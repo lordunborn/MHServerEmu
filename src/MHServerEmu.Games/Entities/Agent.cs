@@ -65,6 +65,11 @@ namespace MHServerEmu.Games.Entities
             // InitPowersCollection
             InitLocomotor(settings.LocomotorHeightOverride);
 
+            // Wait in dormant while play start animation
+            if (agentProto.WakeRange > 0.0f || agentProto.WakeDelayMS > 0) SetDormant(true);
+
+            Properties[PropertyEnum.InitialCharacterLevel] = CharacterLevel;
+
             // When Gazillion implemented DCL, it looks like they made it switchable at first (based on Eval::runIsDynamicCombatLevelEnabled),
             // so all agents need to have their default non-DCL health base curves overriden with new DCL ones.
             if (CanBePlayerOwned() == false)
@@ -91,7 +96,7 @@ namespace MHServerEmu.Games.Entities
             Player ownerPlayer = GetOwnerOfType<Player>();
             if (IsInKnockback || IsInKnockdown || IsInKnockup || IsImmobilized || IsImmobilizedByHitReact
                 || IsSystemImmobilized || IsStunned || IsMesmerized || NPCAmbientLock
-                || (ownerPlayer != null && (ownerPlayer.IsFullscreenMoviePlaying || ownerPlayer.IsOnLoadingScreen)))
+                || (ownerPlayer != null && ownerPlayer.IsFullscreenObscured))
                 return false;
             return true;
         }
@@ -100,7 +105,7 @@ namespace MHServerEmu.Games.Entities
         {
             Player ownerPlayer = GetOwnerOfType<Player>();
             if (base.CanMove() == false || HasMovementPreventionStatus || IsSystemImmobilized
-                || (ownerPlayer != null && (ownerPlayer.IsFullscreenMoviePlaying || ownerPlayer.IsOnLoadingScreen)))
+                || (ownerPlayer != null && ownerPlayer.IsFullscreenObscured))
                 return false;
 
             Power power = GetThrowablePower();
@@ -108,14 +113,6 @@ namespace MHServerEmu.Games.Entities
                 return false;
 
             return true;
-        }
-
-        public Vector3 GetPositionNearAvatar(Avatar avatar)
-        {
-            Region region = avatar.Region;
-            region.ChooseRandomPositionNearPoint(avatar.Bounds, Region.GetPathFlagsForEntity(WorldEntityPrototype), PositionCheckFlags.PreferNoEntity,
-                    BlockingCheckFlags.CheckSpawns, 50, 200, out Vector3 position);
-            return position;
         }
 
         private bool InitLocomotor(float height = 0.0f)
@@ -148,6 +145,7 @@ namespace MHServerEmu.Games.Entities
             // Remove death state properties
             Properties[PropertyEnum.IsDead] = false;
             Properties[PropertyEnum.NoEntityCollide] = false;
+            SetState(PrototypeId.Invalid);
 
             // Send resurrection message
             var resurrectMessage = NetMessageOnResurrect.CreateBuilder()
@@ -480,6 +478,13 @@ namespace MHServerEmu.Games.Entities
 
         #region Progression
 
+        public virtual int GetLatestPowerProgressionVersion()
+        {
+            if (IsTeamUpAgent == false) return 0;
+            if (Prototype is not AgentTeamUpPrototype teamUpProto) return 0;
+            return teamUpProto.PowerProgressionVersion;
+        }
+
         public virtual bool HasPowerInPowerProgression(PrototypeId powerRef)
         {
             if (IsTeamUpAgent)
@@ -628,6 +633,17 @@ namespace MHServerEmu.Games.Entities
                 PowerCollection?.OnOwnerLevelChange();
         }
 
+        public void RemoveMissionActionReferencedPowers(PrototypeId missionRef)
+        {
+            if (missionRef == PrototypeId.Invalid) return;
+            var missionProto = GameDatabase.GetPrototype<MissionPrototype>(missionRef);
+            if (missionProto == null) return;
+            var referencedPowers = missionProto.MissionActionReferencedPowers;
+            if (referencedPowers == null) return;
+            foreach (var referencedPower in referencedPowers) 
+                UnassignPower(referencedPower);
+        }
+
         #endregion
 
         #region Interaction
@@ -635,6 +651,10 @@ namespace MHServerEmu.Games.Entities
         public virtual bool UseInteractableObject(ulong entityId, PrototypeId missionProtoRef)
         {
             // NOTE: This appears to be unused by regular agents.
+            var interactableObject = Game.EntityManager.GetEntity<WorldEntity>(entityId);
+            if (interactableObject == null || interactableObject.IsInWorld == false) return false;
+            if (InInteractRange(interactableObject, InteractionMethod.Use) == false) return false;
+            interactableObject.OnInteractedWith(this);
             return true;
         }
 
@@ -830,6 +850,9 @@ namespace MHServerEmu.Games.Entities
 
             if (result == SimulateResult.Set)
             {
+                if (AgentPrototype.WakeRange <= 0.0f) SetDormant(false);
+                if (IsDormant == false) TryAutoActivatePowersInCollection();
+
                 TriggerEntityActionEvent(EntitySelectorActionEventType.OnSimulated);
             }
             else if (result == SimulateResult.Clear)
@@ -854,7 +877,6 @@ namespace MHServerEmu.Games.Entities
             var behaviorProfile = AgentPrototype?.BehaviorProfile;
             if (behaviorProfile == null) return;
             AIController.OnInitAIOverride(behaviorProfile, collection);
-            AIController.Blackboard.PropertyCollection.RemoveProperty(PropertyEnum.AIFullOverride);
         }
 
         private bool InitAI(EntitySettings settings)
@@ -868,10 +890,17 @@ namespace MHServerEmu.Games.Entities
                 AIController = new(Game, this);
                 using PropertyCollection collection = ObjectPoolManager.Instance.Get<PropertyCollection>();
                 collection[PropertyEnum.AIIgnoreNoTgtOverrideProfile] = Properties[PropertyEnum.AIIgnoreNoTgtOverrideProfile];
-                SpawnSpec spec = settings?.SpawnSpec ?? new SpawnSpec();
+                SpawnSpec spec = settings?.SpawnSpec ?? new SpawnSpec(Game);
                 return AIController.Initialize(behaviorProfile, spec, collection);
             }
             return false;
+        }
+
+        public override void OnCollide(WorldEntity whom, Vector3 whoPos)
+        {
+            // TODO ProcTriggerType.OnCollide
+
+            AIController?.OnAIOnCollide(whom);
         }
 
         #endregion
@@ -892,6 +921,17 @@ namespace MHServerEmu.Games.Entities
                 case PropertyEnum.Confused:
                     SetFlag(EntityFlags.Confused, newValue);
                     AllianceChange();
+                    break;
+
+                case PropertyEnum.EnemyBoost:
+
+                    if (IsInWorld)
+                    {
+                        Property.FromParam(id, 0, out PrototypeId enemyBoost);
+                        if (enemyBoost == PrototypeId.Invalid) break;
+                        if (newValue) AssignEnemyBoostActivePower(enemyBoost);
+                    }
+
                     break;
 
                 case PropertyEnum.Knockback:
@@ -953,9 +993,6 @@ namespace MHServerEmu.Games.Entities
         public override void OnEnteredWorld(EntitySettings settings)
         {
             base.OnEnteredWorld(settings);
-            if (this is not Avatar)     // fix for avatar
-                RegionLocation.Cell.EnemySpawn(); // Calc Enemy
-                                                  // ActivePowerRef = settings.PowerPrototype
 
             // Assign on resurrected power
             PrototypeId onResurrectedPowerRef = AgentPrototype.OnResurrectedPower;
@@ -968,9 +1005,10 @@ namespace MHServerEmu.Games.Entities
             // AI
             // if (TestAI() == false) return;
 
+            var behaviorProfile = AgentPrototype?.BehaviorProfile;
+
             if (AIController != null)
-            {
-                var behaviorProfile = AgentPrototype?.BehaviorProfile;
+            {                
                 if (behaviorProfile == null) return;
                 AIController.Initialize(behaviorProfile, null, null);
             }
@@ -981,10 +1019,18 @@ namespace MHServerEmu.Games.Entities
                 AIController.OnAIEnteredWorld();
                 ActivateAI();
             }
-            
-            // Activate StartAnimation from missionRef
-            // TODO change when Mission Action will work
-            if (/*IsSimulated &&*/ Properties.HasProperty(PropertyEnum.AIPowerOnSpawn))
+
+            if (behaviorProfile != null)
+                EquipPassivePowers(behaviorProfile.EquippedPassivePowers);
+
+            foreach (var kvp in Properties.IteratePropertyRange(PropertyEnum.EnemyBoost))
+            {
+                Property.FromParam(kvp.Key, 0, out PrototypeId enemyBoost);
+                if (enemyBoost == PrototypeId.Invalid) continue;
+                AssignEnemyBoostActivePower(enemyBoost);
+            }
+
+            if (IsSimulated && Properties.HasProperty(PropertyEnum.AIPowerOnSpawn))
             {
                 PrototypeId startPower = Properties[PropertyEnum.AIPowerOnSpawn];
                 if (startPower != PrototypeId.Invalid)
@@ -998,14 +1044,45 @@ namespace MHServerEmu.Games.Entities
                 }
             }
 
+            var player = TeamUpOwner?.GetOwnerOfType<Player>();
+            player?.UpdateScoringEventContext();
+
             if (AIController == null)
                 EntityActionComponent?.InitActionBrain();
+        }
+
+        private void AssignEnemyBoostActivePower(PrototypeId enemyBoost)
+        {
+            var boostProto = GameDatabase.GetPrototype<EnemyBoostPrototype>(enemyBoost);
+            if (boostProto == null) return;
+            var activePower = boostProto.ActivePower;
+            if (activePower != PrototypeId.Invalid)
+            {
+                PowerIndexProperties indexProps = new(0, CharacterLevel, CombatLevel);
+                AssignPower(activePower, indexProps);
+            }
+        }
+
+        private void EquipPassivePowers(PrototypeId[] passivePowers)
+        {
+            if (passivePowers.IsNullOrEmpty()) return;
+            foreach (var powerRef in passivePowers)
+            {
+                var powerProto = GameDatabase.GetPrototype<PowerPrototype>(powerRef);
+                if (powerProto == null || powerProto.Activation != PowerActivationType.Passive) continue;
+                int rank = Properties[PropertyEnum.PowerRank];
+                PowerIndexProperties indexProps = new(rank, CharacterLevel, CombatLevel);
+                AssignPower(powerRef, indexProps);
+            }
         }
 
         public override void OnExitedWorld()
         {
             base.OnExitedWorld();
             AIController?.OnAIExitedWorld();
+
+            var player = TeamUpOwner?.GetOwnerOfType<Player>();
+            player?.UpdateScoringEventContext();
         }
 
         public override void OnGotHit(WorldEntity attacker)
@@ -1027,6 +1104,13 @@ namespace MHServerEmu.Games.Entities
             Avatar teamUpOwner = TeamUpOwner;
             if (teamUpOwner != null)
                 teamUpOwner.ClearSummonedTeamUpAgent(this);
+
+            if (Prototype is OrbPrototype && Properties.HasProperty(PropertyEnum.ItemCurrency) == false)
+            {
+                var avatar = killer as Avatar;
+                var player = avatar?.GetOwnerOfType<Player>();
+                player?.OnScoringEvent(new(ScoringEventType.OrbsCollected, Prototype));
+            }
 
             if (AIController != null)
             {
@@ -1155,7 +1239,8 @@ namespace MHServerEmu.Games.Entities
         {
             if (IsControlledEntity || EntityActionComponent == null) return false;
 
-            // TODO action.SpawnerTrigger
+            if (action.SpawnerTrigger != PrototypeId.Invalid)
+                TriggerLocalSpawner(action.SpawnerTrigger);
 
             if (action.AttributeActions.HasValue())
                 foreach (var attr in action.AttributeActions)
@@ -1235,6 +1320,7 @@ namespace MHServerEmu.Games.Entities
                     using PropertyCollection properties = ObjectPoolManager.Instance.Get<PropertyCollection>();
                     InitAIOverride(profile, properties);
                     if (AIController == null) return false;
+                    AIController.Blackboard.PropertyCollection.RemoveProperty(PropertyEnum.AIFullOverride);
                 }
                 else
                     AIController.Blackboard.PropertyCollection[PropertyEnum.AIFullOverride] = brainRef;
@@ -1268,7 +1354,7 @@ namespace MHServerEmu.Games.Entities
             return true;
         }
 
-        private PowerUseResult ActivatePerformPower(PrototypeId powerRef)
+        public PowerUseResult ActivatePerformPower(PrototypeId powerRef)
         {
             if (this is Avatar) return PowerUseResult.GenericError;
             if (powerRef == PrototypeId.Invalid) return PowerUseResult.AbilityMissing;
@@ -1298,19 +1384,6 @@ namespace MHServerEmu.Games.Entities
             }
 
             return PowerUseResult.Success;
-        }
-
-        // TODO ActivatePerformPower in MissionActionEntityPerformPowerPrototype
-        public override void AppendStartAction_OLD(PrototypeId actionsTarget) 
-        {
-            if (EntityActionComponent != null || actionsTarget == PrototypeId.Invalid) return;
-
-            if (GameDatabase.InteractionManager.GetStartAction(PrototypeDataRef, actionsTarget, out MissionActionEntityPerformPowerPrototype action))
-            {
-                PrototypeId startPowerRef = action.PowerPrototype;
-                if (startPowerRef == PrototypeId.Invalid) return;
-                Properties[PropertyEnum.AIPowerOnSpawn] = startPowerRef;              
-            }
         }
 
         public void DrawPath(EntityHelper.TestOrb orbRef)
@@ -1375,12 +1448,8 @@ namespace MHServerEmu.Games.Entities
             var prototype = AgentPrototype;
             if (prototype != null && prototype.PlayDramaticEntrance == DramaticEntranceType.Once)
                 Properties[PropertyEnum.DramaticEntrancePlayedOnce] = true;
-            var region = Region;
-            if (region != null)
-            {
-                var evt = new EntityLeaveDormantGameEvent(this);
-                region.EntityLeaveDormantEvent.Invoke(evt);
-            }
+
+            Region?.EntityLeaveDormantEvent.Invoke(new(this));
             TryAutoActivatePowersInCollection();
         }
 

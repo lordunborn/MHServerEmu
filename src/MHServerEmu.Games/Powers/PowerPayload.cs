@@ -368,7 +368,7 @@ namespace MHServerEmu.Games.Powers
 
             float damagePctWeaken = powerOwner.Properties[PropertyEnum.DamagePctWeaken];
 
-            foreach (var kvp in powerOwner.Properties.IteratePropertyRange(PropertyEnum.DamagePctWeaken))
+            foreach (var kvp in powerOwner.Properties.IteratePropertyRange(PropertyEnum.DamagePctWeakenForPowerKeyword))
             {
                 Property.FromParam(kvp.Key, 0, out PrototypeId keywordProtoRef);
                 if (keywordProtoRef == PrototypeId.Invalid)
@@ -603,8 +603,9 @@ namespace MHServerEmu.Games.Powers
         {
             float healing = Properties[PropertyEnum.Healing];
 
-            // HACK: Increase healing to compensate for the lack of healing over time
-            healing *= 3f;
+            // HACK: Increase medkit healing to compensate for the lack of healing over time
+            if (results.PowerPrototype.DataRef == GameDatabase.GlobalsPrototype.AvatarHealPower)
+                healing *= 2f;
 
             // Pct healing
             float healingBasePct = Properties[PropertyEnum.HealingBasePct];

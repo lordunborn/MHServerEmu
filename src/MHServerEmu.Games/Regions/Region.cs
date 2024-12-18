@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Gazillion;
 using MHServerEmu.Core.Collections;
 using MHServerEmu.Core.Collisions;
 using MHServerEmu.Core.Extensions;
@@ -8,7 +9,7 @@ using MHServerEmu.Core.Memory;
 using MHServerEmu.Core.Serialization;
 using MHServerEmu.Core.System.Time;
 using MHServerEmu.Core.VectorMath;
-using MHServerEmu.Games.Behavior;
+using MHServerEmu.Games.Common;
 using MHServerEmu.Games.DRAG;
 using MHServerEmu.Games.DRAG.Generators.Regions;
 using MHServerEmu.Games.Entities;
@@ -16,6 +17,7 @@ using MHServerEmu.Games.Entities.Avatars;
 using MHServerEmu.Games.Entities.Locomotion;
 using MHServerEmu.Games.Events;
 using MHServerEmu.Games.GameData;
+using MHServerEmu.Games.GameData.LiveTuning;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.Loot;
 using MHServerEmu.Games.MetaGames;
@@ -44,6 +46,14 @@ namespace MHServerEmu.Games.Regions
         PreferNoEntity     = 1 << 7,
     }
 
+    [Flags]
+    public enum RegionStatus
+    {
+        None = 0,
+        GenerateAreas = 1 << 0,
+        Shutdown = 1 << 2,
+    }
+
     public enum RegionPartitionContext
     {
         Insert,
@@ -54,14 +64,17 @@ namespace MHServerEmu.Games.Regions
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
 
-        private readonly BitList _collisionIds = new();
-        private readonly BitList _collisionBits = new();
-        private readonly List<BitList> _collisionBitList = new();
+        private readonly GBitArray _collisionIds = new();
+        private readonly GBitArray _collisionBits = new();
+        private readonly List<GBitArray> _collisionBitList = new();
+        private Dictionary<PrototypeId, ulong> _uniqueSelectorIndexes = new();
 
         private readonly HashSet<ulong> _discoveredEntities = new();
 
-        private Area _startArea;
+        private readonly HashSet<ulong> _players = new();
 
+        private Area _startArea;
+        private RegionStatus _statusFlag;
         private int _playerDeaths;
         private PrototypeId _avatarOnKilledInfo = PrototypeId.Invalid;
 
@@ -85,11 +98,14 @@ namespace MHServerEmu.Games.Regions
         public int MaxCollisionId { get => _collisionIds.Size; }
 
         public bool IsGenerated { get; private set; }
-        public bool AvatarSwapEnabled { get; private set; }
-        public bool RestrictedRosterEnabled { get; private set; }
+        public bool AvatarSwapEnabled { get; set; }
+        public bool RestrictedRosterEnabled { get; set; }
+        public bool IsRestrictedRosterEnabled { get => RestrictedRosterEnabled && Prototype != null && Prototype.RestrictedRoster.HasValue(); }
 
         public TimeSpan CreatedTime { get; private set; }
         public TimeSpan LastVisitedTime { get; private set; }
+        public bool ShutdownRequested { get; private set; }
+        public int PlayerCount { get => _players.Count; }
 
         public Dictionary<uint, Area> Areas { get; } = new();
         public IEnumerable<Cell> Cells { get => IterateCellsInVolume(Aabb); }
@@ -115,14 +131,87 @@ namespace MHServerEmu.Games.Regions
         public SpawnMarkerRegistry SpawnMarkerRegistry { get; private set; }
         public EntityTracker EntityTracker { get; private set; }
         public TuningTable TuningTable { get; private set; }    // Difficulty table
+        public bool IsFirstLoaded { get; private set; }
+        public int PlayerDeaths { get => _playerDeaths; set => SetPlayerDeaths(value); }
+
+        public float LowResMapResolution { get; private set; }
+        public int LowResVectorSize { get; private set; }
+        public int LowResMapWidth { get; private set; }
+        public int LowResMapLength { get; private set; }
+        public float LowResMapHeight { get; private set; }
+        public float RegionWidth { get => Aabb.Width; }
+        public float RegionLength { get => Aabb.Length; }
+        public float RegionHeight { get => Aabb.Height; }
+        public float RegionMinX { get => Aabb.Min.X; }
+        public float RegionMinY { get => Aabb.Min.Y; }
+
+        #region Events
 
         public Event<EntityDeadGameEvent> EntityDeadEvent = new();
         public Event<AIBroadcastBlackboardGameEvent> AIBroadcastBlackboardEvent = new();
+        public Event<NotificationInteractGameEvent> NotificationInteractEvent = new();
         public Event<PlayerInteractGameEvent> PlayerInteractEvent = new();
         public Event<EntityAggroedGameEvent> EntityAggroedEvent = new();
+        public Event<AdjustHealthGameEvent> AdjustHealthEvent = new();
         public Event<EntityEnteredMissionHotspotGameEvent> EntityEnteredMissionHotspotEvent = new();
         public Event<EntityLeftMissionHotspotGameEvent> EntityLeftMissionHotspotEvent = new();
         public Event<EntityLeaveDormantGameEvent> EntityLeaveDormantEvent = new();
+        public Event<EntityEnteredAreaGameEvent> EntityEnteredAreaEvent = new();
+        public Event<EntityLeftAreaGameEvent> EntityLeftAreaEvent = new();
+        public Event<AreaCreatedGameEvent> AreaCreatedEvent = new();
+        public Event<CellCreatedGameEvent> CellCreatedEvent = new();
+        public Event<PlayerEnteredCellGameEvent> PlayerEnteredCellEvent = new();
+        public Event<PlayerLeftCellGameEvent> PlayerLeftCellEvent = new();
+        public Event<AvatarEnteredRegionGameEvent> AvatarEnteredRegionEvent = new();
+        public Event<PlayerEnteredRegionGameEvent> PlayerEnteredRegionEvent = new();
+        public Event<PlayerLeftRegionGameEvent> PlayerLeftRegionEvent = new();
+        public Event<PlayerRegionChangeGameEvent> PlayerRegionChangeEvent = new();
+        public Event<PlayerDeathRecordedEvent> PlayerDeathRecordedEvent = new();
+        public Event<AvatarUsedPowerGameEvent> AvatarUsedPowerEvent = new();
+        public Event<PlayerCompletedMissionGameEvent> PlayerCompletedMissionEvent = new();
+        public Event<PlayerCompletedMissionObjectiveGameEvent> PlayerCompletedMissionObjectiveEvent = new();
+        public Event<MissionObjectiveUpdatedGameEvent> MissionObjectiveUpdatedEvent = new();
+        public Event<OpenMissionCompleteGameEvent> OpenMissionCompleteEvent = new();
+        public Event<OpenMissionFailedGameEvent> OpenMissionFailedEvent = new();
+        public Event<PlayerFailedMissionGameEvent> PlayerFailedMissionEvent = new();
+        public Event<EntitySetSimulatedGameEvent> EntitySetSimulatedEvent = new();
+        public Event<EntitySetUnSimulatedGameEvent> EntitySetUnSimulatedEvent = new();
+        public Event<ActiveChapterChangedGameEvent> ActiveChapterChangedEvent = new();
+        public Event<CinematicFinishedGameEvent> CinematicFinishedEvent = new();
+        public Event<KismetSeqFinishedGameEvent> KismetSeqFinishedEvent = new();
+        public Event<PlayerEventTeamChangedGameEvent> PlayerEventTeamChangedEvent = new();
+        public Event<PlayerMetaGameCompleteGameEvent> PlayerMetaGameCompleteEvent = new();
+        public Event<PlayerDeathLimitHitGameEvent> PlayerDeathLimitHitEvent = new();
+        public Event<LoadingScreenFinishedGameEvent> LoadingScreenFinishedEvent = new();
+        public Event<PlayerBeginTravelToRegionGameEvent> PlayerBeginTravelToRegionEvent = new();
+        public Event<PlayerBeginTravelToAreaGameEvent> PlayerBeginTravelToAreaEvent = new();
+        public Event<PlayerEnteredAreaGameEvent> PlayerEnteredAreaEvent = new();
+        public Event<PlayerLeftAreaGameEvent> PlayerLeftAreaEvent = new();
+        public Event<PartySizeChangedGameEvent> PartySizeChangedEvent = new();
+        public Event<PlayerSwitchedToAvatarGameEvent> PlayerSwitchedToAvatarEvent = new();
+        public Event<PlayerFactionChangedGameEvent> PlayerFactionChangedEvent = new();
+        public Event<PlayerCollectedItemGameEvent> PlayerCollectedItemEvent = new();
+        public Event<PlayerLostItemGameEvent> PlayerLostItemEvent = new();
+        public Event<PlayerBoughtItemGameEvent> PlayerBoughtItemEvent = new();
+        public Event<PlayerCraftedItemGameEvent> PlayerCraftedItemEvent = new();
+        public Event<PlayerDonatedItemGameEvent> PlayerDonatedItemEvent = new();
+        public Event<PlayerEquippedItemGameEvent> PlayerEquippedItemEvent = new();
+        public Event<PlayerPreItemPickupGameEvent> PlayerPreItemPickupEvent = new();
+        public Event<PlayerRequestMissionRewardsGameEvent> PlayerRequestMissionRewardsEvent = new();
+        public Event<AvatarLeveledUpGameEvent> AvatarLeveledUpEvent = new();
+        public Event<CurrencyCollectedGameEvent> CurrencyCollectedEvent = new();
+        public Event<EmotePerformedGameEvent> EmotePerformedEvent = new();
+        public Event<ClusterEnemiesClearedGameEvent> ClusterEnemiesClearedEvent = new();
+        public Event<EntityStatusEffectGameEvent> EntityStatusEffectEvent = new();
+        public Event<PlayerUnlockedAvatarGameEvent> PlayerUnlockedAvatarEvent = new();
+        public Event<EntityEnteredWorldGameEvent> EntityEnteredWorldEvent = new();
+        public Event<EntityExitedWorldGameEvent> EntityExitedWorldEvent = new();
+        public Event<PlayerUnlockedTeamUpGameEvent> PlayerUnlockedTeamUpEvent = new();
+        public Event<ThrowablePickedUpGameEvent> ThrowablePickedUpEvent = new();
+        public Event<SpawnerDefeatedGameEvent> SpawnerDefeatedEvent = new();
+        public Event<OrbPickUpEvent> OrbPickUpEvent = new();
+
+        #endregion
 
         public Region(Game game)
         {
@@ -166,7 +255,7 @@ namespace MHServerEmu.Games.Regions
             RandomSeed = settings.Seed;
             Aabb = settings.Bounds;
             AvatarSwapEnabled = Prototype.EnableAvatarSwap;
-            RestrictedRosterEnabled = (Prototype.RestrictedRoster.HasValue());
+            RestrictedRosterEnabled = Prototype.RestrictedRoster.HasValue();
 
             SetRegionLevel();
 
@@ -180,11 +269,11 @@ namespace MHServerEmu.Games.Regions
             Properties[PropertyEnum.EndlessLevelsTotal] = sequenceRegionGenerator != null ? sequenceRegionGenerator.EndlessLevelsPerTheme : 0;
 
             EntityTracker = new(this);
-            //LowResMapResolution = GetLowResMapResolution();
+            LowResMapResolution = GetLowResMapResolution();
 
             GlobalsPrototype globals = GameDatabase.GlobalsPrototype;
             if (globals == null)
-                return Logger.ErrorReturn(false, "Unable to get globals prototype for region initialize");
+                return Logger.ErrorReturn(false, "Initialize(): Unable to get globals prototype for region initialize");
 
             TuningTable = new(this);
 
@@ -193,9 +282,8 @@ namespace MHServerEmu.Games.Regions
             {
                 TuningTable.SetTuningTable(difficultySettings.TuningTable);
 
-                /* if (HasProperty(PropertyEnum.DifficultyIndex))
-                       TuningTable.SetDifficultyIndex(GetProperty<int>(PropertyEnum.DifficultyIndex), false);
-                */
+                if (Properties.HasProperty(PropertyEnum.DifficultyIndex))
+                    TuningTable.SetDifficultyIndex(Properties[PropertyEnum.DifficultyIndex], false);
             }
 
             // NOTE: Divided start locations are used only in the Age of Ultron game mode
@@ -206,7 +294,7 @@ namespace MHServerEmu.Games.Regions
             if (Aabb.IsZero() == false)
             {
                 if (settings.GenerateAreas)
-                    Logger.Warn("Bound is not Zero with GenerateAreas On");             
+                    Logger.Warn("Initialize(): Bound is not Zero with GenerateAreas On");             
                 
                 InitializeSpacialPartition(Aabb);
                 NaviMesh.Initialize(Aabb, 1000.0f, this);
@@ -218,7 +306,7 @@ namespace MHServerEmu.Games.Regions
 
             if (MissionManager != null && MissionManager.InitializeForRegion(this) == false) return false;
 
-            if (settings.Affixes != null && settings.Affixes.Any())
+            if (settings.Affixes.Count > 0)
             {
                 RegionAffixTablePrototype affixTableP = GameDatabase.GetPrototype<RegionAffixTablePrototype>(regionProto.AffixTable);
                 if (affixTableP != null)
@@ -249,25 +337,13 @@ namespace MHServerEmu.Games.Regions
 
             Targets = RegionTransition.BuildConnectionEdges(settings.RegionDataRef); // For Teleport system
 
-            // Does this need to be initialized before we generate areas? Is this supposed to be happening later?
-            if (regionProto.MetaGames.HasValue())
-            {
-                foreach (var metaGameRef in regionProto.MetaGames)
-                {
-                    using EntitySettings metaSettings = ObjectPoolManager.Instance.Get<EntitySettings>();
-                    metaSettings.RegionId = Id;
-                    metaSettings.EntityRef = metaGameRef;
-                    MetaGame metagame = Game.EntityManager.CreateEntity(metaSettings) as MetaGame;
-                }
-            }
-
             if (settings.GenerateAreas)
             {
                 if (GenerateAreas(settings.GenerateLog) == false)
                     return Logger.WarnReturn(false, $"Initialize(): Failed to generate areas for\n  region: {this}\n    seed: {RandomSeed}");
             }
 
-            if (settings.Affixes != null && settings.Affixes.Any())
+            if (settings.Affixes.Count > 0)
             {
                 var affixTableProto = GameDatabase.GetPrototype<RegionAffixTablePrototype>(regionProto.AffixTable);
                 if (affixTableProto != null)
@@ -324,14 +400,56 @@ namespace MHServerEmu.Games.Regions
             // if (regionProto.UITopPanel != PrototypeId.Invalid)
             //     Properties[PropertyEnum.RegionUITopPanel] = regionProto.UITopPanel;
 
+            // MetaGames create
+            if (regionProto.MetaGames.HasValue())
+            {
+                EntityManager entityManager = Game.EntityManager;
+
+                using PropertyCollection metaCollection = ObjectPoolManager.Instance.Get<PropertyCollection>();
+                var entryProto = regionProto.GetRegionQueueStateEntry(settings.GameStateId);
+                if (entryProto != null && entryProto.State != PrototypeId.Invalid && entryProto.StateParent != PrototypeId.Invalid)
+                {
+                    var progressionProto = GameDatabase.GetPrototype<MetaStateMissionProgressionPrototype>(entryProto.StateParent);
+                    if (progressionProto != null) {
+                        var nextState = progressionProto.NextState(entryProto.State);
+                        if (nextState != PrototypeId.Invalid)
+                            metaCollection[PropertyEnum.MetaStateWaveForce, entryProto.StateParent] = nextState;
+                    }
+                }
+
+                foreach (var metaGameRef in regionProto.MetaGames)
+                {
+                    using EntitySettings metaSettings = ObjectPoolManager.Instance.Get<EntitySettings>();
+                    metaSettings.RegionId = Id;
+                    metaSettings.EntityRef = metaGameRef;
+                    metaSettings.Properties = metaCollection;
+
+                    var metagame = entityManager.CreateEntity(metaSettings);
+                    if (metagame == null) Logger.Warn($"Initialize(): metagame [{metaGameRef}] == null");
+                }
+            }
+
+            ApplyDifficultyTierProperties(settings.DifficultyTierRef);
+
             IsGenerated = true;
             CreatedTime = Clock.UnixTime;
             return true;
         }
 
+        public bool TestStatus(RegionStatus status)
+        {
+            return _statusFlag.HasFlag(status);
+        }
+
+        private void SetStatus(RegionStatus status, bool enable)
+        {
+            if (enable) _statusFlag |= status;
+            else _statusFlag ^= status;
+        }
+
         public void Shutdown()
         {
-            // SetStatus(2, true);
+            SetStatus(RegionStatus.Shutdown, true);
 
             /* int tries = 100;
              bool found;
@@ -361,20 +479,21 @@ namespace MHServerEmu.Games.Regions
                 }
             }
             // } while (found && (tries-- > 0)); // TODO: For what 100 tries?
+            
+            if (Game != null)
+                MissionManager?.Shutdown(this);
 
-            /*
-            if (Game != null && MissionManager != null)
-                MissionManager.Shutdown(this);
-            */
-            while (MetaGames.Any())
+            EntityManager entityManager = Game.EntityManager;
+
+            while (MetaGames.Count > 0)
             {
-                var metaGameId = MetaGames.First();
-                var metaGame = Game.EntityManager.GetEntity<Entity>(metaGameId);
+                var metaGameId = MetaGames[0];
+                var metaGame = entityManager.GetEntity<Entity>(metaGameId);
                 metaGame?.Destroy();
                 MetaGames.Remove(metaGameId);
             }
 
-            while (Areas.Any())
+            while (Areas.Count > 0)
             {
                 var areaId = Areas.First().Key;
                 DestroyArea(areaId);
@@ -382,22 +501,25 @@ namespace MHServerEmu.Games.Regions
 
             ClearDividedStartLocations();
 
-            /* var scheduler = Game?.GameEventScheduler;
-             if (scheduler != null)
-             {
-                 scheduler.CancelAllEvents(_events);
-             }
-
-             foreach (var entity in Game.EntityManager.GetEntities())
-             {
-                 if (entity is WorldEntity worldEntity)
-                     worldEntity.EmergencyRegionCleanup(this);
-             }
-            */
+            foreach (var entity in Game.EntityManager.IterateEntities())
+                if (entity is WorldEntity worldEntity)
+                    worldEntity.EmergencyRegionCleanup(this);
 
             NaviMesh.Release();
-
+            PopulationManager.Deallocate();
+            MissionManager.Deallocate();
+            UIDataProvider.Deallocate();
             Properties.Unbind();
+        }
+
+        public void RequestShutdown()
+        {
+            if (ShutdownRequested)
+                return;
+
+            Game.RegionManager.RequestRegionShutdown(Id);
+            ShutdownRequested = true;
+            Logger.Trace($"Shutdown requested for region [{this}]");
         }
 
         public bool Serialize(Archive archive)
@@ -448,11 +570,9 @@ namespace MHServerEmu.Games.Regions
 
         public Area GetArea(PrototypeId prototypeId)
         {
-            foreach (var area in Areas)
-            {
-                if (area.Value.PrototypeDataRef == prototypeId)
-                    return area.Value;
-            }
+            foreach (var area in Areas.Values)
+                if (area.PrototypeDataRef == prototypeId)
+                    return area;
 
             return null;
         }
@@ -467,12 +587,9 @@ namespace MHServerEmu.Games.Regions
 
         public Area GetAreaAtPosition(Vector3 position)
         {
-            foreach (var itr in Areas)
-            {
-                Area area = itr.Value;
+            foreach (Area area in Areas.Values)
                 if (area.IntersectsXY(position))
                     return area;
-            }
 
             return null;
         }
@@ -487,13 +604,16 @@ namespace MHServerEmu.Games.Regions
 
         public IEnumerable<Area> IterateAreas(Aabb? bound = null)
         {
-            List<Area> areasList = Areas.Values.ToList();   // TODO: Change this to ToArray()
-            foreach (Area area in areasList)
-            {
-                //Area area = enumerator.Current.Value;
+            foreach (var area in Areas.Values.ToArray())
                 if (bound == null || area.RegionBounds.Intersects(bound.Value))
                     yield return area;
-            }
+        }
+
+        public void RebuildBlackOutZone(BlackOutZone zone)
+        {
+            foreach (var area in IterateAreas())
+                if (area.TestStatus(GenerateFlag.Population) && zone.Sphere.Intersects(area.RegionBounds))
+                    area.RebuildBlackOutZone(zone);
         }
 
         public int GetAreaLevel(Area area)
@@ -601,8 +721,6 @@ namespace MHServerEmu.Games.Regions
             foreach (Player player in new PlayerIterator(this))
                 player.DiscoverEntity(worldEntity, updateInterest);
 
-            Logger.Trace($"DiscoverEntity(): {worldEntity}");
-
             return true;
         }
 
@@ -615,8 +733,6 @@ namespace MHServerEmu.Games.Regions
 
             foreach (Player player in new PlayerIterator(this))
                 player.UndiscoverEntity(worldEntity, updateInterest);
-
-            Logger.Trace($"UndiscoverEntity(): {worldEntity}");
 
             return true;
         }
@@ -632,11 +748,14 @@ namespace MHServerEmu.Games.Regions
 
         public bool GenerateAreas(bool log)
         {
+            if (TestStatus(RegionStatus.GenerateAreas)) return false;
+
             RegionGenerator regionGenerator = DRAGSystem.LinkRegionGenerator(Prototype.RegionGenerator);
 
             regionGenerator.GenerateRegion(log, RandomSeed, this);
 
             _startArea = regionGenerator.StartArea;
+            SetStatus(RegionStatus.GenerateAreas, true);
             SetAabb(CalculateAabbFromAreas());
 
             bool success = GenerateHelper(regionGenerator, GenerateFlag.Background)
@@ -668,11 +787,6 @@ namespace MHServerEmu.Games.Regions
 
         public bool GenerateMissionPopulation()
         {
-            foreach (var metaGameId in MetaGames)
-            {
-                var metaGame = Game.EntityManager.GetEntity<MetaGame>(metaGameId);
-                metaGame?.RegisterStates();
-            }
             return MissionManager.GenerateMissionPopulation();
         }
 
@@ -724,9 +838,23 @@ namespace MHServerEmu.Games.Regions
             return MetaStateChallengeTierEnum.None;
         }
 
-        public void ApplyRegionAffixesEnemyBoosts(PrototypeId rankRef, HashSet<PrototypeId> overrides)
+        public void ApplyRegionAffixesEnemyBoosts(PrototypeId rankRef, HashSet<PrototypeId> affixes)
         {
-            throw new NotImplementedException();
+            foreach (var affix in Settings.Affixes)
+            {
+                var affixProto = GameDatabase.GetPrototype<RegionAffixPrototype>(affix);
+                if (affixProto != null && affixProto.CanApplyToRegion(this))
+                {
+                    if (affixProto.EnemyBoost != PrototypeId.Invalid)
+                        affixes.Add(affixProto.EnemyBoost);
+
+                    if (affixProto.EnemyBoostsFiltered.IsNullOrEmpty()) continue;
+                    foreach (var boostProto in affixProto.EnemyBoostsFiltered)
+                        if ((boostProto.RanksAllowed.IsNullOrEmpty() || boostProto.RanksAllowed.Contains(rankRef))
+                            && (boostProto.RanksPrevented.IsNullOrEmpty() || boostProto.RanksPrevented.Contains(rankRef) == false))
+                            affixes.Add(boostProto.EnemyBoost);
+                }
+            }
         }
 
         private void SetRegionLevel()
@@ -741,6 +869,23 @@ namespace MHServerEmu.Games.Regions
                 RegionLevel = regionProto.Level;
             else
                 Logger.Error("RegionLevel <= 0");
+        }
+
+        private void ApplyDifficultyTierProperties(PrototypeId difficultyTierProtoRef)
+        {
+            DifficultyTierPrototype difficultyTierProto = difficultyTierProtoRef.As<DifficultyTierPrototype>();
+            if (difficultyTierProto == null) return;
+
+            Properties.AdjustProperty(difficultyTierProto.BonusExperiencePct, PropertyEnum.ExperienceBonusPct);
+            Properties.AdjustProperty(difficultyTierProto.BonusExperiencePct, PropertyEnum.LootBonusXPPct);
+            Properties.AdjustProperty(difficultyTierProto.ItemFindCreditsPct, PropertyEnum.LootBonusCreditsPct);
+            Properties.AdjustProperty(difficultyTierProto.ItemFindRarePct, PropertyEnum.LootBonusRarityPct);
+            Properties.AdjustProperty(difficultyTierProto.ItemFindSpecialPct, PropertyEnum.LootBonusSpecialPct);
+
+            Properties.AdjustProperty(difficultyTierProto.BonusItemFindBonusDifficultyMult, PropertyEnum.BonusItemFindBonusDifficultyMult);
+            
+            Properties[PropertyEnum.DamageRegionMobToPlayer] *= difficultyTierProto.DamageMobToPlayerPct;
+            Properties[PropertyEnum.DamageRegionPlayerToMob] *= difficultyTierProto.DamagePlayerToMobPct;
         }
 
         #endregion
@@ -819,9 +964,9 @@ namespace MHServerEmu.Games.Regions
 
         public bool CheckMarkerFilter(PrototypeId filterRef)
         {
-            if (filterRef == 0) return true;
+            if (filterRef == PrototypeId.Invalid) return true;
             PrototypeId markerFilter = Prototype.MarkerFilter;
-            if (markerFilter == 0) return true;
+            if (markerFilter == PrototypeId.Invalid) return true;
             return markerFilter == filterRef;
         }
 
@@ -906,8 +1051,8 @@ namespace MHServerEmu.Games.Regions
         public int AcquireCollisionId()
         {
             int index = _collisionIds.FirstUnset();
-            if (index == -1) index = _collisionIds.Size;
-            _collisionIds.Set(index, true);
+            if (index == GBitArray.Invalid) index = _collisionIds.Size;
+            _collisionIds.Set(index);
             return index;
         }
 
@@ -1092,8 +1237,8 @@ namespace MHServerEmu.Games.Regions
         }
 
         public bool ChoosePositionAtOrNearPoint(Bounds bounds, PathFlags pathFlags, PositionCheckFlags posFlags, BlockingCheckFlags blockFlags,
-            float maxDistance, out Vector3 resultPosition, RandomPositionPredicate positionPredicate = null,
-            EntityCheckPredicate checkPredicate = null, int maxPositionTests = 400)
+            float maxDistance, out Vector3 resultPosition, IRandomPositionPredicate positionPredicate = null,
+            IEntityCheckPredicate checkPredicate = null, int maxPositionTests = 400)
         {
             if (IsLocationClear(bounds, pathFlags, posFlags, blockFlags)
                 && (positionPredicate == null || positionPredicate.Test(bounds.Center)))
@@ -1109,12 +1254,13 @@ namespace MHServerEmu.Games.Regions
         }
 
         public bool ChooseRandomPositionNearPoint(Bounds bounds, PathFlags pathFlags, PositionCheckFlags posFlags, BlockingCheckFlags blockFlags,
-            float minDistanceFromPoint, float maxDistanceFromPoint, out Vector3 resultPosition, RandomPositionPredicate positionPredicate = null,
-            EntityCheckPredicate checkPredicate = null, int maxPositionTests = 400, HeightSweepType heightSweep = HeightSweepType.None,
+            float minDistanceFromPoint, float maxDistanceFromPoint, out Vector3 resultPosition, IRandomPositionPredicate positionPredicate = null,
+            IEntityCheckPredicate checkPredicate = null, int maxPositionTests = 400, HeightSweepType heightSweep = HeightSweepType.None,
             int maxSweepHeight = 0)
         {
             resultPosition = Vector3.Zero;
-            if (maxDistanceFromPoint < minDistanceFromPoint) return false;
+            if (maxDistanceFromPoint < minDistanceFromPoint)
+                Logger.Warn("ChooseRandomPositionNearPoint(): maxDistanceFromPoint < minDistanceFromPoint");
 
             if (posFlags.HasFlag(PositionCheckFlags.CanPathTo) && posFlags.HasFlag(PositionCheckFlags.CanSweepTo))
             {
@@ -1332,10 +1478,23 @@ namespace MHServerEmu.Games.Regions
         {
             Logger.Trace($"OnAddedToAOI(): {this} to {player}");
 
+            // Initialize player Missions
+            player.MissionManager.InitializeForPlayer(player, this);
+
+            var manager = Game.EntityManager;
+            // Consider MetaGames
+            var aoi = player.AOI;
+            if (aoi != null)
+                foreach (var metagameId in MetaGames)
+                {
+                    var metagame = manager.GetEntity<MetaGame>(metagameId);
+                    metagame?.ConsiderInAOI(aoi);                
+                }
+
             // Sync region discovered entities with the player that has entered this region
             foreach (ulong entityId in _discoveredEntities)
             {
-                WorldEntity discoveredEntity = Game.EntityManager.GetEntity<WorldEntity>(entityId);
+                WorldEntity discoveredEntity = manager.GetEntity<WorldEntity>(entityId);
                 if (discoveredEntity == null)
                 {
                     Logger.Warn("OnAddedToAOI(): discoveredEntity == null");
@@ -1344,16 +1503,21 @@ namespace MHServerEmu.Games.Regions
 
                 player.DiscoverEntity(discoveredEntity, true);
             }
+
+            // Track this player
+            if (_players.Add(player.Id) == false)
+                Logger.Warn($"OnAddedToAOI(): Failed to add player id {player.Id}");
         }
 
         public void OnRemovedFromAOI(Player player)
         {
             Logger.Trace($"OnRemovedFromAOI(): {this} from {player}");
 
+            var manager = Game.EntityManager;
             // Remove synced region discovered entities from the player that has left this region
             foreach (ulong entityId in _discoveredEntities)
             {
-                WorldEntity discoveredEntity = Game.EntityManager.GetEntity<WorldEntity>(entityId);
+                WorldEntity discoveredEntity = manager.GetEntity<WorldEntity>(entityId);
                 if (discoveredEntity == null)
                 {
                     Logger.Warn("OnRemovedFromAOI(): discoveredEntity == null");
@@ -1362,6 +1526,41 @@ namespace MHServerEmu.Games.Regions
 
                 player.UndiscoverEntity(discoveredEntity, true);
             }
+
+            foreach(var metagameId in MetaGames)
+            {
+                var metagame = manager.GetEntity<MetaGame>(metagameId);
+                metagame?.OnRemovePlayer(player);
+            }
+
+            // Destroy player Missions
+            player.MissionManager.Shutdown(this);
+
+            // Untrack this player
+            if (_players.Remove(player.Id) == false)
+                Logger.Warn($"OnRemovedFromAOI(): Failed to remove player id {player.Id}");
+        }
+
+        public void OnLoadingFinished()
+        {
+            if (IsFirstLoaded) return;
+            IsFirstLoaded = true;
+
+            List<PrototypeId> timerRefList = ListPool<PrototypeId>.Instance.Rent();
+
+            foreach (var kvp in Properties.IteratePropertyRange(PropertyEnum.ScoringEventTimerStartTimeMS))
+            {
+                if (kvp.Value == -1)
+                {
+                    Property.FromParam(kvp.Key, 0, out PrototypeId timerRef);
+                    timerRefList.Add(timerRef);
+                }
+            }
+
+            foreach (PrototypeId timerRef in timerRefList)
+                ScoringEventTimerStart(timerRef);
+
+            ListPool<PrototypeId>.Instance.Return(timerRefList);
         }
 
         public IEnumerable<PlayerConnection> GetInterestedClients(AOINetworkPolicyValues interestPolicies)
@@ -1390,6 +1589,13 @@ namespace MHServerEmu.Games.Regions
                 : avatarOnKilledInfo;
         }
 
+        public int GetBonusItemFindMultiplier()
+        {
+            int difficultyMult = Properties[PropertyEnum.BonusItemFindBonusDifficultyMult];
+            int liveTuningMult = (int)LiveTuningManager.GetLiveRegionTuningVar(Prototype, RegionTuningVar.eRT_BonusItemFindMultiplier);
+            return Prototype.BonusItemFindMultiplier * difficultyMult * liveTuningMult;
+        }
+
         private bool InitDividedStartLocations(DividedStartLocationPrototype[] dividedStartLocations)
         {
             ClearDividedStartLocations();
@@ -1405,25 +1611,304 @@ namespace MHServerEmu.Games.Regions
         {
             DividedStartLocations.Clear();
         }
+
+        public bool FilterRegion(PrototypeId filterRegionRef, bool includeChildren = false, PrototypeId[] regionsExclude = null)
+        {
+            if (Prototype == null) return false;
+            return Prototype.FilterRegion(filterRegionRef, includeChildren, regionsExclude);
+        }
+
+        public bool FilterRegions(PrototypeId[] filterRegions)
+        {
+            if (Prototype == null || filterRegions.IsNullOrEmpty()) return false;
+            foreach (var regionRef in filterRegions)
+                if (Prototype.FilterRegion(regionRef, false, null)) return true;
+            return false;
+        }
+
+        public void ScoringEventTimerStart(PrototypeId timerRef)
+        {
+            if (timerRef == PrototypeId.Invalid) return;
+            var startPropId = new PropertyId(PropertyEnum.ScoringEventTimerStartTimeMS, timerRef);
+            if (IsFirstLoaded == false)
+            {
+                Properties[startPropId] = -1;
+                return;
+            }
+
+            Properties[startPropId] = (long)Clock.GameTime.TotalMilliseconds;
+
+            var widget = GetScoringTimerWidget(timerRef);
+            if (widget == null) return;
+
+            widget.SetTimeElapsed(GetScoringEventTimeMS(timerRef));
+            widget.SetTimePaused(false);
+            widget.SetAreaContext(PrototypeDataRef);
+        }
+
+        private long GetScoringEventTimeMS(PrototypeId timerRef)
+        {
+            TimeSpan time = TimeSpan.Zero;
+
+            var accumPropId = new PropertyId(PropertyEnum.ScoringEventTimerAccumTimeMS, timerRef);
+            if (Properties.HasProperty(accumPropId))
+                time = TimeSpan.FromMilliseconds(Properties[accumPropId]);
+
+            var startPropId = new PropertyId(PropertyEnum.ScoringEventTimerStartTimeMS, timerRef);
+            if (Properties.HasProperty(startPropId))
+            {
+                long startTime = Properties[startPropId];
+                if (startTime > 0)
+                    time += Clock.GameTime - TimeSpan.FromMilliseconds(startTime);
+            }
+
+            return (long)time.TotalMilliseconds;
+        }
+
+        private UISyncData GetScoringTimerWidget(PrototypeId timerRef)
+        {
+            var widgetProto = GameDatabase.GetPrototype<ScoringEventTimerPrototype>(timerRef);
+            var widgetRef = widgetProto.UIWidget;
+            if (widgetRef == PrototypeId.Invalid) return null;
+            return UIDataProvider.GetWidget<UISyncData>(widgetRef, timerRef);
+        }
+
+        public void ScoringEventTimerEnd(PrototypeId timerRef)
+        {
+            if (timerRef == PrototypeId.Invalid) return;
+            var startPropId = new PropertyId(PropertyEnum.ScoringEventTimerStartTimeMS, timerRef);
+            if (Properties.HasProperty(startPropId) == false) return;
+            ScoringEventTimerStop(timerRef);
+
+            long time = GetScoringEventTimeMS(timerRef);
+            if (time == 0) return;
+            Prototype timerProto = GameDatabase.GetPrototype<Prototype>(timerRef);
+            foreach (var player in new PlayerIterator(this))
+                player?.OnScoringEvent(new(ScoringEventType.CompletionTime, timerProto, (int)time));
+        }
+
+        public void ScoringEventTimerStop(PrototypeId timerRef)
+        {
+            if (timerRef == PrototypeId.Invalid) return;
+            var startPropId = new PropertyId(PropertyEnum.ScoringEventTimerStartTimeMS, timerRef);
+            var accumPropId = new PropertyId(PropertyEnum.ScoringEventTimerAccumTimeMS, timerRef);
+            if (Properties.HasProperty(startPropId) == false) return;
+
+            int startTime = Properties[startPropId];
+            if (startTime > 0)
+            {
+                var time = Clock.GameTime - TimeSpan.FromMilliseconds(startTime);
+                Properties.AdjustProperty((int)time.TotalMilliseconds, accumPropId);
+                Properties.RemoveProperty(startPropId);
+            }
+
+            var widget = GetScoringTimerWidget(timerRef);
+            if (widget == null) return;
+
+            widget.SetTimePaused(true);
+            widget.SetAreaContext(PrototypeDataRef);
+        }
+
+        public void EvalRegionProperties(EvalPrototype evalProto, PropertyCollection properties)
+        {
+            if (evalProto == null) return;
+            using EvalContextData evalContext = ObjectPoolManager.Instance.Get<EvalContextData>();
+            evalContext.Game = Game;
+            evalContext.SetVar_PropertyCollectionPtr(EvalContext.Default, properties);
+            evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Other, Properties);
+            Eval.RunBool(evalProto, evalContext);
+        }
+
+        public void GetUnuqueSelectorIndex(ref int index, int size, PrototypeId dataRef)
+        {
+            if (_uniqueSelectorIndexes.TryGetValue(dataRef, out ulong mask) == false) return;
+            int start = index;
+            do
+            {
+                index = (index + 1) % size;
+                if (MathHelper.EBitTest(mask, index) == false) return;
+            }
+            while (index != start);
+        }
+
+        public void SetUnuqueSelectorIndex(int index, bool setUnique, PrototypeId dataRef)
+        {
+            if (_uniqueSelectorIndexes.ContainsKey(dataRef) == false) return;
+
+            if (setUnique)
+                _uniqueSelectorIndexes[dataRef] |= 1UL << index;
+            else
+                _uniqueSelectorIndexes[dataRef] &= ~(1UL << index);
+        }
+
+        private void SetPlayerDeaths(int value)
+        {
+            _playerDeaths = value;
+            PlayerDeathRecordedEvent.Invoke(new(null));
+        }
+
+        public void OnRecordPlayerDeath(Player player, Avatar avatar, WorldEntity killer)
+        {
+            if (player == null) return;
+
+            /*  TODO PvP
+                PropertyEnum.PvPDeathsDuringMatch
+                PropertyEnum.PvPKillsDuringMatch
+                PropertyEnum.PvPKills
+            */
+
+            if (Properties.HasProperty(PropertyEnum.EndlessLevel))
+                player.Properties.AdjustProperty(1, PropertyEnum.EndlessLevelDeathCount);
+
+            _playerDeaths++;
+
+            PlayerDeathRecordedEvent.Invoke(new(player));
+        }
+
+        public PrototypeId GetStartTarget(Player player)
+        {
+            PrototypeId startTargetRef = Properties[PropertyEnum.RegionStartTargetOverride];
+            if (startTargetRef == PrototypeId.Invalid)
+            {
+                if (GetDividedStartTarget(player, ref startTargetRef) == false)
+                    startTargetRef = Prototype.StartTarget;
+            }
+            return startTargetRef;
+        }
+
+        public bool GetDividedStartTarget(Player player, ref PrototypeId startTargetRef)
+        {
+            if (DividedStartLocations.Count == 0) return false;
+
+            foreach (var startLocation in DividedStartLocations)
+                if (startLocation.UpdatePlayers(player, Game))
+                {
+                    startTargetRef = startLocation.Location.Target;
+                    return true;
+                }
+
+            Picker<DividedStartLocation> picker = new(Game.Random);
+            foreach (var startLocation in DividedStartLocations)
+                if (startLocation.Weight > 0) picker.Add(startLocation, startLocation.Weight);
+
+            if (picker.Pick(out var pickLocation))
+            {
+                pickLocation.AddPlayer(player);
+                startTargetRef = pickLocation.Location.Target;
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool InOwnerParty(Player player)
+        {
+            ulong playerGuid = player.DatabaseUniqueId;
+            if (Settings.PlayerGuidParty == playerGuid) return true;
+
+            // TODO check owner is in party
+
+            return false;
+        }
+
+        #region LowResMap
+
+        private float GetLowResMapResolution() 
+        { 
+            var uiGlobals = GameDatabase.UIGlobalsPrototype;
+            if (uiGlobals == null) return 1.0f;
+            var mapGlobals = GameDatabase.GetPrototype<UIMapGlobalsPrototype>(uiGlobals.UIMapGlobals);
+            if (mapGlobals == null || mapGlobals.DefaultRevealRadius == 0.0f) return 1.0f;
+            return mapGlobals.DefaultRevealRadius * 0.5f;
+        }
+
+        public int CalcLowResSize()
+        {
+            if (LowResVectorSize > 0) return LowResVectorSize;
+
+            LowResMapWidth = MathHelper.RoundUpToInt(RegionWidth / LowResMapResolution); 
+            LowResMapLength = MathHelper.RoundUpToInt(RegionLength / LowResMapResolution);
+            LowResMapHeight = RegionHeight * 2.0f;
+            LowResVectorSize = LowResMapWidth * LowResMapLength;
+
+            return LowResVectorSize;
+        }
+
+        public bool TranslateLowResMap(in Vector3 position, ref int index)
+        {
+            int resWidth = LowResMapWidth;
+            int indexRow = MathHelper.RoundUpToInt((position.Y - RegionMinY) / LowResMapResolution);
+            int indexCol = MathHelper.RoundUpToInt((position.X - RegionMinX) / LowResMapResolution);
+            index = indexRow * resWidth - resWidth + indexCol;
+            return index < LowResVectorSize;
+        }
+
+        public bool TranslateLowResMap(int index, ref Vector3 position)
+        {
+            int resWidth = LowResMapWidth;
+            int resLength = LowResMapLength;
+
+            float fx = (index % resWidth) / (float)resWidth;
+            float fy = MathHelper.RoundUpToInt((float)index / resWidth) / (float)resLength;
+            float fr = LowResMapResolution * 0.5f;
+
+            position.X = RegionWidth * fx + RegionMinX - fr;
+            position.Y = RegionLength * fy + RegionMinY - fr;
+            position.Z = 0.0f;
+
+            return true;
+        }
+
+        public Aabb GetLowResVolume(in Vector3 position)
+        {
+            return new Aabb(position, LowResMapWidth, LowResMapLength, LowResMapHeight);
+        }
+
+        #endregion
     }
 
-    public class RandomPositionPredicate    // TODO: Change to interface / struct
+    public interface IRandomPositionPredicate
     {
-        public virtual bool Test(Vector3 center) => false;
+        public bool Test(Vector3 center);
     }
 
-    public class EntityCheckPredicate       // TODO: Change to interface / struct
+    public interface IEntityCheckPredicate
     {
-        public virtual bool Test(WorldEntity worldEntity) => false;
+        public bool Test(WorldEntity worldEntity);
     }
 
     public class DividedStartLocation
     {
         public DividedStartLocationPrototype Location { get; }
+        public int Weight { get => Location.Players - _players.Count; }
+
+        private readonly List<ulong> _players;
 
         public DividedStartLocation(DividedStartLocationPrototype location)
         {
             Location = location;
+            _players = new();
+        }
+
+        public void AddPlayer(Player player)
+        {
+            _players.Add(player.DatabaseUniqueId);
+        }
+
+        public bool UpdatePlayers(Player player, Game game)
+        {
+            if (player == null) return false;
+            var manager = game.EntityManager;
+            if (manager == null) return false;
+
+            foreach (ulong playerGUID in _players.ToArray())
+            {
+                if (playerGUID == player.DatabaseUniqueId) return true;
+                var existplayer = manager.GetEntityByDbGuid<Player>(playerGUID);
+                if (existplayer == null) _players.Remove(playerGUID);
+            }
+
+            return false;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Memory;
+using MHServerEmu.Games.Entities;
 using MHServerEmu.Games.Entities.Inventories;
 using MHServerEmu.Games.Entities.Items;
 using MHServerEmu.Games.GameData.Calligraphy.Attributes;
@@ -106,6 +107,51 @@ namespace MHServerEmu.Games.GameData.Prototypes
         [DoNotCopy]
         public bool IsGem { get => IsChildBlueprintOf(GameDatabase.LootGlobalsPrototype.GemBlueprint); }
 
+        public override PrototypeId GetPortalTarget()
+        {
+            if (ActionsTriggeredOnItemEvent == null || ActionsTriggeredOnItemEvent.Choices.IsNullOrEmpty())
+                return PrototypeId.Invalid;
+
+            foreach (ItemActionBasePrototype itemActionBaseProto in ActionsTriggeredOnItemEvent.Choices)
+            {
+                // Skip non-power actions
+                if (itemActionBaseProto is not ItemActionUsePowerPrototype usePowerProto || usePowerProto.Power == PrototypeId.Invalid)
+                    continue;
+
+                // Skip non-summon powers
+                SummonPowerPrototype summonPowerProto = usePowerProto.Power.As<SummonPowerPrototype>();
+                if (summonPowerProto == null || summonPowerProto.SummonEntityContexts.IsNullOrEmpty())
+                    continue;
+
+                // Search for transitions in summon contexts for this summon power action
+                foreach (SummonEntityContextPrototype summonContextProto in summonPowerProto.SummonEntityContexts)
+                {
+                    if (summonContextProto.SummonEntity == PrototypeId.Invalid)
+                        continue;
+
+                    // Skip summon contexts that do not summon a transition entity
+                    TransitionPrototype transitionProto = summonContextProto.SummonEntity.As<TransitionPrototype>();
+                    if (transitionProto == null || transitionProto.DirectTarget == PrototypeId.Invalid)
+                        continue;
+
+                    // Get region from transition target
+                    RegionConnectionTargetPrototype connectionTargetProto = transitionProto.DirectTarget.As<RegionConnectionTargetPrototype>();
+                    if (connectionTargetProto == null)
+                        continue;
+
+                    if (connectionTargetProto.Region == PrototypeId.Invalid)
+                    {
+                        Logger.Warn("GetPortalTarget(): connectionTargetProto.Region == PrototypeId.Invalid");
+                        continue;
+                    }
+
+                    return connectionTargetProto.Region;
+                }
+            }
+
+            return PrototypeId.Invalid;
+        }
+
         public void OnApplyItemSpec(Item item, ItemSpec itemSpec)
         {
             // TODO
@@ -141,6 +187,10 @@ namespace MHServerEmu.Games.GameData.Prototypes
             return IsUsableByAgent(agentProto);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the provided <see cref="DropFilterArguments"/> passes the specified <see cref="RestrictionTestFlags"/>
+        /// for this <see cref="ItemPrototype"/>'s restrictions.
+        /// </summary>
         public bool IsDroppableForRestrictions(DropFilterArguments filterArgs, RestrictionTestFlags restrictionFlags)
         {
             if (LootDropRestrictions.IsNullOrEmpty())
@@ -150,6 +200,29 @@ namespace MHServerEmu.Games.GameData.Prototypes
             {
                 if (dropRestrictionProto.Allow(filterArgs, restrictionFlags) == false)
                     return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Adjusts the provided <see cref="DropFilterArguments"/> to pass the specified <see cref="RestrictionTestFlags"/>
+        /// for this <see cref="ItemPrototype"/>'s restrictions.
+        /// </summary>
+        public bool MakeRestrictionsDroppable(DropFilterArguments filterArgs, RestrictionTestFlags flagsToAdjust, out RestrictionTestFlags adjustResultFlags)
+        {
+            adjustResultFlags = RestrictionTestFlags.None;
+
+            if (LootDropRestrictions.IsNullOrEmpty())
+                return true;
+
+            foreach (DropRestrictionPrototype dropRestrictionProto in LootDropRestrictions)
+            {
+                if (dropRestrictionProto.Adjust(filterArgs, ref adjustResultFlags, flagsToAdjust) == false)
+                {
+                    adjustResultFlags = RestrictionTestFlags.None;
+                    return false;
+                }
             }
 
             return true;
@@ -371,61 +444,107 @@ namespace MHServerEmu.Games.GameData.Prototypes
     public class ItemActionPrototype : ItemActionBasePrototype
     {
         public ItemEventType TriggeringEvent { get; protected set; }
+
+        //---
+
+        public virtual ItemActionType ActionType { get => ItemActionType.None; }
     }
 
     public class ItemActionAssignPowerPrototype : ItemActionPrototype
     {
         public PrototypeId Power { get; protected set; }
+
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.AssignPower; }
     }
 
     public class ItemActionDestroySelfPrototype : ItemActionPrototype
     {
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.DestroySelf; }
     }
 
     public class ItemActionGuildsUnlockPrototype : ItemActionPrototype
     {
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.GuildUnlock; }
     }
 
     public class ItemActionReplaceSelfItemPrototype : ItemActionPrototype
     {
         public PrototypeId Item { get; protected set; }
+
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.ReplaceSelfItem; }
     }
 
     public class ItemActionReplaceSelfLootTablePrototype : ItemActionPrototype
     {
         public LootTablePrototype LootTable { get; protected set; }
         public bool UseCurrentAvatarLevelForRoll { get; protected set; }
+
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.ReplaceSelfLootTable; }
     }
 
     public class ItemActionSaveDangerRoomScenarioPrototype : ItemActionPrototype
     {
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.SaveDangerRoomScenario; }
     }
 
     public class ItemActionRespecPrototype : ItemActionPrototype
     {
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.Respec; }
     }
 
     public class ItemActionResetMissionsPrototype : ItemActionPrototype
     {
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.ResetMissions; }
     }
 
     public class ItemActionPrestigeModePrototype : ItemActionPrototype
     {
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.PrestigeMode; }
     }
 
     public class ItemActionUsePowerPrototype : ItemActionPrototype
     {
         public PrototypeId Power { get; protected set; }
+
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.UsePower; }
     }
 
     public class ItemActionUnlockPermaBuffPrototype : ItemActionPrototype
     {
         public PrototypeId PermaBuff { get; protected set; }
+
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.UnlockPermaBuff; }
     }
 
     public class ItemActionAwardTeamUpXPPrototype : ItemActionPrototype
     {
         public int XP { get; protected set; }
+
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.AwardTeamUpXP; }
     }
 
     public class ItemActionSetPrototype : ItemActionBasePrototype
@@ -662,6 +781,36 @@ namespace MHServerEmu.Games.GameData.Prototypes
     {
         public PrototypeId Character { get; protected set; }
         public CharacterTokenType TokenType { get; protected set; }
+
+        //--
+
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
+        [DoNotCopy]
+        public bool IsForAvatar { get => Character.As<AvatarPrototype>() != null; }
+        [DoNotCopy]
+        public bool IsForTeamUp { get => Character.As<AgentTeamUpPrototype>() != null; }
+
+        public override bool ApprovedForUse()
+        {
+            if (base.ApprovedForUse() == false)
+                return false;
+
+            AgentPrototype agentProto = Character.As<AgentPrototype>();
+            return agentProto?.ApprovedForUse() == true;
+        }
+
+        public bool HasUnlockedCharacter(Player player)
+        {
+            Prototype characterProto = Character.As<Prototype>();
+            if (characterProto == null) return Logger.WarnReturn(false, "HasUnlockedCharacter(): characterProto == null");
+
+            if (characterProto is AvatarPrototype)
+                return player.HasAvatarFullyUnlocked(Character);
+
+            return player.IsTeamUpAgentUnlocked(Character);
+        }
+
     }
 
     public class InventoryStashTokenPrototype : ItemPrototype

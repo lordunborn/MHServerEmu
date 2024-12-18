@@ -7,6 +7,7 @@ using MHServerEmu.Core.VectorMath;
 using MHServerEmu.Games.Behavior;
 using MHServerEmu.Games.Behavior.ProceduralAI;
 using MHServerEmu.Games.Behavior.StaticAI;
+using MHServerEmu.Games.Common;
 using MHServerEmu.Games.Entities;
 using MHServerEmu.Games.Entities.Avatars;
 using MHServerEmu.Games.Entities.Locomotion;
@@ -181,6 +182,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public virtual void OnEntityAggroedEvent(AIController ownerController, in EntityAggroedGameEvent aggroedEvent) { }
         public virtual void OnMissileReturnEvent(AIController ownerController) { }
         public virtual void OnSetSimulated(AIController ownerController, bool simulated) { }
+        public virtual void OnOwnerGotDamaged(AIController ownerController) { }
+        public virtual void OnOwnerCollide(AIController ownerController, WorldEntity whom) { }
     }
 
     public class ProceduralProfileEnticerPrototype : ProceduralAIProfilePrototype
@@ -538,7 +541,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
                         if (spawnGroup.GetEntities(out List <WorldEntity> allies, filterFlag, agent.Alliance))                        
                             foreach (var ally in allies)
                                 if (ally != agent)
-                                    ally.TriggerEntityActionEvent(EntitySelectorActionEventType.OnAllyDetectedPlayer);                        
+                                    ally.TriggerEntityActionEventAlly(EntitySelectorActionEventType.OnAllyDetectedPlayer);                        
                     }
                 }
 
@@ -1226,11 +1229,13 @@ namespace MHServerEmu.Games.GameData.Prototypes
                 return -1;
             }
 
-            List<int> syncAttackIndices = new ();
+            EntityManager entityManager = game.EntityManager;
+            List<int> syncAttackIndices = new();    // TODO: Pool this
+
             for (int i = 0; i < IDPropertiesLength && i < SyncAttacks.Length; i++)
             {
                 ulong targetId = blackboard.PropertyCollection[IDProperties[i]];
-                Agent target = game.EntityManager.GetEntity<Agent>(targetId);
+                Agent target = entityManager.GetEntity<Agent>(targetId);
                 if (target != null && target.IsDead == false)
                     syncAttackIndices.Add(i);
             }

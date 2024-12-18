@@ -127,7 +127,7 @@ namespace MHServerEmu.PlayerManagement
         public string GetStatus()
         {
             lock (_pendingSaveDict)
-                return $"Sessions: {_sessionManager.SessionCount} | Games: {_gameManager.GameCount} | Pending Saves: {_pendingSaveDict.Count}";
+                return $"Games: {_gameManager.GameCount} | Sessions: {_sessionManager.ActiveSessionCount} [{_sessionManager.PendingSessionCount}] | Pending Saves: {_pendingSaveDict.Count}";
         }
 
         #endregion
@@ -176,6 +176,11 @@ namespace MHServerEmu.PlayerManagement
             if (client.Session == null || client.Session.Account == null)
                 return Logger.WarnReturn(false, $"RemoveFrontendClient(): Client [{client}] has no valid session assigned");
 
+            // Remove the player in reverse (Game -> Session -> PlayerManager)
+            // This is to make sure the player is removed from the game even if there is some issue with their session.
+            GetGameByPlayer(client)?.RemoveClient(client);
+            _sessionManager.RemoveActiveSession(client.Session.Id);
+
             ulong playerDbId = (ulong)client.Session.Account.Id;
 
             lock (_playerDict)
@@ -183,9 +188,6 @@ namespace MHServerEmu.PlayerManagement
                 if (_playerDict.Remove(playerDbId) == false)
                     return Logger.WarnReturn(false, $"RemoveFrontendClient(): Client [{client}] not found");
             }
-
-            _sessionManager.RemoveSession(client.Session.Id);
-            GetGameByPlayer(client)?.RemoveClient(client);
 
             // Account data is saved asynchronously as a task because it takes some time for a player to leave a game
             lock (_pendingSaveDict)
@@ -217,7 +219,7 @@ namespace MHServerEmu.PlayerManagement
         /// <summary>
         /// Retrieves the <see cref="ClientSession"/> for the specified session id. Returns <see langword="true"/> if successful.
         /// </summary>
-        public bool TryGetSession(ulong sessionId, out ClientSession session) => _sessionManager.TryGetSession(sessionId, out session);
+        public bool TryGetSession(ulong sessionId, out ClientSession session) => _sessionManager.TryGetActiveSession(sessionId, out session);
 
         /// <summary>
         /// Retrieves the <see cref="FrontendClient"/> for the specified session id. Returns <see langword="true"/> if successful.

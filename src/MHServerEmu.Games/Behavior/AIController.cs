@@ -1,10 +1,12 @@
 ﻿using MHServerEmu.Core.Collections;
 using MHServerEmu.Core.Extensions;
+using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Memory;
 using MHServerEmu.Core.System.Time;
 using MHServerEmu.Core.VectorMath;
 using MHServerEmu.Games.Entities;
+using MHServerEmu.Games.Entities.Avatars;
 using MHServerEmu.Games.Events;
 using MHServerEmu.Games.Events.Templates;
 using MHServerEmu.Games.GameData;
@@ -19,9 +21,6 @@ namespace MHServerEmu.Games.Behavior
     public class AIController
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
-        private EventGroup _pendingEvents = new();
-        private EventPointer<AIThinkEvent> _thinkEvent = new();
-        private ulong _thinkCount = 0;
         public Agent Owner { get; private set; }
         public Game Game { get; private set; }
         public ProceduralAI.ProceduralAI Brain { get; private set; }
@@ -32,11 +31,16 @@ namespace MHServerEmu.Games.Behavior
         public WorldEntity TargetEntity => Senses.GetCurrentTarget();
         public WorldEntity InteractEntity => GetInteractEntityHelper();
         public WorldEntity AssistedEntity => GetAssistedEntityHelper();
-        public Action<EntityDeadGameEvent> EntityDeadEvent { get; private set; }
-        public Action<EntityAggroedGameEvent> EntityAggroedEvent { get; private set; }
-        public Action<AIBroadcastBlackboardGameEvent> AIBroadcastBlackboardEvent { get; private set; }
-        public Action<PlayerInteractGameEvent> PlayerInteractEvent { get; private set; }
-        public Action MissileReturnEvent { get; private set; }
+        public Action MissileReturnAction { get; private set; }
+
+        private Action<EntityDeadGameEvent> _entityDeadAction;
+        private Action<EntityAggroedGameEvent> _entityAggroedAction;
+        private Action<AIBroadcastBlackboardGameEvent> _aiBroadcastBlackboardAction;
+        private Action<PlayerInteractGameEvent> _playerInteractAction;
+
+        private EventGroup _pendingEvents = new();
+        private EventPointer<AIThinkEvent> _thinkEvent = new();
+        private bool _thinked;
 
         public AIController(Game game, Agent owner)
         {
@@ -45,11 +49,11 @@ namespace MHServerEmu.Games.Behavior
             Senses = new ();
             Blackboard = new (owner);
             Brain = new (game, this);
-            EntityDeadEvent = OnAIEntityDeadEvent;
-            EntityAggroedEvent = OnAIEntityAggroedGameEvent;
-            AIBroadcastBlackboardEvent = OnAIBroadcastBlackboardEvent;
-            PlayerInteractEvent = OnAIOnPlayerInteractEvent;
-            MissileReturnEvent = OnAIMissileReturnEvent;
+            _entityDeadAction = OnAIEntityDead;
+            _entityAggroedAction = OnAIEntityAggroedGame;
+            _aiBroadcastBlackboardAction = OnAIBroadcastBlackboard;
+            _playerInteractAction = OnAIOnPlayerInteract;
+            MissileReturnAction = OnAIMissileReturn;
         }
 
         public bool Initialize(BehaviorProfilePrototype profile, SpawnSpec spec, PropertyCollection collection)
@@ -212,7 +216,7 @@ namespace MHServerEmu.Games.Behavior
                 }
 
                 eventScheduler.ScheduleEvent(_thinkEvent, nextThinkTimeOffset, _pendingEvents);
-                _thinkEvent.Get().OwnerController = this;
+                _thinkEvent.Get().Initialize(this);
             }
         }
 
@@ -291,7 +295,7 @@ namespace MHServerEmu.Games.Behavior
         public void ResetCurrentTargetState()
         {
             SetTargetEntity(null);
-            Senses.Interrupt = BehaviorInterruptType.NoTarget;
+            Senses.Interrupt |= BehaviorInterruptType.NoTarget;
             var collection = Blackboard.PropertyCollection;
             collection.RemoveProperty(PropertyEnum.AINextSensoryUpdate);
             collection.RemoveProperty(PropertyEnum.AINextHostileSense);
@@ -301,16 +305,30 @@ namespace MHServerEmu.Games.Behavior
 
         public void SetTargetEntity(WorldEntity target)
         {
-            ulong oldTarget = Blackboard.PropertyCollection[PropertyEnum.AIRawTargetEntityID];
-            ulong newTarget = target?.Id ?? 0;
+            var collection = Blackboard.PropertyCollection;
+            ulong oldTarget = collection[PropertyEnum.AIRawTargetEntityID];
+            bool hasTarget = oldTarget != Entity.InvalidId;
+            ulong newTarget = target?.Id ?? Entity.InvalidId;
 
             if (oldTarget != newTarget)
             {
                 Brain?.OnOwnerTargetSwitch(oldTarget, newTarget);
-                Blackboard.PropertyCollection[PropertyEnum.AIRawTargetEntityID] = newTarget;
+                collection[PropertyEnum.AIRawTargetEntityID] = newTarget;
             }
 
-            // TODO update think event
+            // Update aggro state
+            if (collection[PropertyEnum.AIAlwaysAggroed]) return;
+
+            if (hasTarget && target == null)
+            {
+                collection[PropertyEnum.AIAggroState] = false;
+                ScheduleAIThinkEvent(TimeSpan.FromMilliseconds(50));
+            }
+            else if (hasTarget == false && target != null)
+            {
+                collection[PropertyEnum.AIAggroState] = true;
+                collection[PropertyEnum.AIAggroTime] = (long)Game.CurrentTime.TotalMilliseconds;
+            }
         }
 
         public void Think()
@@ -324,19 +342,33 @@ namespace MHServerEmu.Games.Behavior
                 Brain.LastThinkQTime = Game.NumQuantumFixedTimeUpdates;
                 Brain.ThinkCountPerFrame = 0;
             }
-            bool thinking = true;
+
             if (Owner.TestStatus(EntityStatus.PendingDestroy) == false 
-                && Owner.TestStatus(EntityStatus.Destroyed) == false && thinking)
+                && Owner.TestStatus(EntityStatus.Destroyed) == false)
             {
-                float thinkTime = 500; // slow think 
-                if (TargetEntity != null || AssistedEntity != null)
-                    thinkTime = 100; // fast think
-                ScheduleAIThinkEvent(TimeSpan.FromMilliseconds(thinkTime) * Game.Random.NextFloat(0.9f, 1.1f));
+                float thinkTime;
+                int aiCustomThinkRateMS = Blackboard.AICustomThinkRateMS;
+                if (aiCustomThinkRateMS <= 0)
+                {
+                    thinkTime = TargetEntity != null || AssistedEntity != null
+                        ? 100.0f    // slow think
+                        : 500.0f;   // fast think
+                }
+                else
+                {
+                    thinkTime = aiCustomThinkRateMS;
+                }
+                
+                float thinkRange = _thinked 
+                    ? Game.Random.NextFloat(0.9f, 1.1f)
+                    : Game.Random.NextFloat(0.5f, 1.5f);
+
+                ScheduleAIThinkEvent(TimeSpan.FromMilliseconds(thinkTime) * thinkRange);
             }
 
             Brain?.Think();
-            //Logger.Debug($"Think [{Owner.PrototypeName}] {_thinkCount}");
-            _thinkCount++;
+
+            _thinked = true;
         }
 
         public void OnAIKilled()
@@ -366,27 +398,27 @@ namespace MHServerEmu.Games.Behavior
             Brain?.OnAllyGotKilled();          
         }
 
-        private void OnAIMissileReturnEvent()
+        private void OnAIMissileReturn()
         {
             Brain?.OnMissileReturnEvent();
         }
 
-        private void OnAIEntityDeadEvent(EntityDeadGameEvent deadEvent)
+        private void OnAIEntityDead(EntityDeadGameEvent deadEvent)
         {
             Brain?.OnEntityDeadEvent(deadEvent);
         }
 
-        private void OnAIBroadcastBlackboardEvent(AIBroadcastBlackboardGameEvent broadcastEvent)
+        private void OnAIBroadcastBlackboard(AIBroadcastBlackboardGameEvent broadcastEvent)
         {
             Brain?.OnAIBroadcastBlackboardEvent(broadcastEvent);
         }
 
-        private void OnAIOnPlayerInteractEvent(PlayerInteractGameEvent broadcastEvent)
+        private void OnAIOnPlayerInteract(PlayerInteractGameEvent broadcastEvent)
         {
             Brain?.OnPlayerInteractEvent(broadcastEvent);
         }
 
-        private void OnAIEntityAggroedGameEvent(EntityAggroedGameEvent broadcastEvent)
+        private void OnAIEntityAggroedGame(EntityAggroedGameEvent broadcastEvent)
         {
             Brain?.OnEntityAggroedEvent(broadcastEvent);
         }
@@ -394,33 +426,33 @@ namespace MHServerEmu.Games.Behavior
         public void RegisterForEntityAggroedEvents(Region region, bool register)
         {
             if (register)
-                region.EntityAggroedEvent.AddActionBack(EntityAggroedEvent);
+                region.EntityAggroedEvent.AddActionBack(_entityAggroedAction);
             else
-                region.EntityAggroedEvent.RemoveAction(EntityAggroedEvent);
+                region.EntityAggroedEvent.RemoveAction(_entityAggroedAction);
         }
 
         public void RegisterForEntityDeadEvents(Region region, bool register)
         {
             if (register)
-                region.EntityDeadEvent.AddActionBack(EntityDeadEvent);
+                region.EntityDeadEvent.AddActionBack(_entityDeadAction);
             else
-                region.EntityDeadEvent.RemoveAction(EntityDeadEvent);
+                region.EntityDeadEvent.RemoveAction(_entityDeadAction);
         }
 
         public void RegisterForAIBroadcastBlackboardEvents(Region region, bool register)
         {
             if (register)
-                region.AIBroadcastBlackboardEvent.AddActionBack(AIBroadcastBlackboardEvent);
+                region.AIBroadcastBlackboardEvent.AddActionBack(_aiBroadcastBlackboardAction);
             else
-                region.AIBroadcastBlackboardEvent.RemoveAction(AIBroadcastBlackboardEvent);
+                region.AIBroadcastBlackboardEvent.RemoveAction(_aiBroadcastBlackboardAction);
         }
 
         public void RegisterForPlayerInteractEvents(Region region, bool register)
         {
             if (register)
-                region.PlayerInteractEvent.AddActionBack(PlayerInteractEvent);
+                region.PlayerInteractEvent.AddActionBack(_playerInteractAction);
             else
-                region.PlayerInteractEvent.RemoveAction(PlayerInteractEvent);
+                region.PlayerInteractEvent.RemoveAction(_playerInteractAction);
         }
 
         public void OnAIDramaticEntranceEnd()
@@ -439,11 +471,16 @@ namespace MHServerEmu.Games.Behavior
         {
             EventScheduler scheduler = Game.GameEventScheduler;
             scheduler?.CancelAllEvents(_pendingEvents);
+            Blackboard?.PropertyCollection.RemoveAllWatchers();
         }
 
         public void OnAISetSimulated(bool simulated)
         {
-            SetIsEnabled(simulated);
+            if (simulated)
+                ScheduleAIThinkEvent(TimeSpan.FromMilliseconds(1), true);
+            else
+                ClearScheduledThinkEvent();
+
             Brain?.OnSetSimulated(simulated);
         }
 
@@ -477,6 +514,63 @@ namespace MHServerEmu.Games.Behavior
             else
                 ScheduleAIThinkEvent(TimeSpan.FromMilliseconds(50), true);
         }
+
+        public void OnAIGotDamaged(WorldEntity attacker, long damage)
+        {
+            if (attacker != null)
+            {
+                var properties = Owner.Properties;
+                if (Blackboard.PropertyCollection.HasProperty(PropertyEnum.AITrackIncomingDamage)) // MODOKBase
+                {
+                    ulong attackerId = attacker.Id;
+                    long absDamage = Math.Abs(damage);
+                    Blackboard.OnTrackIncomingDamage(attackerId, absDamage);
+
+                    // schedule event
+                    EventPointer<TrackDamageEvent> trackEvent = new();
+                    TimeSpan trackTime = TimeSpan.FromSeconds((float)Blackboard.PropertyCollection[PropertyEnum.AITrackIncomingDamage]);
+                    ScheduleAIEvent(trackEvent, trackTime, attackerId, absDamage);
+                }
+
+                if (properties[PropertyEnum.AIDefeated] == false 
+                    && properties.HasProperty(PropertyEnum.AIDefeatedAtHealthPct)
+                    && MathHelper.IsBelowOrEqual(
+                        properties[PropertyEnum.Health] - damage, 
+                        properties[PropertyEnum.HealthMax], 
+                        properties[PropertyEnum.AIDefeatedAtHealthPct])
+                    )
+                {
+                    var avatar = attacker.GetMostResponsiblePowerUser<Avatar>();
+                    var player = avatar?.GetOwnerOfType<Player>();
+
+                    Owner.Region?.EntityDeadEvent?.Invoke(new(Owner, attacker, player));
+
+                    properties[PropertyEnum.AIDefeated] = true;
+
+                    Senses.Interrupt |= BehaviorInterruptType.Defeated;
+                }
+            }
+
+            Brain?.OnOwnerGotDamaged();
+        }
+
+        private void OnAITrackIncomingDamage(ulong attackerId, long damage)
+        {
+            if (Owner == null || Owner.IsInWorld == false) return;
+            Blackboard.OnTrackIncomingDamage(attackerId, -damage);
+        }
+
+        public void OnAIOnCollide(WorldEntity whom)
+        {
+            if (whom == null) return;
+
+            var target = TargetEntity;
+            if (target != null && whom.Id == target.Id)
+                Senses.Interrupt |= BehaviorInterruptType.CollisionWithTarget;
+
+            Brain?.OnOwnerCollide(whom);
+        }
+
 
         public void OnAIStartThrowing(WorldEntity throwableEntity, PrototypeId throwablePowerRef, PrototypeId throwableCancelPowerRef)
         {
@@ -517,6 +611,23 @@ namespace MHServerEmu.Games.Behavior
             }
             
             return time;
+        }
+
+        public void OnAIAggroNotification(ulong targetId)
+        {
+            if (Owner == null) return;
+            var target = Game.EntityManager.GetEntity<Avatar>(targetId);
+            if (target == null) return;
+            var player = target.GetOwnerOfType<Player>();
+            if (player == null) return;
+
+            if (Blackboard.PropertyCollection.HasProperty(PropertyEnum.AIAggroAnnouncement))
+            {
+                PrototypeId announcement = Blackboard.PropertyCollection[PropertyEnum.AIAggroAnnouncement];
+                player.SendAIAggroNotification(announcement, Owner, player, true);
+            }
+
+            target.Region?.EntityAggroedEvent.Invoke(new(player, Owner));
         }
 
         #region Events
@@ -560,7 +671,7 @@ namespace MHServerEmu.Games.Behavior
             }
         }
 
-        private void ScheduleAIEvent<TEvent>(EventPointer<TEvent> eventPointer, TimeSpan timeOffset)
+        public void ScheduleAIEvent<TEvent>(EventPointer<TEvent> eventPointer, TimeSpan timeOffset)
             where TEvent : CallMethodEvent<AIController>, new()
         {
             var scheduler = Game?.GameEventScheduler;
@@ -578,6 +689,15 @@ namespace MHServerEmu.Games.Behavior
             eventPointer.Get().Initialize(this, param1);
         }
 
+        public void ScheduleAIEvent<TEvent, TParam1, TParam2>(EventPointer<TEvent> eventPointer, TimeSpan timeOffset, TParam1 param1, TParam2 param2)
+            where TEvent : CallMethodEventParam2<AIController, TParam1, TParam2>, new()
+        {
+            var scheduler = Game?.GameEventScheduler;
+            if (scheduler == null) return;
+            scheduler.ScheduleEvent(eventPointer, timeOffset, _pendingEvents);
+            eventPointer.Get().Initialize(this, param1, param2);
+        }
+
         public class StartThrowPowerEvent : CallMethodEvent<AIController>
         {
             protected override CallbackDelegate GetCallback() => (controller) => controller.StartThrownPower();
@@ -586,6 +706,21 @@ namespace MHServerEmu.Games.Behavior
         public class ThrownObjectPickedUpEvent : CallMethodEventParam1<AIController, TimeSpan>
         {
             protected override CallbackDelegate GetCallback() => (controller, time) => controller.ThrownObjectPickedUp(time);
+        }
+
+        public class EnableAIEvent : CallMethodEvent<AIController>
+        {
+            protected override CallbackDelegate GetCallback() => (controller) => controller.SetIsEnabled(true);
+        }
+
+        public class AIThinkEvent : CallMethodEvent<AIController>
+        {
+            protected override CallbackDelegate GetCallback() => (controller) => controller?.Think();
+        }
+
+        public class TrackDamageEvent : CallMethodEventParam2<AIController, ulong, long>
+        {
+            protected override CallbackDelegate GetCallback() => (controller, attackerId, damage) => controller.OnAITrackIncomingDamage(attackerId, damage);
         }
 
         #endregion

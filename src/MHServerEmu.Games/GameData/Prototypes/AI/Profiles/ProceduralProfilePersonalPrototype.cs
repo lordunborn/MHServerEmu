@@ -16,6 +16,7 @@ using MHServerEmu.Games.Entities.Inventories;
 using MHServerEmu.Games.Navi;
 using MHServerEmu.Games.Powers;
 using MHServerEmu.Games.Entities.Avatars;
+using MHServerEmu.Games.Common;
 
 namespace MHServerEmu.Games.GameData.Prototypes
 {
@@ -562,15 +563,19 @@ namespace MHServerEmu.Games.GameData.Prototypes
                 bool toadSummoned = false;
                 Inventory summonedInventory = agent.GetInventory(InventoryConvenienceLabel.Summoned);
                 if (summonedInventory != null)
+                {
+                    EntityManager entityManager = game.EntityManager;
+
                     foreach (var entry in summonedInventory)
                     {
-                        WorldEntity summoned = game.EntityManager.GetEntity<WorldEntity>(entry.Id);
+                        WorldEntity summoned = entityManager.GetEntity<WorldEntity>(entry.Id);
                         if (summoned != null && summoned.PrototypeDataRef == ToadPrototype)
                         {
                             toadSummoned = true;
                             break;
                         }
                     }
+                }
 
                 if (toadSummoned == false)
                 {
@@ -995,6 +1000,9 @@ namespace MHServerEmu.Games.GameData.Prototypes
             base.Init(agent);
             InitPower(agent, TeleportToEntityPower);
             InitPowers(agent, SummonProceduralPowers);
+
+            // REMOVEME: Disabled state change until we fix desync issues
+            agent.AIController.Blackboard.PropertyCollection[PropertyEnum.AICustomStateVal1] = (int)State.GenericProcedural;
         }
 
         public override void Think(AIController ownerController)
@@ -1075,6 +1083,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
                     PopulatePowerPicker(ownerController, powerPicker);
                     if (HandleProceduralPower(ownerController, proceduralAI, random, currentTime, powerPicker, true) == StaticBehaviorReturnType.Running) return;
 
+                    break;  // REMOVEME: Disabled state change until we fix desync issues
                     if (currentTime > blackboard.PropertyCollection[PropertyEnum.AICustomTimeVal1])
                         blackboard.PropertyCollection[PropertyEnum.AICustomStateVal1] = (int)State.TeleportToEntity;
                     break;
@@ -1467,10 +1476,13 @@ namespace MHServerEmu.Games.GameData.Prototypes
                 var oldTargetId = blackboard.PropertyCollection[PropertyEnum.AIRawTargetEntityID];
 
                 if (senses.PotentialHostileTargetIds.Count > 1 && oldTargetId != 0)
+                {
+                    var entityManager = ownerController.Game.EntityManager;
+
                     foreach (var targetId in senses.PotentialHostileTargetIds)
                         if (targetId != oldTargetId)
                         {
-                            var selectedEntity = ownerController.Game.EntityManager.GetEntity<WorldEntity>(targetId);
+                            var selectedEntity = entityManager.GetEntity<WorldEntity>(targetId);
                             if (selectedEntity == null || !selectedEntity.IsInWorld) return false;
 
                             blackboard.PropertyCollection[PropertyEnum.AIRawTargetEntityID] = targetId;
@@ -1478,6 +1490,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
                                 return false;
                             break;
                         }
+                }
+
             }
 
             return true;
@@ -1676,6 +1690,13 @@ namespace MHServerEmu.Games.GameData.Prototypes
         {
             base.PopulatePowerPicker(ownerController, powerPicker);
             ownerController.AddPowersToPicker(powerPicker, DisappearPower);
+        }
+
+        public override void OnOwnerGotDamaged(AIController ownerController)
+        {
+            var collection = ownerController.Blackboard.PropertyCollection;
+            if (collection[PropertyEnum.AICustomStateVal1] == 0)
+                collection[PropertyEnum.AICustomStateVal1] = (int)State.Flee;
         }
     }
 
@@ -2692,13 +2713,16 @@ namespace MHServerEmu.Games.GameData.Prototypes
             int numTargets = 1;
             var conditions = agent.ConditionCollection;
             if (conditions == null) return;
+
+            var entityManager = game.EntityManager;
+
             foreach (var condition in conditions.IterateConditions(true))
             {
                 if (condition == null) return;
                 var transferId = condition.Properties[PropertyEnum.DamageTransferID];
                 if (transferId != 0)
                 {
-                    var transfer = game.EntityManager.GetEntity<WorldEntity>(transferId);
+                    var transfer = entityManager.GetEntity<WorldEntity>(transferId);
                     if (transfer != null)
                     {
                         ++numTargets;
@@ -4865,6 +4889,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
             if (region == null) return;
             ownerController.RegisterForPlayerInteractEvents(region, true);
             agent.Properties[PropertyEnum.Interactable] = true;
+            agent.Properties[PropertyEnum.Health] = 0; // REMOVEME when EMPHealing will work!!!
             var transitionGlobalsProto = GameDatabase.TransitionGlobalsPrototype;
             if (transitionGlobalsProto != null && transitionGlobalsProto.EnabledState != PrototypeId.Invalid)
                 agent.Properties[PropertyEnum.EntityState] = transitionGlobalsProto.EnabledState;
@@ -4902,6 +4927,22 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
                     blackboard.PropertyCollection[PropertyEnum.AICustomStateVal1] = (int)State.Activated;
                 }
+            }
+            else if (stateVal == (int)State.Activated)
+            {
+                // REMOVEME when EMPHealing will work!!!
+                int maxHealth = agent.Properties[PropertyEnum.HealthMax];
+                int health = agent.Properties[PropertyEnum.Health] + 80; // update 1% of base
+                if (health < maxHealth)
+                {
+                    agent.Properties[PropertyEnum.Health] = health;
+                    // update widget
+                }
+                else
+                {
+                    agent.Properties[PropertyEnum.Health] = maxHealth;
+                    agent.Region.AdjustHealthEvent.Invoke(new(agent, null, null, 0, false));
+                } 
             }
         }
 

@@ -98,6 +98,7 @@ namespace MHServerEmu.Games.Entities
             }
 
             agent.InitAIOverride(profile, collection);
+            agent.AIController.Blackboard.PropertyCollection.RemoveProperty(PropertyEnum.AIFullOverride);
 
             if (Owner.IsSimulated)
                 Trigger(EntitySelectorActionEventType.OnSimulated);
@@ -121,9 +122,9 @@ namespace MHServerEmu.Games.Entities
         {
             if (Owner == null || action == null) return false;
             if (_pendingActions.ContainsKey(action)) return false;
-            DeregisterAction(action); 
-            var sheduler = Game.Current.GameEventScheduler;
-            if (sheduler == null) return false;
+            DeregisterAction(action);
+            var scheduler = Game.Current.GameEventScheduler;
+            if (scheduler == null) return false;
             CancelTableInsert(action);
 
             TimeSpan reactionTime = TimeSpan.FromMilliseconds(action.ReactionTimeMS);
@@ -131,7 +132,7 @@ namespace MHServerEmu.Games.Entities
 
             FireActionPointer actionEvent = new();
             _pendingActions[action] = actionEvent;
-            sheduler.ScheduleEvent(actionEvent, reactionTime, _pendingEvents);
+            scheduler.ScheduleEvent(actionEvent, reactionTime, _pendingEvents);
             actionEvent.Get().Initialize(this, action, eventType);
 
             return true;
@@ -154,9 +155,9 @@ namespace MHServerEmu.Games.Entities
         private bool CancelActionEvent(EntitySelectorActionPrototype action)
         {
             if (_pendingActions.TryGetValue(action, out FireActionPointer fireAction) == false) return false;
-            var sheduler = Game.Current.GameEventScheduler;
-            if (sheduler == null) return false;
-            sheduler.CancelEvent(fireAction);
+            var scheduler = Game.Current.GameEventScheduler;
+            if (scheduler == null) return false;
+            scheduler.CancelEvent(fireAction);
             _pendingActions.Remove(action);
             return true;
         }
@@ -209,8 +210,8 @@ namespace MHServerEmu.Games.Entities
 
         public void RestartPendingActions()
         {
-            var sheduler = Game.Current.GameEventScheduler;
-            if (sheduler == null) return;
+            var scheduler = Game.Current.GameEventScheduler;
+            if (scheduler == null) return;
             List<EntitySelectorActionPrototype> actions = new(_pendingActions.Keys);
             foreach (var action in actions)
             {
@@ -221,11 +222,11 @@ namespace MHServerEmu.Games.Entities
 
         public void CancelAll()
         {
-            var sheduler = Game.Current.GameEventScheduler;
-            if (sheduler == null) return;
+            var scheduler = Game.Current.GameEventScheduler;
+            if (scheduler == null) return;
             foreach (var kvp in _pendingActions)
-                sheduler.CancelEvent(kvp.Value);
-            sheduler.CancelAllEvents(_pendingEvents);
+                scheduler.CancelEvent(kvp.Value);
+            scheduler.CancelAllEvents(_pendingEvents);
         }
     }
 

@@ -355,6 +355,14 @@ namespace MHServerEmu.Games.Powers
                     creationSettings.Lifespan = TimeSpan.FromMilliseconds(lifespanOverride);
                 else
                 {
+                    if (projectileSpeed == 0f)
+                    {
+                        // Projectile speed appears to be zero in some cases, need to figure out if this is intended.
+                        // When range / projectileSpeed = NaN, TimeSpan.FromSeconds() throws an exception.
+                        Logger.Warn($"SetExtraProperties(): projectileSpeed is 0 in [{powerProto}] belonging to [{Owner}].");
+                        projectileSpeed = 1f;
+                    }
+
                     float lifespanMult = missilePrototype.Locomotion.RotationSpeed > 0 ? 1.5f : 1.0f;
                     creationSettings.Lifespan = TimeSpan.FromSeconds(range / projectileSpeed) * lifespanMult + missilePrototype.GetSeekDelayTime();
                 }
@@ -485,7 +493,7 @@ namespace MHServerEmu.Games.Powers
                     if (target != null && target.IsDead == false)
                     {
                         locomotor.FollowEntity(targetId, 0.0f, locomotionOptions);
-                        locomotor.FollowEntityMissingEvent.AddActionBack(missile.SeekTargetMissingEvent);
+                        locomotor.FollowEntityMissingEvent.AddActionBack(missile.SeekTargetMissingAction);
                     }
                     else
                     {
@@ -522,10 +530,10 @@ namespace MHServerEmu.Games.Powers
 
         private bool ScheduleCreationDelayEvent(TimeSpan delay, PowerApplication powerApplication)
         {
-            var sheduler = Game?.GameEventScheduler;
-            if (sheduler == null) return false;
+            var scheduler = Game?.GameEventScheduler;
+            if (scheduler == null) return false;
             if (_createMissileEvent.IsValid) return Logger.WarnReturn(false, $"ScheduleCreationDelayEvent called when event already scheduled. POWER={ToString()}");
-            sheduler.ScheduleEvent(_createMissileEvent, delay, _pendingEvents);
+            scheduler.ScheduleEvent(_createMissileEvent, delay, _pendingEvents);
             _createMissileEvent.Get().Initialize(this, powerApplication);
 
             return true;

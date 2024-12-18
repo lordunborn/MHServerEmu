@@ -21,27 +21,32 @@ namespace MHServerEmu.Games.Entities.Items
         private List<AffixSpec> _affixSpecList = new();
         private int _seed;
         private PrototypeId _equippableBy;
-        private int _count = 1;
 
         public PrototypeId ItemProtoRef { get => _itemProtoRef; }
-        public PrototypeId RarityProtoRef { get => _rarityProtoRef; }
-        public int ItemLevel { get => _itemLevel; }
+        public PrototypeId RarityProtoRef { get => _rarityProtoRef; set => _rarityProtoRef = value; }
+        public int ItemLevel { get => _itemLevel; set => _itemLevel = value; }
         public int CreditsAmount { get => _creditsAmount; }
-        public IEnumerable<AffixSpec> AffixSpecs { get => _affixSpecList; }
+        public IReadOnlyList<AffixSpec> AffixSpecs { get => _affixSpecList; }
         public int Seed { get => _seed; }
         public PrototypeId EquippableBy { get => _equippableBy; }
+
+        public int StackCount { get; set; } = 1;
 
         public bool IsValid { get => _itemProtoRef != PrototypeId.Invalid && _rarityProtoRef != PrototypeId.Invalid; }
 
         public ItemSpec() { }
 
-        public ItemSpec(PrototypeId itemProtoRef, PrototypeId rarityProtoRef, int itemLevel, int creditsAmount, IEnumerable<AffixSpec> affixSpecs, int seed, PrototypeId equippableBy)
+        public ItemSpec(PrototypeId itemProtoRef, PrototypeId rarityProtoRef, int itemLevel,
+            int creditsAmount = 0, IEnumerable<AffixSpec> affixSpecs = null, int seed = 0, PrototypeId equippableBy = PrototypeId.Invalid)
         {
             _itemProtoRef = itemProtoRef;
             _rarityProtoRef = rarityProtoRef;
             _itemLevel = itemLevel;
             _creditsAmount = creditsAmount;
-            _affixSpecList.AddRange(affixSpecs);
+
+            if (affixSpecs != null)
+                _affixSpecList.AddRange(affixSpecs);
+            
             _seed = seed;
             _equippableBy = equippableBy;
         }
@@ -62,6 +67,22 @@ namespace MHServerEmu.Games.Entities.Items
                 _equippableBy = (PrototypeId)protobuf.EquippableBy;
         }
 
+        public ItemSpec(ItemSpec other)
+        {
+            _itemProtoRef = other._itemProtoRef;
+            _rarityProtoRef = other._rarityProtoRef;
+            _itemLevel = other._itemLevel;
+            _creditsAmount = other._creditsAmount;
+
+            foreach (AffixSpec affixSpec in other._affixSpecList)
+                _affixSpecList.Add(new(affixSpec));
+
+            _seed = other._seed;
+            _equippableBy = other._equippableBy;
+
+            StackCount = other.StackCount;
+        }
+
         public bool Serialize(Archive archive)
         {
             bool success = true;
@@ -72,6 +93,7 @@ namespace MHServerEmu.Games.Entities.Items
             success &= Serializer.Transfer(archive, ref _affixSpecList);
             success &= Serializer.Transfer(archive, ref _seed);
             success &= Serializer.Transfer(archive, ref _equippableBy);
+            // StackCount is serialized as a property
             return success;
         }
 
@@ -92,7 +114,7 @@ namespace MHServerEmu.Games.Entities.Items
         {
             return NetStructItemSpecStack.CreateBuilder()
                 .SetSpec(ToProtobuf())
-                .SetCount((uint)_count)
+                .SetCount((uint)StackCount)
                 .Build();
         }
 

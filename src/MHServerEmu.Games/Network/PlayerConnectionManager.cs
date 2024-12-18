@@ -215,6 +215,15 @@ namespace MHServerEmu.Games.Network
         }
 
         /// <summary>
+        /// Sends the provided <see cref="IMessage"/> to all <see cref="PlayerConnection"/> instances that are interested in the provided <see cref="Region"/>.
+        /// </summary>
+        public void SendMessageToInterested(IMessage message, Region region)
+        {
+            foreach (PlayerConnection playerConnection in GetInterestedClients(region))
+                playerConnection.SendMessage(message);
+        }
+
+        /// <summary>
         /// Sends the provided <see cref="IMessage"/> to all <see cref="PlayerConnection"/> instances that are interested in the provided <see cref="Entity"/>.
         /// </summary>
         public void SendMessageToInterested(IMessage message, Entity entity, AOINetworkPolicyValues interestFilter = AOINetworkPolicyValues.AllChannels, bool skipOwner = false)
@@ -325,6 +334,12 @@ namespace MHServerEmu.Games.Network
 
             if (_dbIdConnectionDict.TryAdd(connection.PlayerDbId, connection) == false)
                 Logger.Error($"AcceptAndRegisterNewClient(): Failed to add player id 0x{connection.PlayerDbId}");
+
+            if (connection.Initialize() == false)
+            {
+                connection.Disconnect();
+                return false;
+            }
 
             //SetPlayerConnectionPending(connection);   // This will be set when we receive region availability query response
 

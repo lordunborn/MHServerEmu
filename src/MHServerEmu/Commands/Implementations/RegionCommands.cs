@@ -8,13 +8,14 @@ using MHServerEmu.Games.GameData.Calligraphy;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.Network;
 using MHServerEmu.Games.Regions;
+using MHServerEmu.Grouping;
 
 namespace MHServerEmu.Commands.Implementations
 {
-    [CommandGroup("region", "Changes player data for this account.", AccountUserLevel.User)]
+    [CommandGroup("region", "Manages region instances.", AccountUserLevel.Admin)]
     public class RegionCommands : CommandGroup
     {
-        [Command("warp", "Warps the player to another region.\nUsage: region warp [name]", AccountUserLevel.User)]
+        [Command("warp", "Warps the player to another region.\nUsage: region warp [name]")]
         public string Warp(string[] @params, FrontendClient client)
         {
             if (client == null) return "You can only invoke this command from the game.";
@@ -38,7 +39,7 @@ namespace MHServerEmu.Commands.Implementations
             return $"Warping to {regionName}.";
         }
 
-        [Command("reload", "Reloads the current region.\nUsage: region reload", AccountUserLevel.User)]
+        [Command("reload", "Reloads the current region.\nUsage: region reload")]
         public string Reload(string[] @params, FrontendClient client)
         {
             if (client == null) return "You can only invoke this command from the game.";
@@ -57,18 +58,33 @@ namespace MHServerEmu.Commands.Implementations
 
             CommandHelper.TryGetPlayerConnection(client, out PlayerConnection playerConnection);
             Game game = playerConnection.Game;
+            RegionContext regionContext = new();
 
             int numRegions = 0;
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             foreach (RegionPrototypeId value in Enum.GetValues<RegionPrototypeId>())
             {
-                game.RegionManager.GetOrGenerateRegionForPlayer((PrototypeId)value, playerConnection);
+                regionContext.RegionDataRef = (PrototypeId)value;
+                game.RegionManager.GetOrGenerateRegionForPlayer(regionContext, playerConnection);
                 numRegions++;
             }
 
             stopwatch.Stop();
             return $"Generated {numRegions} regions in {stopwatch.Elapsed.TotalSeconds} sec.";
+        }
+
+        [Command("properties", "Prints properties for the current region.\nUsage: region properties")]
+        public string Properties(string[] @params, FrontendClient client)
+        {
+            if (client == null) return "You can only invoke this command from the game.";
+
+            CommandHelper.TryGetPlayerConnection(client, out PlayerConnection playerConnection);
+            Region region = playerConnection.Player.GetRegion();
+
+            ChatHelper.SendMetagameMessageSplit(client, region.Properties.ToString());
+
+            return string.Empty;
         }
     }
 }

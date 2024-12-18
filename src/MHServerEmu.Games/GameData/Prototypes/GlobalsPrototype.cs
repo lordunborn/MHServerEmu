@@ -4,6 +4,7 @@ using MHServerEmu.Games.GameData.Calligraphy;
 using MHServerEmu.Games.GameData.Calligraphy.Attributes;
 using MHServerEmu.Games.GameData.LiveTuning;
 using MHServerEmu.Games.Properties;
+using MHServerEmu.Games.Regions;
 
 namespace MHServerEmu.Games.GameData.Prototypes
 {
@@ -276,8 +277,59 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public PrototypeId ConsumableItemBlueprint { get; protected set; }
         public int AvatarCoopInactiveTimeMS { get; protected set; }
         public int AvatarCoopInactiveOnDeadBufferMS { get; protected set; }
+
+        //---
+
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
+        private DifficultyTierPrototype[] _difficultyTierProtos;
+
         [DoNotCopy]
-        public AlliancePrototype PlayerAlliancePrototype { get => PlayerAlliance.As<AlliancePrototype>(); }
+        public AlliancePrototype PlayerAlliancePrototype { get; protected set; }
+
+        [DoNotCopy]
+        public PopulationGlobalsPrototype PopulationGlobalsPrototype { get; protected set; }
+
+        public override void PostProcess()
+        {
+            base.PostProcess();
+
+            if (DifficultyTiers.HasValue())
+            {
+                _difficultyTierProtos = new DifficultyTierPrototype[(int)DifficultyTier.NumTiers];
+
+                foreach (PrototypeId difficultyTierProtoRef in DifficultyTiers)
+                {
+                    DifficultyTierPrototype tierPtr = difficultyTierProtoRef.As<DifficultyTierPrototype>();
+                    if (tierPtr == null)
+                    {
+                        Logger.Warn("PostProcess(): tierPtr == null");
+                        continue;
+                    }
+
+                    int tierAsIndex = (int)tierPtr.Tier;
+                    if (tierAsIndex < 0 || tierAsIndex >= _difficultyTierProtos.Length)
+                    {
+                        Logger.Warn("PostProcess(): tierAsIndex < 0 || tierAsIndex >= _difficultyTierProtos.Length");
+                        continue;
+                    }
+
+                    _difficultyTierProtos[tierAsIndex] = tierPtr;
+                }
+            }
+
+            PlayerAlliancePrototype = PlayerAlliance.As<AlliancePrototype>();
+            PopulationGlobalsPrototype = PopulationGlobals.As<PopulationGlobalsPrototype>();
+        }
+
+        public DifficultyTierPrototype GetDifficultyTierByEnum(DifficultyTier tierEnum)
+        {
+            int tierAsIndex = (int)tierEnum;
+            if (tierAsIndex < 0 || tierAsIndex >= _difficultyTierProtos.Length)
+                Logger.WarnReturn<DifficultyTierPrototype>(null, "PostProcess(): tierAsIndex < 0 || tierAsIndex >= _difficultyTierProtos.Length");
+
+            return _difficultyTierProtos[tierAsIndex];
+        }
     }
 
     public class LoginRewardPrototype : Prototype
@@ -304,8 +356,6 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
     public class AdvancementGlobalsPrototype : Prototype
     {
-        private static readonly Logger Logger = LogManager.CreateLogger();
-
         public CurveId LevelingCurve { get; protected set; }
         public CurveId DeathPenaltyCost { get; protected set; }
         public CurveId ItemEquipRequirementOffset { get; protected set; }
@@ -345,6 +395,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         // ---
 
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
         public const long InvalidXPRequirement = -1;
 
         [DoNotCopy]
@@ -362,6 +414,14 @@ namespace MHServerEmu.Games.GameData.Prototypes
         {
             Curve levelingCurve = GetTeamUpLevelingCurve();
             if (levelingCurve == null) return Logger.WarnReturn(0, "GetTeamUpLevelCap(): levelingCurve == null");
+
+            return levelingCurve.MaxPosition;
+        }
+
+        public int GetItemAffixLevelCap()
+        {
+            Curve levelingCurve = GetItemAffixLevelingCurve();
+            if (levelingCurve == null) return Logger.WarnReturn(0, "GetItemAffixLevelCap(): levelingCurve == null");
 
             return levelingCurve.MaxPosition;
         }
@@ -386,7 +446,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         public long GetAvatarLevelUpXPRequirement(int level)
         {
-            if (level < 1) return InvalidXPRequirement;
+            if (level < 1)
+                return InvalidXPRequirement;
 
             Curve levelingCurve = GetAvatarLevelingCurve();
             if (levelingCurve == null) return Logger.WarnReturn(InvalidXPRequirement, "GetAvatarLevelUpXPRequirement(): levelingCurve == null");
@@ -396,10 +457,22 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         public long GetTeamUpLevelUpXPRequirement(int level)
         {
-            if (level < 1) return InvalidXPRequirement;
+            if (level < 1)
+                return InvalidXPRequirement;
 
             Curve levelingCurve = GetTeamUpLevelingCurve();
             if (levelingCurve == null) return Logger.WarnReturn(InvalidXPRequirement, "GetTeamUpLevelUpXPRequirement(): levelingCurve == null");
+
+            return GetLevelUpXPRequirementFromCurve(level, levelingCurve);
+        }
+
+        public long GetItemAffixLevelUpXPRequirement(int level)
+        {
+            if (level < 0)
+                return InvalidXPRequirement;
+
+            Curve levelingCurve = GetItemAffixLevelingCurve();
+            if (levelingCurve == null) return Logger.WarnReturn(InvalidXPRequirement, "GetItemAffixLevelUpXPRequirement(): levelingCurve == null");
 
             return GetLevelUpXPRequirementFromCurve(level, levelingCurve);
         }
@@ -420,6 +493,11 @@ namespace MHServerEmu.Games.GameData.Prototypes
         private Curve GetTeamUpLevelingCurve()
         {
             return CurveDirectory.Instance.GetCurve(TeamUpLevelingCurve);
+        }
+
+        private Curve GetItemAffixLevelingCurve()
+        {
+            return CurveDirectory.Instance.GetCurve(ItemAffixLevelingCurve);
         }
     }
 
@@ -863,11 +941,29 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public PrototypeId TwinEnemyRank { get; protected set; }
         public RankDefaultEntryPrototype[] RankDefaults { get; protected set; }
 
-        internal RankPrototype GetRankByEnum(Rank rank)
+        private RankPrototype[] _rankEnumToProto;
+
+        public override void PostProcess()
         {
-            throw new NotImplementedException();
+            base.PostProcess();
+
+            if (RankDefaults.IsNullOrEmpty()) return;
+
+            _rankEnumToProto = new RankPrototype[(int)Rank.Max];
+            foreach (var rankEntry in RankDefaults)
+            {
+                int rankAsIndex = (int)rankEntry.Rank;
+                if (rankAsIndex < 0 || rankAsIndex >= (int)Rank.Max) continue;
+                _rankEnumToProto[rankAsIndex] = rankEntry.Data.As<RankPrototype>();
+            }
         }
 
+        public RankPrototype GetRankByEnum(Rank rank)
+        {
+            int rankAsIndex = (int)rank;
+            if (rankAsIndex < 0 || rankAsIndex >= (int)Rank.Max) return null;
+            return _rankEnumToProto[rankAsIndex];
+        }
     }
 
     public class ClusterConfigurationGlobalsPrototype : Prototype

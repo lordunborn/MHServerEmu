@@ -3,7 +3,7 @@ using MHServerEmu.Core.Config;
 using MHServerEmu.DatabaseAccess.Models;
 using MHServerEmu.Frontend;
 using MHServerEmu.Games;
-using MHServerEmu.Games.Entities.Avatars;
+using MHServerEmu.Games.Entities;
 using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.Calligraphy;
 using MHServerEmu.Games.GameData.Prototypes;
@@ -97,6 +97,42 @@ namespace MHServerEmu.Commands.Implementations
             }
             
             return $"Setting all Infinity points to {value}.";
+        }
+
+        [Command("wipe", "Wipes all progress associated with the current account.\nUsage: player wipe [playerName]")]
+        public string Wipe(string[] @params, FrontendClient client)
+        {
+            if (client == null) return "You can only invoke this command from the game.";
+
+            CommandHelper.TryGetPlayerConnection(client, out PlayerConnection playerConnection);
+            string playerName = playerConnection.Player.GetName();
+
+            if (@params.Length == 0)
+                return $"Type '!player wipe {playerName}' to wipe all progress associated with this account.\nWARNING: THIS ACTION CANNOT BE REVERTED.";
+
+            if (string.Equals(playerName, @params[0], StringComparison.OrdinalIgnoreCase) == false)
+                return "Incorrect player name.";
+
+            playerConnection.WipePlayerData();
+            return string.Empty;
+        }
+
+        [Command("givecurrency", "Gives all currencies.\nUsage: player givecurrency [amount]", AccountUserLevel.Admin)]
+        public string GiveCurrency(string[] @params, FrontendClient client)
+        {
+            if (client == null) return "You can only invoke this command from the game.";
+            if (@params.Length == 0) return "Invalid arguments. Type 'help player givecurrency' to get help.";
+
+            if (int.TryParse(@params[0], out int amount) == false)
+                return $"Failed to parse amount from {@params[0]}.";
+
+            CommandHelper.TryGetPlayerConnection(client, out PlayerConnection playerConnection);
+            Player player = playerConnection.Player;
+
+            foreach (PrototypeId currencyProtoRef in DataDirectory.Instance.IteratePrototypesInHierarchy<CurrencyPrototype>(PrototypeIterateFlags.NoAbstractApprovedOnly))
+                player.Properties.AdjustProperty(amount, new(PropertyEnum.Currency, currencyProtoRef));
+
+            return $"Successfully given {amount} of all currencies.";
         }
     }
 }

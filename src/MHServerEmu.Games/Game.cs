@@ -24,6 +24,7 @@ using MHServerEmu.Games.MetaGames;
 using MHServerEmu.Games.Network;
 using MHServerEmu.Games.Powers;
 using MHServerEmu.Games.Regions;
+using MHServerEmu.Games.UI;
 
 namespace MHServerEmu.Games
 {
@@ -51,7 +52,7 @@ namespace MHServerEmu.Games
         private FixedQuantumGameTime _realGameTime = new(TimeSpan.FromMilliseconds(1));
         private TimeSpan _currentGameTime = TimeSpan.FromMilliseconds(1);   // Current time in the game simulation
         private TimeSpan _lastFixedTimeUpdateProcessTime;                   // How long the last fixed update took
-        private int _frameCount;
+        private long _frameCount;
 
         private int _liveTuningChangeNum;
 
@@ -71,7 +72,7 @@ namespace MHServerEmu.Games
         public RegionManager RegionManager { get; }
         public AdminCommandManager AdminCommandManager { get; }
         public LootManager LootManager { get; }
-
+        public GameDialogManager GameDialogManager { get; }
         public LiveTuningData LiveTuningData { get; private set; } = new();
 
         public TimeSpan FixedTimeBetweenUpdates { get; } = TimeSpan.FromMilliseconds(1000f / TargetFrameRate);
@@ -81,6 +82,8 @@ namespace MHServerEmu.Games
 
         public ulong CurrentRepId { get => ++_currentRepId; }
         public Dictionary<ulong, IArchiveMessageHandler> MessageHandlerDict { get; } = new();
+        public bool OmegaMissionsEnabled { get; set; }
+        public bool AchievementsEnabled { get; set; }
 
         public override string ToString() => $"serverGameId=0x{Id:X}";
 
@@ -90,6 +93,7 @@ namespace MHServerEmu.Games
 
             // Initialize game options
             var config = ConfigManager.Instance.GetConfig<GameOptionsConfig>();
+            AchievementsEnabled = config.AchievementsEnabled;
             GameOptions = config.ToProtobuf();
 
             CustomGameOptions = ConfigManager.Instance.GetConfig<CustomGameOptionsConfig>();
@@ -102,7 +106,7 @@ namespace MHServerEmu.Games
             RegionManager = new();
             EntityManager = new(this);
             LootManager = new(this);
-
+            GameDialogManager = new(this);
             Random = new();
 
             Initialize();
@@ -120,6 +124,8 @@ namespace MHServerEmu.Games
 
             success &= RegionManager.Initialize(this);
             success &= EntityManager.Initialize();
+
+            OmegaMissionsEnabled = true;
 
             LiveTuningManager.Instance.CopyLiveTuningData(LiveTuningData);
             LiveTuningData.GetLiveTuningUpdate();   // pre-generate update protobuf
@@ -258,12 +264,6 @@ namespace MHServerEmu.Games
                 return new Power(this, powerProtoRef);
         }
 
-        public IEnumerable<Region> RegionIterator()
-        {            
-            foreach (Region region in RegionManager.AllRegions) 
-                yield return region;
-        }
-
         // StartTime is always a TimeSpan of 1 ms, so we can make both Game::GetTimeFromStart() and Game::GetTimeFromDelta() static
 
         public static long GetTimeFromStart(TimeSpan gameTime) => (long)(gameTime - StartTime).TotalMilliseconds;
@@ -332,34 +332,59 @@ namespace MHServerEmu.Games
                 timesUpdated++;
 
                 _lastFixedTimeUpdateProcessTime = _gameTimer.Elapsed - stepStartTime;
-                MetricsManager.Instance.RecordFixedUpdateTime(Id, _lastFixedTimeUpdateProcessTime);
+                MetricsManager.Instance.RecordGamePerformanceMetric(Id, GamePerformanceMetricEnum.FrameTime, _lastFixedTimeUpdateProcessTime);
 
                 if (_lastFixedTimeUpdateProcessTime > FixedTimeBetweenUpdates)
-                    Logger.Warn($"UpdateFixedTime(): Frame took longer ({_lastFixedTimeUpdateProcessTime.TotalMilliseconds:0.00} ms) than FixedTimeBetweenUpdates ({FixedTimeBetweenUpdates.TotalMilliseconds:0.00} ms)");
+                    Logger.Trace($"UpdateFixedTime(): Frame took longer ({_lastFixedTimeUpdateProcessTime.TotalMilliseconds:0.00} ms) than FixedTimeBetweenUpdates ({FixedTimeBetweenUpdates.TotalMilliseconds:0.00} ms)");
 
                 // Bail out if we have fallen behind more exceeded frame budget
                 if (_gameTimer.Elapsed - updateStartTime > FixedTimeBetweenUpdates)
                     break;
             }
 
-            // Skip time if we have fallen behind
-            _currentGameTime = RealGameTime;
-
+            // Track catch-up frames
             if (timesUpdated > 1)
-                Logger.Warn($"UpdateFixedTime(): Simulated {timesUpdated} frames in a single fixed update to catch up");
+            {
+                Logger.Trace($"UpdateFixedTime(): Simulated {timesUpdated} frames in a single fixed update to catch up");
+                MetricsManager.Instance.RecordGamePerformanceMetric(Id, GamePerformanceMetricEnum.CatchUpFrames, timesUpdated - 1);
+            }
+
+            // Skip time if we have fallen behind
+            TimeSpan timeSkip = RealGameTime - _currentGameTime;
+            if (timeSkip != TimeSpan.Zero)
+            {
+                Logger.Trace($"UpdateFixedTime(): Taking too long to catch up, skipping {timeSkip.TotalMilliseconds} ms");
+                MetricsManager.Instance.RecordGamePerformanceMetric(Id, GamePerformanceMetricEnum.TimeSkip, timeSkip);
+            }
+
+            _currentGameTime = RealGameTime;
         }
 
         private void DoFixedTimeUpdate()
         {
-            GameEventScheduler.TriggerEvents(_currentGameTime);
+            TimeSpan referenceTime;
+            MetricsManager metrics = MetricsManager.Instance;
 
-            // Re-enable locomotion and physics when we get rid of multithreading issues
+            referenceTime = _gameTimer.Elapsed;
+            GameEventScheduler.TriggerEvents(_currentGameTime);
+            metrics.RecordGamePerformanceMetric(Id, GamePerformanceMetricEnum.FrameTriggerEventsTime, _gameTimer.Elapsed - referenceTime);
+
+            referenceTime = _gameTimer.Elapsed;
             EntityManager.LocomoteEntities();
+            metrics.RecordGamePerformanceMetric(Id, GamePerformanceMetricEnum.FrameLocomoteEntitiesTime, _gameTimer.Elapsed - referenceTime);
+
+            referenceTime = _gameTimer.Elapsed;
             EntityManager.PhysicsResolveEntities();
+            metrics.RecordGamePerformanceMetric(Id, GamePerformanceMetricEnum.FramePhysicsResolveEntitiesTime, _gameTimer.Elapsed - referenceTime);
+
+            referenceTime = _gameTimer.Elapsed;
             EntityManager.ProcessDeferredLists();
+            metrics.RecordGamePerformanceMetric(Id, GamePerformanceMetricEnum.FrameProcessDeferredListsTime, _gameTimer.Elapsed - referenceTime);
 
             // Send responses to all clients
+            referenceTime = _gameTimer.Elapsed;            
             NetworkManager.SendAllPendingMessages();
+            metrics.RecordGamePerformanceMetric(Id, GamePerformanceMetricEnum.FrameSendAllPendingMessagesTime, _gameTimer.Elapsed - referenceTime);
         }
 
         private void UpdateLiveTuning()
@@ -404,7 +429,7 @@ namespace MHServerEmu.Games
                 writer.WriteLine($"Exception:\n{exception}\n");
 
                 writer.WriteLine("Active Regions:");
-                foreach (Region region in RegionIterator())
+                foreach (Region region in RegionManager)
                     writer.WriteLine(region.ToString());
                 writer.WriteLine();
 
@@ -413,7 +438,7 @@ namespace MHServerEmu.Games
                     writer.WriteLine($"{kvp.Key} x{kvp.Value}");
                 writer.WriteLine();
 
-                writer.WriteLine($"Server Status:\n{ServerManager.Instance.GetServerStatus()}\n");
+                writer.WriteLine($"Server Status:\n{ServerManager.Instance.GetServerStatus(true)}\n");
             }
 
             Logger.ErrorException(exception, $"Game instance crashed, report saved to {crashReportFilePath}");

@@ -1,4 +1,5 @@
-﻿using MHServerEmu.Core.Extensions;
+﻿using MHServerEmu.Core.Collections;
+using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Memory;
 using MHServerEmu.Core.System.Random;
@@ -91,6 +92,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
         Player,
         GroupBoss,
         TeamUp,
+        Max
     }
 
     [AssetEnum((int)Default)]
@@ -179,7 +181,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
             return GetFirstCategoryMatch(affixCategoryProtos) != null;
         }
 
-        public bool AllowAttachment(DropFilterArguments args)
+        public virtual bool AllowAttachment(DropFilterArguments args)
         {
             if (DropRestrictions.IsNullOrEmpty())
                 return true;
@@ -246,8 +248,26 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         //---
 
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
         [DoNotCopy]
         public override bool HasBonusPropertiesToApply { get => true; }
+
+        public override bool AllowAttachment(DropFilterArguments args)
+        {
+            if (base.AllowAttachment(args) == false)
+                return false;
+
+            if (args.ItemProto == null)
+                return Logger.WarnReturn(false, "AllowAttachment(): args.ItemProto == null");
+
+            if (args.ItemProto is not ItemPrototype itemProto)
+                return false;
+
+            PrototypeId portalTargetProtoRef = itemProto.GetPortalTarget();
+            RegionPrototype portalTargetProto = portalTargetProtoRef.As<RegionPrototype>();
+            return portalTargetProto?.AffixTable == AffixTable;
+        }
     }
 
     public class AffixRegionRestrictedPrototype : AffixPrototype
@@ -374,7 +394,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
                     evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Var1, indexProperties);
 
                     PropertyInfo propertyInfo = GameDatabase.PropertyInfoTable.LookupPropertyInfo(propEntryProto.Prop.Enum);
-                    
+
                     switch (propertyInfo.DataType)
                     {
                         case PropertyDataType.Boolean:
@@ -481,13 +501,41 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public PrototypeId[] Keywords { get; protected set; }
         public int BonusItemFindPoints { get; protected set; }
 
-        //--
+        //---
 
         [DoNotCopy]
         public bool IsRankBoss { get => Rank == Rank.Boss || Rank == Rank.GroupBoss; }
 
         [DoNotCopy]
         public bool IsRankBossOrMiniBoss { get => IsRankBoss || Rank == Rank.MiniBoss; }
+
+        private KeywordsMask _keywordsMask;
+
+        public static PrototypeId DoOverride(PrototypeId rankRef, PrototypeId rankOverride)
+        {
+            var rankProto = rankRef.As<RankPrototype>();
+            var rankOverrideProto = rankOverride.As<RankPrototype>();
+            return DoOverride(rankProto, rankOverrideProto).DataRef;
+        }
+
+        public static RankPrototype DoOverride(RankPrototype rankProto, RankPrototype rankOverrideProto)
+        {
+            if (rankProto == null) return rankOverrideProto;
+            if (rankOverrideProto == null) return rankProto;
+            if (rankProto.Rank < rankOverrideProto.Rank) return rankOverrideProto;
+            return rankProto;
+        }
+
+        public override void PostProcess()
+        {
+            base.PostProcess();
+            _keywordsMask = KeywordPrototype.GetBitMaskForKeywordList(Keywords);
+        }
+
+        public bool HasKeyword(KeywordPrototype keywordProto)
+        {
+            return keywordProto != null && KeywordPrototype.TestKeywordBit(_keywordsMask, keywordProto);
+        }
     }
 
     public class EnemyBoostSetPrototype : Prototype
@@ -515,9 +563,31 @@ namespace MHServerEmu.Games.GameData.Prototypes
         [DoNotCopy]
         public EnemyBoostSetPrototype AffixTablePrototype { get => AffixTable.As<EnemyBoostSetPrototype>(); }
 
-        internal PrototypeId RollAffix(GRandom random, HashSet<PrototypeId> affixes, HashSet<PrototypeId> exclude)
+        public PrototypeId RollAffix(GRandom random, HashSet<PrototypeId> affixes, HashSet<PrototypeId> exclude)
         {
-            throw new NotImplementedException();
+            var affixTableProto = AffixTablePrototype;
+            if (affixTableProto != null && random.NextPct(ChancePct))
+            {
+                Picker<PrototypeId> picker = new(random);
+
+                if (affixes.Count > 0)
+                    foreach (var affixRef in affixes)
+                        if (affixTableProto.Contains(affixRef))
+                            picker.Add(affixRef);
+
+                if (picker.Pick(out PrototypeId pickRef))
+                    return pickRef;
+
+                if (affixTableProto.Modifiers.HasValue())
+                    foreach (var affix in affixTableProto.Modifiers)
+                        if (exclude.Contains(affix) == false)
+                            picker.Add(affix);
+
+                if (picker.Pick(out pickRef))
+                    return pickRef;
+            }
+
+            return PrototypeId.Invalid;
         }
     }
 
@@ -529,14 +599,14 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         public AffixTableEntryPrototype GetAffixSlot(int slot)
         {
-            if (Affixes.HasValue() && slot >=0 && slot < Affixes.Length)
+            if (Affixes.HasValue() && slot >= 0 && slot < Affixes.Length)
                 return Affixes[slot];
-            return null; // empty prototype
+            return null;
         }
 
         public int GetMaxAffixes()
         {
-            return (Affixes.HasValue() ? Affixes.Length : 0);
+            return Affixes.HasValue() ? Affixes.Length : 0;
         }
     }
 

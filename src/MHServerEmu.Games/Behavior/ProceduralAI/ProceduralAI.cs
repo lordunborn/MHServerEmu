@@ -1,11 +1,10 @@
 ﻿using MHServerEmu.Core.Logging;
-using MHServerEmu.DatabaseAccess.Models;
 using MHServerEmu.Games.Behavior.StaticAI;
 using MHServerEmu.Games.Entities;
-using MHServerEmu.Games.Entities.Avatars;
 using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.Properties;
+using MHServerEmu.Games.Regions;
 
 namespace MHServerEmu.Games.Behavior.ProceduralAI
 {
@@ -310,6 +309,11 @@ namespace MHServerEmu.Games.Behavior.ProceduralAI
             _proceduralPtr.Profile?.OnEntityDeadEvent(_owningController, deadEvent);
         }
 
+        public void OnOwnerGotDamaged()
+        {
+            _proceduralPtr.Profile?.OnOwnerGotDamaged(_owningController);
+        }
+
         public void OnAIBroadcastBlackboardEvent(in AIBroadcastBlackboardGameEvent broadcastEvent)
         {
             _proceduralPtr.Profile?.OnAIBroadcastBlackboardEvent(_owningController, broadcastEvent);
@@ -333,6 +337,11 @@ namespace MHServerEmu.Games.Behavior.ProceduralAI
         public void OnSetSimulated(bool simulated)
         {
             _proceduralPtr.Profile?.OnSetSimulated(_owningController, simulated);
+        }
+
+        public void OnOwnerCollide(WorldEntity whom)
+        {
+            _proceduralPtr.Profile?.OnOwnerCollide(_owningController, whom);
         }
 
         public void OnPropertyChange(PropertyId id, PropertyValue newValue, PropertyValue oldValue, SetPropertyFlags flags)

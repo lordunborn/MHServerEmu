@@ -9,6 +9,7 @@ using MHServerEmu.Games.GameData.Calligraphy.Attributes;
 using MHServerEmu.Games.GameData.LiveTuning;
 using MHServerEmu.Games.GameData.Tables;
 using MHServerEmu.Games.Loot;
+using MHServerEmu.Games.Loot.Visitors;
 
 namespace MHServerEmu.Games.GameData.Prototypes
 {
@@ -23,12 +24,11 @@ namespace MHServerEmu.Games.GameData.Prototypes
             Weight = Math.Max((short)0, Weight);
         }
 
-        public virtual bool OnResultsEvaluation(Player player, WorldEntity worldEntity)
+        public virtual void OnResultsEvaluation(Player player, WorldEntity dropper)
         {
-            return true;
         }
 
-        public virtual void Visit(LootTableNodeVisitor visitor)
+        public virtual void Visit<T>(T visitor) where T: ILootTableNodeVisitor
         {
             visitor.Visit(this);
         }
@@ -70,7 +70,14 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         protected LootRollResult PushLootNodeCallback(LootRollSettings settings, IItemResolver resolver)
         {
-            return LootRollResult.NoRoll;
+            LootRollResult result = resolver.PushLootNodeCallback(this);
+            if (result.HasFlag(LootRollResult.Failure))
+            {
+                resolver.ClearPending();
+                return LootRollResult.Failure;
+            }
+
+            return resolver.ProcessPending(settings) ? result : LootRollResult.Failure;
         }
     }
 
@@ -222,6 +229,17 @@ namespace MHServerEmu.Games.GameData.Prototypes
             LootTablePrototypeEnumValue = GetEnumValueFromBlueprint(LiveTuningData.GetLootTableBlueprintDataRef());
         }
 
+        public override void Visit<T>(T visitor)
+        {
+            base.Visit(visitor);
+
+            if (Choices.IsNullOrEmpty())
+                return;
+
+            foreach (LootNodePrototype node in Choices)
+                node.Visit(visitor);
+        }
+
         public bool IsLiveTuningEnabled()
         {
             int tuningVar = (int)Math.Floor(LiveTuningManager.GetLiveLootTableTuningVar(this, LootTableTuningVar.eLTTV_Enabled));
@@ -272,7 +290,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
                 noDropPercent = NoDropPercent;
 
             // Cancel roll if no roll percent check fails
-            if (resolver.CheckDropPercent(settings, noDropPercent) == false)
+            if (resolver.CheckDropChance(settings, noDropPercent) == false)
                 return resolver.ProcessPending(settings) ? LootRollResult.Success : LootRollResult.Failure;
 
             settings.Depth++;

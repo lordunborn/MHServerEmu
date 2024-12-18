@@ -20,6 +20,7 @@
         public static float SquareRoot(float f) => f > 0.0f ? MathF.Sqrt(f) : 0.0f;
         public static float Square(float v) => v * v;
         public static int RoundDownToInt(float v) => (int)MathF.Floor(v);
+        public static int RoundUpToInt(float v) => (int)MathF.Ceiling(v);
 
         /// <summary>
         /// Determines the index of the highest bit set in a <see cref="ulong"/> value.
@@ -35,6 +36,26 @@
         public static void BitSet(ref int value, int bitMask)
         {
             value |= bitMask;
+        }
+
+        public static void BitSet(ref ulong value, ulong bitMask)
+        {
+            value |= bitMask;
+        }
+
+        public static void EBitSet(ref ulong value, int bit)
+        {
+            BitSet(ref value, 1UL << bit);
+        }
+
+        public static bool EBitTest(ulong value, int bit)
+        {
+            return BitTest(value, 1UL << bit);
+        }
+
+        public static bool BitTest(ulong value, ulong bitMask)
+        {
+            return (value & bitMask) != 0;
         }
 
         public static bool BitTest(int value, int bitMask)

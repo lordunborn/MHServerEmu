@@ -3,6 +3,7 @@ using System.Text;
 using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Metrics;
 using MHServerEmu.Core.Network.Tcp;
+using MHServerEmu.Core.System.Time;
 
 namespace MHServerEmu.Core.Network
 {
@@ -30,7 +31,7 @@ namespace MHServerEmu.Core.Network
 
         public static ServerManager Instance { get; } = new();
 
-        public DateTime StartupTime { get; private set; }
+        public TimeSpan StartupTime { get; private set; }
 
         private ServerManager() { }
 
@@ -39,7 +40,7 @@ namespace MHServerEmu.Core.Network
         /// </summary>
         public void Initialize()
         {
-            StartupTime = DateTime.Now;
+            StartupTime = Clock.UnixTime;
         }
 
         /// <summary>
@@ -180,11 +181,12 @@ namespace MHServerEmu.Core.Network
         /// <summary>
         /// Returns a <see cref="string"/> representing the current status of all running <see cref="IGameService"/> instances.
         /// </summary>
-        public string GetServerStatus()
+        public string GetServerStatus(bool includeMetrics)
         {
             StringBuilder sb = new();
 
-            sb.AppendLine($"Uptime: {DateTime.Now - StartupTime:hh\\:mm\\:ss}");
+            TimeSpan uptime = Clock.UnixTime - StartupTime;
+            sb.AppendLine($"Uptime: {uptime:dd\\:hh\\:mm\\:ss}");
 
             sb.AppendLine("Service Status:");
             for (int i = 0; i < _services.Length; i++)
@@ -198,8 +200,11 @@ namespace MHServerEmu.Core.Network
                     sb.AppendLine("Not running");
             }
 
-            sb.AppendLine("Performance Metrics:");
-            sb.AppendLine(MetricsManager.Instance.GeneratePerformanceReport(MetricsReportFormat.PlainText));
+            if (includeMetrics)
+            {
+                sb.AppendLine("Performance Metrics:");
+                sb.AppendLine(MetricsManager.Instance.GeneratePerformanceReport(MetricsReportFormat.PlainText));
+            }
 
             return sb.ToString();
         }

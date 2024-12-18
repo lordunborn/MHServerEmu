@@ -18,11 +18,12 @@ namespace MHServerEmu.Games.Behavior
         public Vector3 SpawnPoint { get; set; }
         public Vector3 SpawnOffset { get; set; }
         public Vector3 UsePowerTargetPos { get; set; }
-        public Queue<CustomPowerQueueEntry> CustomPowerQueue { get; set; }
+        public Queue<CustomPowerQueueEntry> CustomPowerQueue { get; private set; }
         public Vector3 LastFlankTargetEntityPos { get; set; }
         public Vector3 LastFlockPosition { get; set; }
         public Vector3 MoveToCurrentPathNodePos { get; set; }
-        public Dictionary<ulong, long> DamageMap { get; set; }       
+        public Dictionary<ulong, long> DamageMap { get; private set; }
+        public int AICustomThinkRateMS { get; private set; }
 
         public BehaviorBlackboard(Agent owner)
         {
@@ -76,13 +77,26 @@ namespace MHServerEmu.Games.Behavior
 
         public void OnPropertyChange(PropertyId id, PropertyValue newValue, PropertyValue oldValue, SetPropertyFlags flags)
         {
+            if (flags.HasFlag(SetPropertyFlags.Refresh) == false)
+            {
+                if (id.Enum == PropertyEnum.AICustomThinkRateMS)
+                    AICustomThinkRateMS = newValue;
+            }
+
              _owner.AIController?.Brain?.OnPropertyChange(id, newValue, oldValue, flags);
         }
 
         public void AddCustomPower(PrototypeId powerRef, Vector3 targetPos, ulong targetId)
         {
-            CustomPowerQueue ??= new Queue<CustomPowerQueueEntry>();
-            CustomPowerQueue.Enqueue(new (powerRef, targetPos, targetId ));
+            CustomPowerQueue ??= new();
+            CustomPowerQueue.Enqueue(new(powerRef, targetPos, targetId));
+        }
+
+        public void OnTrackIncomingDamage(ulong attackerId, long damage)
+        {
+            DamageMap ??= new();
+            DamageMap.TryGetValue(attackerId, out long oldDamage);
+            DamageMap[attackerId] = oldDamage + damage;
         }
 
         private GeneratedPath _cachedGenPath;
