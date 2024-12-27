@@ -127,6 +127,8 @@ namespace MHServerEmu.Games.Entities
         public bool IsOnLoadingScreen { get; private set; }
         public bool IsFullscreenObscured { get => IsFullscreenMoviePlaying || IsOnLoadingScreen; }
 
+        public bool IsSwitchingAvatar { get; private set; }
+
         // Network
         public PlayerConnection PlayerConnection { get; private set; }
         public AreaOfInterest AOI { get => PlayerConnection.AOI; }
@@ -1208,7 +1210,6 @@ namespace MHServerEmu.Games.Entities
             }
 
             if (avatarProtoRef == PrototypeId.Invalid) return Logger.WarnReturn(false, "SwitchAvatar(): Failed to find pending avatar switch");
-            Properties.RemovePropertyRange(PropertyEnum.AvatarSwitchPending);
 
             // Get information about the previous avatar
             ulong lastCurrentAvatarId = CurrentAvatar != null ? CurrentAvatar.Id : InvalidId;
@@ -1216,19 +1217,33 @@ namespace MHServerEmu.Games.Entities
             Vector3 prevPosition = CurrentAvatar.RegionLocation.Position;
             Orientation prevOrientation = CurrentAvatar.RegionLocation.Orientation;
 
-            // Do the switch
+            // Find the avatar to switch to
             Inventory avatarLibrary = GetInventory(InventoryConvenienceLabel.AvatarLibrary);
             Inventory avatarInPlay = GetInventory(InventoryConvenienceLabel.AvatarInPlay);
 
             if (avatarLibrary.GetMatchingEntity(avatarProtoRef) is not Avatar avatar)
                 return Logger.WarnReturn(false, $"SwitchAvatar(): Failed to find avatar entity for avatarProtoRef {GameDatabase.GetPrototypeName(avatarProtoRef)}");
 
+            // Remove non-persistent conditions from the current avatar
+            ConditionCollection previousConditions = CurrentAvatar?.ConditionCollection;
+            previousConditions?.RemoveAllConditions(false);
+
+            // Do the switch
             InventoryResult result = avatar.ChangeInventoryLocation(avatarInPlay, 0);
 
             if (result != InventoryResult.Success)
                 return Logger.WarnReturn(false, $"SwitchAvatar(): Failed to change library avatar's inventory location ({result})");
 
+            IsSwitchingAvatar = true;
+
+            // Transfer conditions to the new current avatar
+            ConditionCollection currentConditions = CurrentAvatar?.ConditionCollection;
+            if (previousConditions != null && currentConditions != null)
+                currentConditions.TransferConditionsFrom(previousConditions);
+
             EnableCurrentAvatar(true, lastCurrentAvatarId, prevRegionId, prevPosition, prevOrientation);
+
+            IsSwitchingAvatar = false;
 
             GetRegion()?.PlayerSwitchedToAvatarEvent.Invoke(new(this, avatarProtoRef));
 
@@ -1237,8 +1252,6 @@ namespace MHServerEmu.Games.Entities
 
         public bool EnableCurrentAvatar(bool withSwapInPower, ulong lastCurrentAvatarId, ulong regionId, in Vector3 position, in Orientation orientation)
         {
-            // TODO: Use this for teleportation within region as well
-
             if (CurrentAvatar == null)
                 return Logger.WarnReturn(false, "EnableCurrentAvatar(): CurrentAvatar == null");
 
@@ -2328,8 +2341,6 @@ namespace MHServerEmu.Games.Entities
             amount = (int)(amount * bonusItemFindCurve.GetAt(bonusItemFindRating));
             if (amount <= 0)
                 return true;
-
-            Logger.Debug($"AwardBonusItemFindPoints(): amount={amount} to [{this}]");
 
             int points = Properties[PropertyEnum.BonusItemFindPoints] + amount;
             if (points >= lootGlobalsProto.BonusItemFindNumPointsForBonus)
