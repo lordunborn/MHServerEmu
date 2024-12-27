@@ -9,6 +9,7 @@ using MHServerEmu.Games.Events;
 using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.Calligraphy;
 using MHServerEmu.Games.GameData.Prototypes;
+using MHServerEmu.Games.Powers.Conditions;
 using MHServerEmu.Games.Properties;
 using MHServerEmu.Games.Properties.Evals;
 
@@ -749,14 +750,8 @@ namespace MHServerEmu.Games.Powers
                 return false;
 
             // Calculate duration
-            CalculateConditionDuration(conditionProto, owner, target, out TimeSpan duration);
-            
-            if ((PowerPrototype is MovementPowerPrototype movementPowerProto && movementPowerProto.IsTravelPower == false) ||
-                (conditionProto.Properties != null && conditionProto.Properties[PropertyEnum.Knockback]))
-            {
-                // TODO: calculate duration for conditions that last as long as the entity is moving
+            if (CalculateConditionDuration(conditionProto, owner, target, out TimeSpan duration) == false)
                 return false;
-            }
 
             // Calculate the number of stacks to apply and modify duration if needed
             int numStacksToApply = CalculateConditionNumStacksToApply(target, ultimateOwner, conditionCollection, conditionProto, ref duration);
@@ -764,7 +759,7 @@ namespace MHServerEmu.Games.Powers
             // Apply the calculated number of stacks
             for (int i = 0; i < numStacksToApply; i++)
             {
-                Condition condition = conditionCollection.AllocateCondition();
+                Condition condition = ConditionCollection.AllocateCondition();
                 condition.InitializeFromPower(conditionCollection.NextConditionId, this, conditionProto, duration);
                 results.AddConditionToAdd(condition);
             }
@@ -952,6 +947,13 @@ namespace MHServerEmu.Games.Powers
             duration = conditionProto.GetDuration(Properties, owner, PowerProtoRef, target);
 
             // TODO: Apply modifiers to the base duration we get from the prototype
+
+            if ((PowerPrototype is MovementPowerPrototype movementPowerProto && movementPowerProto.IsTravelPower == false) ||
+                (conditionProto.Properties != null && conditionProto.Properties[PropertyEnum.Knockback]))
+            {
+                // TODO: calculate duration for conditions that last as long as the entity is moving
+                return false;
+            }
 
             if (duration < TimeSpan.Zero)
                 return Logger.WarnReturn(false, $"CalculateConditionDuration(): Negative duration for {PowerPrototype}");

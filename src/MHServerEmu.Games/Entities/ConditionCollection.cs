@@ -14,6 +14,7 @@ using MHServerEmu.Games.GameData.LiveTuning;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.Network;
 using MHServerEmu.Games.Powers;
+using MHServerEmu.Games.Powers.Conditions;
 using MHServerEmu.Games.Properties;
 
 namespace MHServerEmu.Games.Entities
@@ -24,8 +25,6 @@ namespace MHServerEmu.Games.Entities
         public const ulong InvalidConditionId = 0;
 
         private static readonly Logger Logger = LogManager.CreateLogger();
-
-        private static int ConditionCount = 0;  // test variable to make sure we delete all conditions we allocate
 
         private readonly WorldEntity _owner;
 
@@ -677,12 +676,12 @@ namespace MHServerEmu.Games.Entities
             return new Iterator(this, false).GetEnumerator();
         }
 
-        public Condition AllocateCondition()
+        public static Condition AllocateCondition()
         {
             return ConditionPool.Instance.Get();
         }
 
-        public bool DeleteCondition(Condition condition)
+        public static bool DeleteCondition(Condition condition)
         {
             if (condition == null) return Logger.WarnReturn(false, "DeleteCondition(): condition == null");
             if (condition.IsInCollection) return Logger.WarnReturn(false, "DeleteCondition(): condition.IsInCollection");
@@ -1018,7 +1017,7 @@ namespace MHServerEmu.Games.Entities
         }
 
         /// <summary>
-        /// Represents a <see cref="Powers.Condition"/> stored in a <see cref="ConditionCollection"/>.
+        /// Represents a <see cref="Powers.Conditions.Condition"/> stored in a <see cref="ConditionCollection"/>.
         /// </summary>
         public struct Handle
         {

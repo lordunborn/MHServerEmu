@@ -23,6 +23,7 @@ using MHServerEmu.Games.Navi;
 using MHServerEmu.Games.Network;
 using MHServerEmu.Games.Populations;
 using MHServerEmu.Games.Powers;
+using MHServerEmu.Games.Powers.Conditions;
 using MHServerEmu.Games.Properties;
 using MHServerEmu.Games.Regions;
 
@@ -1302,7 +1303,10 @@ namespace MHServerEmu.Games.Entities
             }
 
             if (IsInWorld == false)
+            {
+                powerResults.Clear();   // Clearing the results instance returns any conditions it may have to the pool
                 return false;
+            }
 
             // TODO: Procs
 
