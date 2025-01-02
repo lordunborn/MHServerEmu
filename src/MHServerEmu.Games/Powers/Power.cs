@@ -40,6 +40,9 @@ namespace MHServerEmu.Games.Powers
         private PowerActivationPhase _activationPhase = PowerActivationPhase.Inactive;
         private PowerActivationSettings _lastActivationSettings;
 
+        private bool _hasDelayedActivationSettings = false;
+        private PowerActivationSettings _delayedActivationSettings;
+
         private readonly List<TrackedCondition> _trackedConditionList = new();
         private PowerIndexPropertyFlags _trackedConditionIndexPropertyFlags = PowerIndexPropertyFlags.None;
 
@@ -47,6 +50,7 @@ namespace MHServerEmu.Games.Powers
         private readonly EventGroup _pendingActivationPhaseEvents = new();
         private readonly EventGroup _pendingPowerApplicationEvents = new();
 
+        private readonly EventPointer<DelayedActivationEvent> _delayedActivationEvent = new();
         private readonly EventPointer<StopChargingEvent> _stopChargingEvent = new();
         private readonly EventPointer<StartChannelingEvent> _startChannelingEvent = new();
         private readonly EventPointer<StopChannelingEvent> _stopChannelingEvent = new();
@@ -521,26 +525,25 @@ namespace MHServerEmu.Games.Powers
             PowerPrototype powerProto = Prototype;
             if (powerProto == null) return Logger.WarnReturn(PowerUseResult.GenericError, "Activate(): powerProto == null");
 
+            if (IsOnExtraActivation())
+                return RunExtraActivation(ref settings);
+
             WorldEntity target = Game.EntityManager.GetEntity<WorldEntity>(settings.TargetEntityId);
 
-            // Charging (variable activation time) powers
+            // Hold and release (variable activation time) powers
             if (powerProto.ExtraActivation != null)
             {
                 if (powerProto.ExtraActivation is SecondaryActivateOnReleasePrototype secondaryActivation)
                 {
-                    // If this is not a release yet, send pre-activation message to clients
+                    // If this is not a release yet, just prepare for it
                     if (settings.VariableActivationRelease == false)
                     {
-                        var preActivatePower = NetMessagePreActivatePower.CreateBuilder()
-                            .SetIdUserEntity(Owner.Id)
-                            .SetPowerPrototypeId((ulong)PrototypeDataRef)
-                            .SetIdTargetEntity(settings.TargetEntityId)
-                            .SetTargetPosition(settings.TargetPosition.ToNetStructPoint3())
-                            .Build();
-
-                        Game.NetworkManager.SendMessageToInterested(preActivatePower, Owner, AOINetworkPolicyValues.AOIChannelProximity, true);
-                        return PowerUseResult.Success;
+                        HandleTriggerPowerEventOnHoldBegin();
+                        return StartDelayedActivation(ref settings, secondaryActivation);
                     }
+
+                    if (settings.VariableActivationTime == TimeSpan.Zero)
+                        settings.VariableActivationTime = Game.CurrentTime - settings.CreationTime;
 
                     if (secondaryActivation.MaxReleaseTimeMS > 0)
                     {
@@ -559,7 +562,7 @@ namespace MHServerEmu.Games.Powers
                 if (triggeringPower != null)
                 {
                     Properties.CopyProperty(triggeringPower.Properties, PropertyEnum.VariableActivationTimeMS);
-                    Properties.CopyProperty(triggeringPower.Properties, PropertyEnum.VariableActivationTimeMS);
+                    Properties.CopyProperty(triggeringPower.Properties, PropertyEnum.VariableActivationTimePct);
                 }
             }
 
@@ -715,13 +718,6 @@ namespace MHServerEmu.Games.Powers
             return result;
         }
 
-        public void ReleaseVariableActivation(ref PowerActivationSettings settings)
-        {
-            //Logger.Debug($"ReleaseVariableActivation(): {Prototype}");
-            settings.VariableActivationRelease = true;  // Mark power as release
-            Activate(ref settings);
-        }
-
         private bool ScheduledActivateCallback(PrototypeId triggeredPowerProtoRef, PowerEventActionPrototype triggeredPowerEvent, ref PowerActivationSettings settings)
         {
             if (Game == null) return Logger.WarnReturn(false, "ScheduledActivateCallback(): Game == null");
@@ -847,6 +843,7 @@ namespace MHServerEmu.Games.Powers
             PowerResults ownerResults = new();
             ulong ownerId = payload.PowerOwnerId;
             ownerResults.Init(ownerId, ownerId, ownerId, payload.PowerOwnerPosition, powerProto, payload.PowerAssetRefOverride, false);
+            ownerResults.ActivationSettings = activationSettings;
 
             // Calculate and apply results for each target
             int payloadCombatLevel = payload.CombatLevel;
@@ -865,6 +862,7 @@ namespace MHServerEmu.Games.Powers
 
                 PowerResults targetResults = new();
                 payload.InitPowerResultsForTarget(targetResults, target);
+                targetResults.ActivationSettings = activationSettings;
                 payload.CalculatePowerResults(targetResults, ownerResults, target, true);
                 
                 if (player != null && powerProto.CanCauseTag)
@@ -1014,9 +1012,109 @@ namespace MHServerEmu.Games.Powers
             return true;
         }
 
-        // NOTE: Charging and channeling methods need to be public because they interact with scheduled events
+        protected virtual PowerUseResult RunExtraActivation(ref PowerActivationSettings settings)
+        {
+            if (Prototype?.ExtraActivation == null) return Logger.WarnReturn(PowerUseResult.ExtraActivationFailed, "RunExtraActivation(): Prototype?.ExtraActivation == null");
 
-        public bool StartCharging()
+            CancelExtraActivationTimeout();
+
+            Owner.Properties.AdjustProperty(1, new(PropertyEnum.PowerActivationCount, PrototypeDataRef));
+
+            StartCooldown();
+            EndPower(EndPowerFlags.None);
+
+            return PowerUseResult.Success;
+        }
+
+        #region Delayed / Variable Time Activation
+
+        public void ReleaseVariableActivation(ref PowerActivationSettings settings)
+        {
+            if (Prototype.ExtraActivation is not SecondaryActivateOnReleasePrototype secondaryActivationProto)
+                return;
+
+            // If we are receiving a release message and there are not delayed activation settings server-side, it means we have a desync that needs to be handled
+            if (_hasDelayedActivationSettings == false)
+            {
+                if (Owner is Avatar avatar)
+                {
+                    // If the server doesn't have delayed activation settings because of a desync, init new settings
+                    if (avatar.CanActivatePower(this, settings.TargetEntityId, settings.TargetPosition) == PowerUseResult.Success)
+                    {
+                        avatar.CancelPendingAction();
+                        settings.VariableActivationRelease = true;
+                        settings.VariableActivationTime = TimeSpan.FromMilliseconds(secondaryActivationProto.MinReleaseTimeMS);
+                        Activate(ref settings);
+                    }
+                    else if (avatar.PendingPowerDataRef == PrototypeDataRef)
+                    {
+                        avatar.CancelPendingAction();
+                    }
+                }
+
+                return;
+            }
+
+            _delayedActivationSettings.TargetEntityId = settings.TargetEntityId;
+            _delayedActivationSettings.TargetPosition = settings.TargetPosition;
+            _delayedActivationSettings.VariableActivationTime = Game.CurrentTime - _delayedActivationSettings.CreationTime;
+
+            TimeSpan delay = TimeSpan.FromMilliseconds(secondaryActivationProto.MinReleaseTimeMS) - _delayedActivationSettings.VariableActivationTime;
+
+            if (delay > TimeSpan.Zero)
+                ScheduleDelayedActivation(delay);
+            else
+                DelayedActivateCallback();
+        }
+
+        private PowerUseResult StartDelayedActivation(ref PowerActivationSettings settings, SecondaryActivateOnReleasePrototype secondaryActivationProto)
+        {
+            // Send pre-activation message to nearby clients
+            var preActivatePower = NetMessagePreActivatePower.CreateBuilder()
+                .SetIdUserEntity(Owner.Id)
+                .SetPowerPrototypeId((ulong)PrototypeDataRef)
+                .SetIdTargetEntity(settings.TargetEntityId)
+                .SetTargetPosition(settings.TargetPosition.ToNetStructPoint3())
+                .Build();
+
+            Game.NetworkManager.SendMessageToInterested(preActivatePower, Owner, AOINetworkPolicyValues.AOIChannelProximity, true);
+
+            // Initialize settings
+            if (_hasDelayedActivationSettings)
+                Logger.Warn($"StartDelayedActivation(): Overwriting existing delayed activation settings for {this}");
+
+            if (_delayedActivationEvent.IsValid)
+            {
+                Logger.Warn($"StartDelayedActivation(): Cancelling previously scheduled delayed activation for {this}");
+                Game.GameEventScheduler?.CancelEvent(_delayedActivationEvent);
+            }
+
+            _hasDelayedActivationSettings = true;
+            _delayedActivationSettings = settings;
+            _delayedActivationSettings.VariableActivationRelease = true;
+
+            // TODO: Costs
+
+            return PowerUseResult.Success;
+        }
+
+        private bool DelayedActivateCallback()
+        {
+            if (_hasDelayedActivationSettings == false) return Logger.WarnReturn(false, "DelayedActivateCallback(): _hasDelayedActivationSettings == false");
+
+            if (Owner.IsInWorld && Owner.IsDead == false)
+            {
+                _delayedActivationSettings.UserPosition = Owner.RegionLocation.Position;
+                Activate(ref _delayedActivationSettings);
+            }
+
+            CancelDelayedActivation();
+            return true;
+        }
+
+        #endregion
+
+        private bool StartCharging()
         {
             //Logger.Debug("StartCharging()");
 
@@ -2602,11 +2700,7 @@ namespace MHServerEmu.Games.Powers
                 return false;
 
             int powerActivationCount = owner.Properties[PropertyEnum.PowerActivationCount, powerProto.DataRef];
-
-            if (extraActivate.ExtraActivateEffect != SubsequentActivateType.DestroySummonedEntity || powerActivationCount % 2 != 1)
-                return false;
-
-            return true;
+            return extraActivate.ExtraActivateEffect == SubsequentActivateType.DestroySummonedEntity && powerActivationCount % 2 == 1;
         }
 
         public bool IsToggled()
@@ -4539,6 +4633,40 @@ namespace MHServerEmu.Games.Powers
             return true;
         }
 
+        private bool ScheduleDelayedActivation(TimeSpan delay)
+        {
+            // Skipping the first stage of delayed activation shouldn't go through scheduling
+            if (delay <= TimeSpan.Zero) return Logger.WarnReturn(false, "ScheduleDelayedActivation(): delay <= TimeSpan.Zero");
+
+            EventScheduler scheduler = Game.GameEventScheduler;
+            if (scheduler == null) return Logger.WarnReturn(false, "ScheduleDelayedActivation(): scheduler == null");
+
+            if (_delayedActivationEvent.IsValid)
+            {
+                scheduler.RescheduleEvent(_delayedActivationEvent, delay);
+            }
+            else
+            {
+                scheduler.ScheduleEvent(_delayedActivationEvent, delay, _pendingEvents);
+                _delayedActivationEvent.Get().Initialize(this);
+            }
+
+            return true;
+        }
+
+        private bool CancelDelayedActivation()
+        {
+            EventScheduler scheduler = Game.GameEventScheduler;
+            if (scheduler == null) return Logger.WarnReturn(false, "CancelDelayedActivation(): scheduler == null");
+
+            scheduler.CancelEvent(_delayedActivationEvent);
+
+            _hasDelayedActivationSettings = false;
+            _delayedActivationSettings = default;
+
+            return true;
+        }
+
         private bool ScheduleExtraActivationTimeout(ExtraActivateOnSubsequentPrototype extraActivateOnSubsequent)
         {
             Logger.Debug("ScheduleExtraActivationTimeout()");
@@ -4748,6 +4876,11 @@ namespace MHServerEmu.Games.Powers
                 if (_eventTarget.Game == null) return Logger.WarnReturn(false, "OnCancelled(): _eventTarget.Game == null");
                 return true;
             }
+        }
+
+        private class DelayedActivationEvent : CallMethodEvent<Power>
+        {
+            protected override CallbackDelegate GetCallback() => (t) => t.DelayedActivateCallback();
         }
 
         private class StopChargingEvent : CallMethodEvent<Power>

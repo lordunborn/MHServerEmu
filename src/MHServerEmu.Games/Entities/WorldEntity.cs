@@ -364,6 +364,41 @@ namespace MHServerEmu.Games.Entities
             OnKilled(killer, killFlags, directKiller);   
         }
 
+        public virtual bool OnKilledOther(PowerResults powerResults)
+        {
+            if (powerResults == null) return Logger.WarnReturn(false, "OnKilledOther(): powerResults == null");
+
+            if (IsInWorld == false)
+                return false;
+
+            // Trigger power events
+            PowerPrototype powerProto = powerResults.PowerPrototype;
+            if (powerProto != null)
+            {
+                Power power = GetPower(powerProto.DataRef);
+                power?.HandleTriggerPowerEventOnTargetKill(powerResults);
+            }
+
+            // Try activate procs
+            TryActivateOnKillProcs(ProcTriggerType.OnKillOther, powerResults);
+
+            if (powerResults.TestFlag(PowerResultFlags.Critical))
+                TryActivateOnKillProcs(ProcTriggerType.OnKillOtherCritical, powerResults);
+            else if (powerResults.TestFlag(PowerResultFlags.SuperCritical))
+                TryActivateOnKillProcs(ProcTriggerType.OnKillOtherSuperCrit, powerResults);
+
+            WorldEntity target = Game.EntityManager.GetEntity<WorldEntity>(powerResults.TargetId);
+            if (target != null)
+            {
+                if (target.IsDestructible)
+                    TryActivateOnKillProcs(ProcTriggerType.OnKillDestructible, powerResults);
+                else if (IsFriendlyTo(target))
+                    TryActivateOnKillProcs(ProcTriggerType.OnKillAlly, powerResults);
+            }
+
+            return true;
+        }
+
         public override void Destroy()
         {
             if (Game == null) return;
@@ -1308,13 +1343,121 @@ namespace MHServerEmu.Games.Entities
 
             if (IsInWorld)
             {
-                success = ApplyPowerResultsInternal(powerResults);
+                WorldEntity powerOwner = Game.EntityManager.GetEntity<WorldEntity>(powerResults.PowerOwnerId);
+                powerOwner ??= Game.EntityManager.GetEntity<WorldEntity>(powerResults.UltimateOwnerId);
 
-                // TODO: Procs
+                if (powerResults.IsAtMaxRecursionDepth() == false)
+                {
+                    if (powerResults.IsAvoided == false && powerResults.TestFlag(PowerResultFlags.Hostile) && powerOwner?.IsInWorld == true)
+                        TriggerOnHitEffects(powerResults, powerOwner);
+
+                    if (powerResults.IsBlocked)
+                        TryActivateOnBlockProcs(powerResults);
+
+                    if (powerResults.IsDodged)
+                        TryActivateOnDodgeProcs(powerResults);
+                }
+
+                // Check if this entity was destroyed by procs
+                if (IsInWorld == false || TestStatus(EntityStatus.Destroyed))
+                    success = true;
+                else // Apply the actual results if not
+                    success = ApplyPowerResultsInternal(powerResults);
             }
 
             powerResults.Clear();   // Clear to prevent leaking (TODO: PowerResults pooling)
             return success;
+        }
+
+        private bool TriggerOnHitEffects(PowerResults powerResults, WorldEntity powerOwner)
+        {
+            // powerOwner has been null checked above in ApplyPowerResults()
+
+            PowerPrototype powerProto = powerResults.PowerPrototype;
+            if (powerProto == null) return Logger.WarnReturn(false, "TriggerOnHitEffects(): powerProto == null");
+
+            Avatar avatar = powerOwner.GetMostResponsiblePowerUser<Avatar>(true);
+
+            // TODO: Set LastInflictedDamageTime for avatars
+
+            // Enter combat if this is not an over time effect
+            if (powerResults.TestFlag(PowerResultFlags.OverTime) == false)
+            {
+                powerOwner.EnterCombat();
+                if (avatar != null && avatar != powerOwner && avatar.IsInWorld)
+                    avatar.EnterCombat();
+            }
+
+            Power power = powerOwner.GetPower(powerProto.DataRef);
+
+            // Trigger OnProjectileHit power events (projectiles are non-missile powers that have projectile speed)
+            if (power != null && powerProto is not MissilePowerPrototype &&
+                (powerProto.ProjectileTimeToImpactOverride > 0f || powerProto.GetProjectileSpeed(power.Properties, powerOwner.Properties) > 0f))
+            {
+                power.HandleTriggerPowerEventOnProjectileHit(powerResults);
+            }
+
+            // Trigger OnAnyHit procs
+            powerOwner.TryActivateOnHitProcs(ProcTriggerType.OnAnyHit, powerResults);
+            powerOwner.TryActivateOnHitProcs(ProcTriggerType.OnAnyHitForPctHealth, powerResults);
+            powerOwner.TryActivateOnHitProcs(ProcTriggerType.OnAnyHitTargetHealthBelowPct, powerResults);
+
+            // Trigger OnHitKeyword power events
+            power?.HandleTriggerPowerEventOnHitKeyword(powerResults);
+
+            // Trigger OnPetHit procs for the summoner if needed
+            ulong powerUserOverrideId = powerOwner.Properties[PropertyEnum.PowerUserOverrideID];
+            if (powerUserOverrideId != InvalidId)
+            {
+                WorldEntity summoner = Game.EntityManager.GetEntity<WorldEntity>(powerUserOverrideId);
+                if (summoner != null && summoner.IsInWorld)
+                    summoner.TryActivateOnPetHitProcs(powerResults, powerOwner);
+            }
+
+            // OnPowerHitPhysical / OnPowerHitEnergy / OnPowerHitMental
+            foreach (var kvp in powerResults.Properties.IteratePropertyRange(PropertyEnum.Damage))
+            {
+                Property.FromParam(kvp.Key, 0, out int damageType);
+
+                ProcTriggerType triggerType = (DamageType)damageType switch
+                {
+                    DamageType.Physical => ProcTriggerType.OnPowerHitPhysical,
+                    DamageType.Energy   => ProcTriggerType.OnPowerHitEnergy,
+                    DamageType.Mental   => ProcTriggerType.OnPowerHitMental,
+                    _                   => ProcTriggerType.None
+                };
+
+                if (triggerType == ProcTriggerType.None)
+                {
+                    Logger.Warn("TriggerOnHitEffects(): triggerType == ProcTriggerType.None");
+                    continue;
+                }
+
+                TryActivateOnHitProcs(triggerType, powerResults);
+            }
+
+            // OnPowerHit / OnPowerHitNormal
+            powerOwner.TryActivateOnHitProcs(ProcTriggerType.OnPowerHit, powerResults);
+
+            if (powerProto.PowerCategory == PowerCategoryType.NormalPower)
+                powerOwner.TryActivateOnHitProcs(ProcTriggerType.OnPowerHitNormal, powerResults);
+
+            // OnCrit / OnSuperCrit procs and OnCriticalHit power events
+            if (powerResults.TestFlag(PowerResultFlags.Critical))
+            {
+                powerOwner.TryActivateOnHitProcs(ProcTriggerType.OnCrit, powerResults);
+                power?.HandleTriggerPowerEventOnCriticalHit(powerResults);
+            }
+            else if (powerResults.TestFlag(PowerResultFlags.SuperCritical))
+            {
+                powerOwner.TryActivateOnHitProcs(ProcTriggerType.OnSuperCrit, powerResults);
+            }
+
+            // OnPowerHitNotOverTime
+            if (powerResults.TestFlag(PowerResultFlags.OverTime) == false)
+                powerOwner.TryActivateOnHitProcs(ProcTriggerType.OnPowerHitNotOverTime, powerResults);
+
+            return true;
         }
 
         private bool ApplyPowerResultsInternal(PowerResults powerResults)
@@ -1436,7 +1579,13 @@ namespace MHServerEmu.Games.Entities
             if (powerResults.TestFlag(PowerResultFlags.Hostile) && Properties[PropertyEnum.Invulnerable])
                 healthDelta = 0;
 
-            // todo: procs
+            // Check procs (even if invulnerable)
+            if (powerResults.TestFlag(PowerResultFlags.Hostile) && powerResults.IsAtMaxRecursionDepth() == false)
+            {
+                TryActivateOnGotAttackedProcs(powerResults);
+                EnterCombat();
+                OnGotHit(ultimateOwner);
+            }
 
             // Abort if not valid
             // Case 1: No health change
@@ -1467,17 +1616,16 @@ namespace MHServerEmu.Games.Entities
 
             // Change health to the new value
             WorldEntity powerUser = Game.EntityManager.GetEntity<WorldEntity>(powerResults.PowerOwnerId);
-            WorldEntity ultimatePowerUser = Game.EntityManager.GetEntity<WorldEntity>(powerResults.UltimateOwnerId);
 
             long adjustHealth = health - startHealth;
 
-            var avatar = ultimatePowerUser?.GetMostResponsiblePowerUser<Avatar>();
+            var avatar = ultimateOwner?.GetMostResponsiblePowerUser<Avatar>();
 
             if (region != null)
             {
                 var player = avatar?.GetOwnerOfType<Player>();
                 bool isDodged = powerResults.TestFlag(PowerResultFlags.Dodged);
-                region.AdjustHealthEvent.Invoke(new(this, ultimatePowerUser, player, adjustHealth, isDodged));
+                region.AdjustHealthEvent.Invoke(new(this, ultimateOwner, player, adjustHealth, isDodged));
             }
 
             bool killed = false;
@@ -1487,7 +1635,7 @@ namespace MHServerEmu.Games.Entities
                 if (this is Avatar killedAvatar)
                 {
                     var killedPlayer = GetOwnerOfType<Player>();
-                    region?.OnRecordPlayerDeath(killedPlayer, killedAvatar, ultimatePowerUser);
+                    region?.OnRecordPlayerDeath(killedPlayer, killedAvatar, ultimateOwner);
 
                     killedPlayer.OnScoringEvent(new(ScoringEventType.AvatarDeath));
                     var killer = avatar?.GetOwnerOfType<Player>();
@@ -1503,27 +1651,34 @@ namespace MHServerEmu.Games.Entities
 
                 if (powerResults.PowerOwnerId != powerResults.TargetId)
                 {
-                    ultimatePowerUser?.TriggerEntityActionEvent(EntitySelectorActionEventType.OnKilledOther);
+                    if (powerUser != null && powerUser != ultimateOwner)
+                        powerUser.OnKilledOther(powerResults);
+                    else
+                        ultimateOwner?.OnKilledOther(powerResults);
+
+                    ultimateOwner?.TriggerEntityActionEvent(EntitySelectorActionEventType.OnKilledOther);
 
                     if (IsControlledEntity == false)
-                        TriggerOnDeath(powerResults, ultimatePowerUser);
+                        TryActivateOnDeathProcs(powerResults);
                 }
 
-                Kill(ultimatePowerUser, KillFlags.None, powerUser);
+                Kill(ultimateOwner, KillFlags.None, powerUser);
                 killed = true;
                 TriggerEntityActionEvent(EntitySelectorActionEventType.OnGotKilled);
             }
             else
             {
                 Properties[PropertyEnum.Health] = health;
-                if (powerResults.Flags.HasFlag(PowerResultFlags.Hostile))
-                    OnGotHit(ultimatePowerUser);
+
+                // Procs
+                if (adjustHealth < 0 && powerResults.IsAtMaxRecursionDepth() == false)
+                    TryActivateOnGotDamagedProcs(powerResults);
 
                 TriggerEntityActionEvent(EntitySelectorActionEventType.OnGotDamaged);
             }
 
             if (this is Agent agent && adjustHealth < 0 && CanBePlayerOwned() == false)
-                agent.AIController?.OnAIGotDamaged(ultimatePowerUser, adjustHealth);
+                agent.AIController?.OnAIGotDamaged(ultimateOwner, adjustHealth);
 
             if (killed)
             {
@@ -1553,48 +1708,6 @@ namespace MHServerEmu.Games.Entities
             }
 
             return true;
-        }
-
-        private void TriggerOnDeath(PowerResults powerResults, WorldEntity killer)
-        {
-            // TODO Rewrite this
-
-            if (this is not Agent) return;
-            Power power = null;
-
-            // Get OnDeath ProcPower
-            foreach (var kvp in PowerCollection)
-            {
-                var proto = kvp.Value.PowerPrototype;
-                if (proto.Activation != PowerActivationType.Passive) continue;
-
-                string protoName = kvp.Key.GetNameFormatted();
-                if (protoName.Contains("OnDeath"))
-                {
-                    power = kvp.Value.Power;
-                    break;
-                }
-            }
-
-            if (power == null) return;
-
-            // Get OnDead power
-            var conditions = power.Prototype.AppliesConditions;
-            if (conditions.Count != 1) return;
-            var conditionProto = conditions[0].Prototype as ConditionPrototype;
-
-            // Get summon power
-            SummonPowerPrototype summonPower = null;
-            foreach (var kvp in conditionProto.Properties.IteratePropertyRange(PropertyEnum.Proc))
-            {
-                Property.FromParam(kvp.Key, 0, out int procEnum);
-                if ((ProcTriggerType)procEnum != ProcTriggerType.OnDeath) continue;
-                Property.FromParam(kvp.Key, 1, out PrototypeId summonPowerRef);
-                summonPower = GameDatabase.GetPrototype<SummonPowerPrototype>(summonPowerRef);
-                if (summonPower != null) break;
-            }
-
-            if (summonPower != null) EntityHelper.OnDeathSummonFromPowerPrototype(this, summonPower);
         }
 
         public void TriggerEntityActionEventAlly(EntitySelectorActionEventType eventType)
@@ -1654,27 +1767,16 @@ namespace MHServerEmu.Games.Entities
 
         #endregion
 
-        #region Procs
+        #region Combat State
 
-        public void TryActivateOnConditionEndProcs(Condition condition) // 8
+        public virtual void EnterCombat()
         {
-            if (IsInWorld == false)
-                return;
-
-            // TODO: Proper implementation
-
-            // HACK: Activate cooldown for Moon Knight's signature
-            if (condition.CreatorPowerPrototypeRef == (PrototypeId)924314278184884866)
-            {
-                PowerIndexProperties indexProps = new(0, CharacterLevel, CombatLevel);
-                AssignPower((PrototypeId)10152747549179582463, indexProps);
-                PowerActivationSettings settings = new(Id, default, RegionLocation.Position);
-                ActivatePower((PrototypeId)10152747549179582463, ref settings);
-            }
+            // TODO
         }
 
-        public void TryActivateOnMissileHitProcs(Power power, WorldEntity target)   // 72
+        public virtual void ExitCombat()
         {
+            // TODO
         }
 
         #endregion
