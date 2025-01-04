@@ -89,6 +89,13 @@ namespace MHServerEmu.Games.Entities.Avatars
         {
             base.Initialize(settings);
 
+            // NOTE: We need to set owner player dbid asap for it to be restored in persistent conditions
+            if (settings.InventoryLocation != null)
+            {
+                Player player = Game.EntityManager.GetEntity<Player>(settings.InventoryLocation.ContainerId);
+                if (player != null)
+                    _ownerPlayerDbId = player.DatabaseUniqueId;
+            }
 
             return true;
         }
@@ -2303,6 +2310,11 @@ namespace MHServerEmu.Games.Entities.Avatars
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}, Player={_playerName?.Get()} (0x{_ownerPlayerDbId:X})";
+        }
 
         protected override void BuildString(StringBuilder sb)
         {
