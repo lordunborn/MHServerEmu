@@ -24,6 +24,8 @@ namespace MHServerEmu.Games.Powers
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
 
+        private ulong _propertySourceEntityId;
+
         public Game Game { get; private set; }
 
         public bool IsPlayerPayload { get; private set; }
@@ -102,7 +104,13 @@ namespace MHServerEmu.Games.Powers
                 : powerOwner.RegionLocation.Position;
 
             // Snapshot properties of the power and its owner
-            Power.SerializeEntityPropertiesForPowerPayload(power.GetPayloadPropertySourceEntity(), Properties);
+            WorldEntity propertySourceEntity = power.GetPayloadPropertySourceEntity();
+            if (propertySourceEntity == null) return Logger.WarnReturn(false, "Init(): propertySourceEntity == null");
+
+            // Save property source owner id for later calculations
+            _propertySourceEntityId = propertySourceEntity != powerOwner ? propertySourceEntity.Id : powerOwner.Id;
+
+            Power.SerializeEntityPropertiesForPowerPayload(propertySourceEntity, Properties);
             Power.SerializePowerPropertiesForPowerPayload(power, Properties);
 
             // Snapshot additional data used to determine targets
@@ -278,8 +286,8 @@ namespace MHServerEmu.Games.Powers
         /// </remarks>
         private bool CalculateInitialDamageBonuses(Power power)
         {
-            WorldEntity powerOwner = Game.EntityManager.GetEntity<WorldEntity>(PowerOwnerId);
-            if (powerOwner == null) return Logger.WarnReturn(false, "CalculateUserDamageBonuses(): powerOwner == null");
+            WorldEntity powerOwner = Game.EntityManager.GetEntity<WorldEntity>(_propertySourceEntityId);
+            if (powerOwner == null) return Logger.WarnReturn(false, "CalculateInitialDamageBonuses(): powerOwner == null");
 
             PropertyCollection ownerProperties = powerOwner.Properties;
 
@@ -319,7 +327,7 @@ namespace MHServerEmu.Games.Powers
                     Property.FromParam(kvp.Key, 0, out PrototypeId protoRefToCheck);
                     if (protoRefToCheck == PrototypeId.Invalid)
                     {
-                        Logger.Warn($"CalculateOwnerDamageBonuses(): Invalid param proto ref for {propertyEnum}");
+                        Logger.Warn($"CalculateInitialDamageBonuses(): Invalid param proto ref for {propertyEnum}");
                         continue;
                     }
 
@@ -373,7 +381,7 @@ namespace MHServerEmu.Games.Powers
                     Property.FromParam(kvp.Key, 0, out PrototypeId keywordProtoRef);
                     if (keywordProtoRef == PrototypeId.Invalid)
                     {
-                        Logger.Warn($"CalculateOwnerDamageBonuses(): Invalid keyword param proto ref for {kvp.Key.Enum}");
+                        Logger.Warn($"CalculateInitialDamageBonuses(): Invalid keyword param proto ref for {kvp.Key.Enum}");
                         continue;
                     }
 
@@ -394,20 +402,17 @@ namespace MHServerEmu.Games.Powers
                 }
             }
 
+            // Apply damage type-specific bonuses
+            for (DamageType damageType = 0; damageType < DamageType.NumDamageTypes; damageType++)
+            {
+                damagePct += ownerProperties[PropertyEnum.DamagePctBonusByType, damageType];
+                damageRating += ownerProperties[PropertyEnum.DamageRatingBonusByType, damageType];
+            }
+
             // Set all damage bonus properties
             Properties[PropertyEnum.PayloadDamageMultTotal, DamageType.Any] = damageMult;
             Properties[PropertyEnum.PayloadDamagePctModifierTotal, DamageType.Any] = damagePct;
             Properties[PropertyEnum.PayloadDamageRatingTotal, DamageType.Any] = damageRating;
-
-            // Apply damage type-specific bonuses
-            for (DamageType damageType = 0; damageType < DamageType.NumDamageTypes; damageType++)
-            {
-                float damagePctBonusByType = powerOwner.Properties[PropertyEnum.DamagePctBonusByType, damageType];
-                float damageRatingBonusByType = powerOwner.Properties[PropertyEnum.DamageRatingBonusByType, damageType];
-
-                Properties[PropertyEnum.PayloadDamagePctModifierTotal, damageType] = damagePctBonusByType;
-                Properties[PropertyEnum.PayloadDamageRatingTotal, damageType] = damageRatingBonusByType;
-            }
 
             return true;
         }
