@@ -65,7 +65,7 @@ namespace MHServerEmu.Games.Loot
             int level = 1;
 
             if (lootContext == LootContext.Drop && avatar != null)
-                level = avatar.GetDynamicLevel(avatar.CharacterLevel);
+                level = avatar.CharacterLevel;
 
             Initialize(lootContext, player, sourceEntity, level, positionOverride);
         }

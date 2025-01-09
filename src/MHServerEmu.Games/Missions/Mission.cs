@@ -2177,23 +2177,11 @@ namespace MHServerEmu.Games.Missions
 
         private int GetLootLevel(Avatar avatar)
         {
+            if (avatar != null)
+                return avatar.CharacterLevel;
+
             // Default to prototype level is we have no valid avatar
-            if (avatar == null)
-                return (int)Prototype.Level;
-
-            // For open missions use region level
-            if (IsOpenMission)
-            {
-                RegionLocation regionLocation = avatar.RegionLocation;
-                Region region = regionLocation.Region;
-                Area area = regionLocation.Area;
-
-                if (region != null && area != null)
-                    return region.GetAreaLevel(area);
-            }
-
-            // Use avatar level for regular missions
-            return avatar.CharacterLevel;
+            return (int)Prototype.Level;
         }
 
         public static void OnRequestRewardsForPrototype(Player player, PrototypeId missionRef, ulong entityId, int lootSeed)
