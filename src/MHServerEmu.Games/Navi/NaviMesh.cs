@@ -57,6 +57,11 @@ namespace MHServerEmu.Games.Navi
             _modifyMeshPatchesProjZ = new();
         }
 
+        public override string ToString()
+        {
+            return $"region={_region}";
+        }
+
         public void Initialize(in Aabb bounds, float padding, Region region)
         {
             Release();
@@ -589,7 +594,7 @@ namespace MHServerEmu.Games.Navi
             NaviTriangle currentTriangle = NaviCdt.FindTriangleAtPoint(fromPosition);
             if (currentTriangle == null)
             {
-                Logger.Error($"Navi sweep failed to find starting triangle at point: {fromPosition} for mesh: {ToString()}");
+                Logger.Warn($"Sweep(): Navi sweep failed to find starting triangle at point: {fromPosition} for mesh: [{this}] (owner=[{owner}])");
                 resultPosition = Vector3.Zero;
                 return SweepResult.Failed;
             }
