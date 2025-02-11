@@ -1840,6 +1840,8 @@ namespace MHServerEmu.Games.Entities
 
             if (health <= 0 && Properties[PropertyEnum.AIDefeated] == false)
             {
+                Properties[PropertyEnum.Health] = 0;
+
                 if (this is Avatar killedAvatar)
                 {
                     var killedPlayer = GetOwnerOfType<Player>();
@@ -2836,17 +2838,19 @@ namespace MHServerEmu.Games.Entities
         {
             SetSimulated(false);
 
-            var region = Region;
-
-            if (region.EntityTracker != null)
+            Region region = Region;
+            if (region != null)
             {
-                region.EntityExitedWorldEvent.Invoke(new(this));
-                region.EntityTracker.RemoveFromTracking(this);
-            }
+                if (region.EntityTracker != null)
+                {
+                    region.EntityExitedWorldEvent.Invoke(new(this));
+                    region.EntityTracker.RemoveFromTracking(this);
+                }
 
-            // Undiscover from region
-            if (WorldEntityPrototype.DiscoverInRegion)
-                region.UndiscoverEntity(this, true);
+                // Undiscover from region
+                if (WorldEntityPrototype.DiscoverInRegion)
+                    region.UndiscoverEntity(this, true);
+            }
 
             // Undiscover from players
             if (InterestReferences.IsAnyPlayerInterested(AOINetworkPolicyValues.AOIChannelDiscovery))
