@@ -1,4 +1,5 @@
 ﻿using Gazillion;
+using MHServerEmu.Core.Collections;
 using MHServerEmu.Core.Collisions;
 using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Helpers;
@@ -17,6 +18,7 @@ using MHServerEmu.Games.Entities.PowerCollections;
 using MHServerEmu.Games.Events;
 using MHServerEmu.Games.Events.Templates;
 using MHServerEmu.Games.GameData;
+using MHServerEmu.Games.GameData.LiveTuning;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.Network;
 using MHServerEmu.Games.Powers.Conditions;
@@ -26,7 +28,7 @@ using MHServerEmu.Games.Regions;
 
 namespace MHServerEmu.Games.Powers
 {
-    public partial class Power
+    public partial class Power : IKeyworded
     {
         private const float PowerPositionSweepPadding = Locomotor.MovementSweepPadding;
         private const float PowerPositionSweepPaddingSquared = PowerPositionSweepPadding * PowerPositionSweepPadding;
@@ -58,6 +60,7 @@ namespace MHServerEmu.Games.Powers
         private readonly EventPointer<PowerSubsequentActivationTimeoutEvent> _subsequentActivationTimeoutEvent = new();
         private readonly EventPointer<EndPowerEvent> _endPowerEvent = new();
         private readonly EventPointer<ReapplyIndexPropertiesEvent> _reapplyIndexPropertiesEvent = new();
+        private readonly EventPointer<PayRecurringCostEvent> _payRecurringCostEvent = new();
 
         private List<EventPointer<ScheduledActivateEvent>> _scheduledActivateEventList;     // Initialized on demand
 
@@ -480,6 +483,25 @@ namespace MHServerEmu.Games.Powers
             }
         }
 
+        public static void AccumulateKeywordProperties(ref float value, PowerPrototype powerProto, PropertyCollection properties1,
+            PropertyCollection properties2, PropertyEnum propertyEnum, int param0)
+        {
+            foreach (var kvp in properties1.IteratePropertyRange(propertyEnum, param0))
+            {
+                // Keyword param index is shifted by 1 because we have another param
+                Property.FromParam(kvp.Key, 1, out PrototypeId keywordProtoRef);
+                if (keywordProtoRef == PrototypeId.Invalid) continue;
+
+                int powerKeywordChange = properties2[PropertyEnum.PowerKeywordChange, powerProto.DataRef, keywordProtoRef];
+
+                if ((powerKeywordChange != (int)TriBool.False && powerProto.HasKeyword(keywordProtoRef.As<KeywordPrototype>())) ||
+                   powerKeywordChange == (int)TriBool.True)
+                {
+                    value += kvp.Value;
+                }
+            }
+        }
+
         public static void AccumulateKeywordProperties(ref long value, PowerPrototype powerProto, PropertyCollection properties1,
             PropertyCollection properties2, PropertyEnum propertyEnum)
         {
@@ -831,6 +853,7 @@ namespace MHServerEmu.Games.Powers
             List<PowerResults> targetResultsList = ListPool<PowerResults>.Instance.Get();
 
             GetTargets(targetList, payload);
+            payload.Properties[PropertyEnum.TargetsHit] = targetList.Count;
 
             EntityManager entityManager = payload.Game.EntityManager;
 
@@ -843,10 +866,14 @@ namespace MHServerEmu.Games.Powers
 
             PowerActivationSettings activationSettings = payload.ActivationSettings;
 
+            bool isProc = powerProto.PowerCategory == PowerCategoryType.ProcEffect;
+
             // Accumulate results for the owner in a separate PowerResults instance
             PowerResults ownerResults = new();
             ulong ownerId = payload.PowerOwnerId;
             ownerResults.Init(ownerId, ownerId, ownerId, payload.PowerOwnerPosition, powerProto, payload.PowerAssetRefOverride, false);
+            ownerResults.SetKeywordsMask(payload.KeywordsMask);
+            ownerResults.SetFlag(PowerResultFlags.Proc, isProc);
             ownerResults.ActivationSettings = activationSettings;
 
             // Calculate and apply results for each target
@@ -866,6 +893,8 @@ namespace MHServerEmu.Games.Powers
 
                 PowerResults targetResults = new();
                 payload.InitPowerResultsForTarget(targetResults, target);
+                targetResults.SetKeywordsMask(payload.KeywordsMask);
+                targetResults.SetFlag(PowerResultFlags.Proc, isProc);
                 targetResults.ActivationSettings = activationSettings;
                 payload.CalculatePowerResults(targetResults, ownerResults, target, true);
                 
@@ -912,13 +941,17 @@ namespace MHServerEmu.Games.Powers
                 ownerResults.Clear();   // Clear results to prevent them from being sent
 
             // Apply results - this is delayed to account for proc effects that may kill our targets
+            bool isHostile = false;
             foreach (PowerResults results in targetResultsList)
             {
                 bool applied = false;
 
                 WorldEntity target = entityManager.GetEntity<WorldEntity>(results.TargetId);
                 if (target != null && target.IsInWorld)
+                {
                     applied = target.ScheduleApplyPowerResultsEvent(results);
+                    isHostile |= results.TestFlag(PowerResultFlags.Hostile);
+                }
 
                 if (applied == false)
                     results.Clear();    // leak prevention
@@ -932,6 +965,12 @@ namespace MHServerEmu.Games.Powers
 
             ListPool<WorldEntity>.Instance.Return(targetList);
             ListPool<PowerResults>.Instance.Return(targetResultsList);
+
+            // Break stealth if needed
+            TryBreakStealth(powerOwner, ultimateOwner, powerProto, isHostile, false);
+
+            // Schedule beam sweep reapplication if needed
+            CheckBeamSweepTick(payload);
 
             // Check if this payload needs bouncing and end projectile powers once all bouncing is over
             if (TryBouncePayload(payload) == false)
@@ -1012,6 +1051,75 @@ namespace MHServerEmu.Games.Powers
             Owner.ActivatePostPowerAction(this, flags);
 
             OnEndPowerConditionalRemove(flags);     // Remove one-offs, like throwables
+
+            return true;
+        }
+
+        public static bool TryBreakStealth(WorldEntity powerOwner, WorldEntity ultimateOwner, PowerPrototype powerProto, bool isHostile, bool isOverTime)
+        {
+            // Non-power payloads don't break stealth
+            if (powerProto == null)
+                return false;
+
+            // Check if this power can potentially break stealth at all
+            if (powerProto.BreaksStealth == false || powerProto.Activation == PowerActivationType.Passive)
+                return false;
+
+            WorldEntity stealthedEntity = null;
+
+            if (isOverTime == false)
+            {
+                // For direct damage use the ultimate owner for hotspots / missiles
+                if (powerOwner == null || powerOwner is Missile || powerOwner is Hotspot)
+                    stealthedEntity = ultimateOwner;
+                else
+                    stealthedEntity = powerOwner;
+            }
+            else
+            {
+                // For DoTs only hotspots attached to their owners break stealth
+                if (isHostile && powerOwner != null && powerOwner is Hotspot && ultimateOwner != null &&
+                    powerOwner.IsAttachedToEntity && powerOwner.Properties[PropertyEnum.AttachedToEntityId] == ultimateOwner.Id)
+                {
+                    stealthedEntity = ultimateOwner;
+                }
+            }
+
+            // Validate our stealthed entity
+            if (stealthedEntity == null || stealthedEntity.IsInWorld == false || stealthedEntity.TestStatus(EntityStatus.Destroyed))
+                return false;
+
+            // Check stealth break override eval (e.g. talents that remove stealth break)
+            if (powerProto.BreaksStealthOverrideEval != null)
+            {
+                using EvalContextData evalContext = ObjectPoolManager.Instance.Get<EvalContextData>();
+                evalContext.SetVar_EntityPtr(EvalContext.Default, stealthedEntity);
+                if (Eval.RunBool(powerProto.BreaksStealthOverrideEval, evalContext) == false)
+                    return false;
+            }
+
+            // Check if our potentially stealthed entity is actually stealthed
+            KeywordPrototype stealthPowerKeyword = GameDatabase.KeywordGlobalsPrototype.StealthPowerKeywordPrototype;
+            if (stealthedEntity.HasConditionWithKeyword(stealthPowerKeyword) == false)
+                return false;
+
+            // Remove stealth via power results
+            PowerResults results = new();
+            results.Init(stealthedEntity.Id, stealthedEntity.Id, stealthedEntity.Id, stealthedEntity.RegionLocation.Position, powerProto, AssetId.Invalid, false);
+
+            Power power = stealthedEntity == powerOwner ? stealthedEntity.GetPower(powerProto.DataRef) : null;
+            results.SetKeywordsMask(power != null ? power.KeywordsMask : powerProto.KeywordsMask);
+
+            foreach (Condition condition in stealthedEntity.ConditionCollection)
+            {
+                if (condition.HasKeyword(stealthPowerKeyword) == false)
+                    continue;
+
+                results.AddConditionToRemove(condition.Id);
+            }
+
+            if (results.HasMeaningfulResults())
+                stealthedEntity.ScheduleApplyPowerResultsEvent(results);
 
             return true;
         }
@@ -1097,7 +1205,8 @@ namespace MHServerEmu.Games.Powers
             _delayedActivationSettings = settings;
             _delayedActivationSettings.VariableActivationRelease = true;
 
-            // TODO: Costs
+            // TODO: Implement EnduranceCostIncreasePerSecond if needed for older versions of the game
+            // (1.52 uses EnduranceCostRank0NoCost for all hold and release powers).
 
             return PowerUseResult.Success;
         }
@@ -1378,7 +1487,7 @@ namespace MHServerEmu.Games.Powers
                 properties = player.Properties;
             }
 
-            properties.AdjustProperty((long)offset.TotalMilliseconds, new(PropertyEnum.PowerCooldownDuration, PrototypeDataRef));
+            properties.AdjustProperty((int)offset.TotalMilliseconds, new(PropertyEnum.PowerCooldownDuration, PrototypeDataRef));
 
             // Reschedule cooldown end event
             if (_endCooldownEvent.IsValid)
@@ -1486,8 +1595,6 @@ namespace MHServerEmu.Games.Powers
             if (powerApplication.IsFree)
                 return;
 
-            // TODO: mana costs and others
-
             // Item cost
             if (powerApplication.ItemSourceId != Entity.InvalidId && IsItemPower())
             {
@@ -1505,6 +1612,106 @@ namespace MHServerEmu.Games.Powers
                 if (Prototype is not MovementPowerPrototype || Game.CustomGameOptions.DisableMovementPowerChargeCost == false)
                     Owner.Properties.AdjustProperty(-1, new(PropertyEnum.PowerChargesAvailable, PrototypeDataRef));
             }
+
+            // Endurance (spirit / other primary resources)
+            if (Owner is Avatar avatar)
+            {
+                bool hasRecurringCost = false;
+
+                foreach (PrimaryResourceManaBehaviorPrototype primaryManaBehaviorProto in avatar.GetPrimaryResourceManaBehaviors())
+                {
+                    float endurance = Owner.Properties[PropertyEnum.Endurance, primaryManaBehaviorProto.ManaType];
+                    float cost = GetEnduranceCost(primaryManaBehaviorProto.ManaType, true);
+
+                    endurance = MathF.Max(endurance - cost, 0f);
+                    Owner.Properties[PropertyEnum.Endurance, primaryManaBehaviorProto.ManaType] = endurance;
+
+                    hasRecurringCost |= GetEnduranceCostRecurring(primaryManaBehaviorProto.ManaType, false, false) > 0f;
+                }
+
+                if (hasRecurringCost)
+                    ScheduleRecurringCostEvent();
+            }
+
+            // Check costs for the ultimate owner
+            WorldEntity ultimateOwner = GetUltimateOwner();
+            if (ultimateOwner != null)
+            {
+                // Secondary resource cost
+                float secondaryResource = ultimateOwner.Properties[PropertyEnum.SecondaryResource];
+                float cost = GetSecondaryResourceCost();
+
+                // Secondary resource costs are paid only if we have enough of them
+                if (cost <= secondaryResource)
+                {
+                    secondaryResource = MathF.Max(secondaryResource - cost, 0f);
+                    ultimateOwner.Properties[PropertyEnum.SecondaryResource] = secondaryResource;
+                }
+
+                // Health cost
+                float powerHealthCost = Properties[PropertyEnum.PowerHealthCost];
+                if (powerHealthCost > 0f)
+                {
+                    long health = ultimateOwner.Properties[PropertyEnum.Health];
+                    health -= MathHelper.RoundToInt64(powerHealthCost);
+                    health = Math.Max(health, 1);   // Should not be able to kill self with a health cost
+                    ultimateOwner.Properties[PropertyEnum.Health] = health;
+                }
+
+                // Weapon cost for bounce powers
+                // NOTE: Weapon costs for non-bounce powers are handled by missiles themselves.
+                if (Properties[PropertyEnum.PowerUsesReturningWeapon] && Properties[PropertyEnum.BounceCount] > 0)
+                    ultimateOwner.Properties[PropertyEnum.WeaponMissing] = true;
+            }
+        }
+
+        private bool PayRecurringCost()
+        {
+            if (Owner is not Avatar avatar) return Logger.WarnReturn(false, "PayRecurringCost(): Owner is not Avatar");
+
+            PowerPrototype powerProto = Prototype;
+            if (powerProto == null) return Logger.WarnReturn(false, "PayRecurringCost(): powerProto == null");
+
+            // NOTE: There shouldn't be more than one recurring endurance cost for a single power.
+            foreach (PrimaryResourceManaBehaviorPrototype primaryManaBehaviorProto in avatar.GetPrimaryResourceManaBehaviors())
+            {
+                float enduranceCostRecurring = GetEnduranceCostRecurring(primaryManaBehaviorProto.ManaType, true, true);
+
+                if (enduranceCostRecurring <= 0f)
+                {
+                    // If this recurring cost payment was reduced to zero by modifiers, don't pay and schedule the next tick straight away.
+                    if (GetEnduranceCostRecurring(primaryManaBehaviorProto.ManaType, false, false) > 0f)
+                    {
+                        ScheduleRecurringCostEvent();
+                        return true;
+                    }
+
+                    // Continue to the next mana type (if any)
+                    continue;
+                }
+
+                // EnduranceCostRecurring is cost per second, so we need to multiply it by the number of seconds in our interval
+                enduranceCostRecurring *= (float)powerProto.GetRecurringCostInterval().TotalSeconds;
+
+                // Recurring endurance cost may be optional for this power (by default it is required)
+                bool enduranceCostRequired = Properties[PropertyEnum.EnduranceCostRequired];
+
+                // Check if we have endurance to continue
+                float endurance = avatar.Properties[PropertyEnum.Endurance, primaryManaBehaviorProto.ManaType];
+                if (endurance <= 0f || (enduranceCostRequired && enduranceCostRecurring > endurance))
+                {
+                    EndPower(EndPowerFlags.ExplicitCancel | EndPowerFlags.NotEnoughEndurance);
+                    return true;
+                }
+
+                // Schedule the next tick and pay the cost.
+                // Schedule before paying because changing the endurance property may end the power.
+                ScheduleRecurringCostEvent();
+                avatar.Properties.AdjustProperty(-enduranceCostRecurring, new(PropertyEnum.Endurance, primaryManaBehaviorProto.ManaType));
+                return true;
+            }
+
+            return true;
         }
 
         #endregion
@@ -1608,8 +1815,8 @@ namespace MHServerEmu.Games.Powers
             WorldEntity primaryTarget = payload.Game.EntityManager.GetEntity<WorldEntity>(payload.TargetId);
 
             return GetTargets(targetList, payload.Game, payload.PowerPrototype, payload.Properties, primaryTarget, payload.TargetPosition, payload.PowerOwnerPosition,
-                payload.Range, payload.RegionId, payload.PowerOwnerId, payload.UltimateOwnerId, payload.OwnerAlliance, payload.BeamSweepSlice,
-                payload.ExecutionTime, (int)payload.PowerRandomSeed);
+                payload.Range, payload.RegionId, payload.PowerOwnerId, payload.UltimateOwnerId, payload.OwnerAlliance, payload.AOESweepTick,
+                payload.ExecutionTime, payload.PowerRandomSeed);
         }
 
         public static bool GetTargets(List<WorldEntity> targetList, Game game, PowerPrototype powerProto, PropertyCollection properties,
@@ -1705,7 +1912,7 @@ namespace MHServerEmu.Games.Powers
             };
         }
 
-        public static int ComputeNearbyPlayers(Region region, Vector3 position, int numPlayersMin, bool combatActiveOnly, HashSet<ulong> nearbyPlayerIds = null)
+        public static int ComputeNearbyPlayers(Region region, Vector3 position, int numPlayersMin = 0, bool combatActiveOnly = false, HashSet<ulong> nearbyPlayerIds = null)
         {
             return ComputeNearbyPlayersInternal(region, position, numPlayersMin, combatActiveOnly, nearbyPlayerIds, null);
         }
@@ -1756,6 +1963,40 @@ namespace MHServerEmu.Games.Powers
             }
 
             return Math.Max(numPlayersMin, numPlayers);
+        }
+
+        public WorldEntity GetRandomTarget()
+        {
+            PowerPrototype powerProto = Prototype;
+            if (powerProto == null) return Logger.WarnReturn<WorldEntity>(null, "GetRandomTarget(): powerProto == null");
+
+            Region region = Owner?.Region;
+            if (region == null) return Logger.WarnReturn<WorldEntity>(null, "GetRandomTarget(): region == null");
+
+            // Populate potential target picker
+            Picker<WorldEntity> picker = new(Game.Random);
+            bool requiresLineOfSight = RequiresLineOfSight(powerProto);
+            Sphere bounds = new(Owner.RegionLocation.Position, powerProto.Radius);
+
+            foreach (WorldEntity entity in region.IterateEntitiesInVolume(bounds, new(EntityRegionSPContextFlags.ActivePartition)))
+            {
+                if (IsValidTarget(entity) == false)
+                    continue;
+
+                if (entity.IsTargetable(Owner) == false)
+                    continue;
+
+                if (requiresLineOfSight)
+                {
+                    Vector3? resultPosition = null;
+                    if (PowerLOSCheck(Owner.RegionLocation, entity.RegionLocation.Position, entity.Id, ref resultPosition, LOSCheckAlongGround()) == false)
+                        continue;
+                }
+
+                picker.Add(entity);
+            }
+
+            return picker.Empty() == false ? picker.Pick() : null;
         }
 
         #region State Accessors
@@ -1818,16 +2059,78 @@ namespace MHServerEmu.Games.Powers
         }
 
         public static float GetEnduranceCost(PropertyCollection powerProperties, ManaType manaType, PowerPrototype powerProto, 
-            WorldEntity owner, bool useSecondaryResource)
+            WorldEntity powerOwner, bool canSkipCost)
         {
-            // TODO
-            return 0f;
+            if (canSkipCost && CanUseSecondaryResourceEffects(powerProperties, powerOwner.Properties) && powerProperties[PropertyEnum.SecondaryResourceNoEndurance])
+                return 0f;
+
+            float cost = powerProperties[PropertyEnum.EnduranceCost, manaType];
+
+            return ModifyEnduranceCost(cost, manaType, powerProto, powerProperties, powerOwner, canSkipCost);
         }
 
+        private float ModifyEnduranceCost(float cost, ManaType manaType, bool canSkipCost)
+        {
+            PowerPrototype powerProto = Prototype;
+            if (powerProto == null) return Logger.WarnReturn(0f, "ModifyEnduranceCost(): powerProto == null");
+            return ModifyEnduranceCost(cost, manaType, powerProto, Properties, Owner, canSkipCost);
+        }
+
+        private static float ModifyEnduranceCost(float cost, ManaType manaType, PowerPrototype powerProto, PropertyCollection powerProperties,
+            WorldEntity powerOwner, bool canSkipCost)
+        {
+            if (powerOwner == null) return Logger.WarnReturn(cost, "ModifyEnduranceCost(): owner == null");
+
+            cost *= powerOwner.GetEnduranceCostMultiplier(manaType, powerProto, canSkipCost);
+            cost *= LiveTuningManager.GetLivePowerTuningVar(powerProto, PowerTuningVar.ePTV_PowerCost);
+
+            float minCost = 0f;
+
+            if (powerProperties[PropertyEnum.EnduranceCostAllRemaining, manaType] || powerProperties[PropertyEnum.EnduranceCostAllRemaining, ManaType.TypeAll])
+                minCost = powerOwner.Properties[PropertyEnum.Endurance];
+
+            return MathF.Max(cost, minCost);
+        }
+        
+        public float GetSecondaryResourceCost()
+        {
+            WorldEntity ultimateOwner = GetUltimateOwner();
+            if (ultimateOwner == null)
+                return 0f;
+
+            return GetSecondaryResourceCost(Properties, ultimateOwner.Properties);
+        }
+
+        public static float GetSecondaryResourceCost(PropertyCollection powerProperties, PropertyCollection ownerProperties)
+        {
+            float secondaryResourceCost = powerProperties[PropertyEnum.SecondaryResourceCost];
+
+            int secondaryResourceCostPips = powerProperties[PropertyEnum.SecondaryResourceCostPips];
+            float secondaryResourceCostPerPip = ownerProperties[PropertyEnum.SecondaryResourceCostPerPip];
+            secondaryResourceCost += secondaryResourceCostPips * secondaryResourceCostPerPip;
+
+            return secondaryResourceCost;
+        }
+
+        /// <summary>
+        /// Returns the amount of endurance per second this <see cref="Power"/> costs as long as it is active.
+        /// </summary>
+        public float GetEnduranceCostRecurring(ManaType manaType, bool applyModifiers, bool canSkipCost)
+        {
+            float powerRecurringCost = Properties[PropertyEnum.PowerRecurringCost, manaType];
+
+            if (applyModifiers == false)
+                return powerRecurringCost;
+
+            return ModifyEnduranceCost(powerRecurringCost, manaType, canSkipCost);
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this <see cref="Power"/> has a recurring cost for any <see cref="ManaType"/>.
+        /// </summary>
         public bool HasEnduranceCostRecurring()
         {
-            // TODO
-            return false;
+            return GetEnduranceCostRecurring(ManaType.Type1, false, false) > 0f || GetEnduranceCostRecurring(ManaType.Type2, false, false) > 0f;
         }
 
         public bool IsOnCooldown()
@@ -2656,7 +2959,7 @@ namespace MHServerEmu.Games.Powers
             AccumulateKeywordProperties(ref cooldownModifierPct, powerProto, owner.Properties, owner.Properties, PropertyEnum.CooldownModifierPctForKeyword);
 
             // Calculate flat cooldown modifier
-            long flatCooldownModifierMS = owner.Properties[PropertyEnum.CooldownModifierPctForPower, powerProto.DataRef];
+            long flatCooldownModifierMS = owner.Properties[PropertyEnum.CooldownModifierMSForPower, powerProto.DataRef];
             AccumulateKeywordProperties(ref flatCooldownModifierMS, powerProto, owner.Properties, owner.Properties, PropertyEnum.CooldownModifierMSForKeyword);
             TimeSpan flatCooldownModifier = TimeSpan.FromMilliseconds(flatCooldownModifierMS);
 
@@ -2678,11 +2981,12 @@ namespace MHServerEmu.Games.Powers
             return powerProto.CooldownOnPlayer;
         }
 
-        public bool TriggersComboPowerOnEvent(PowerEventType onPowerEnd)
+        public bool TriggersComboPowerOnEvent(PowerEventType eventType)
         {
             PowerPrototype powerProto = Prototype;
             if (powerProto == null) return Logger.WarnReturn(false, "TriggersComboPowerOnEvent(): powerProto == null");
-            return powerProto.ExtraActivation != null && powerProto.ExtraActivation is SecondaryActivateOnReleasePrototype;
+
+            return powerProto.TriggersComboPowerOnEvent(eventType, Properties, Owner);
         }
 
         public bool IsOnExtraActivation()
@@ -2883,6 +3187,23 @@ namespace MHServerEmu.Games.Powers
             return true;
         }
 
+        public static bool CanCauseHitReact(PowerPrototype powerProto, Agent target)
+        {
+            if (powerProto.CanCauseHitReact == false)
+                return false;
+
+            AgentPrototype agentProto = target.AgentPrototype;
+            if (agentProto == null) return Logger.WarnReturn(false, "CanCauseHitReact(): agentProto == null");
+
+            if (agentProto.HitReactCondition == PrototypeId.Invalid)
+                return false;
+
+            if (target.IsHitReactionOnCooldown())
+                return false;
+
+            return true;
+        }
+
         public static T FindPowerPrototype<T>(PowerPrototype powerProto) where T: PowerPrototype
         {
             if (powerProto == null) return Logger.WarnReturn<T>(null, "FindPowerPrototype(): powerProto == null");
@@ -3062,9 +3383,76 @@ namespace MHServerEmu.Games.Powers
 
             float critDamageRatingBonus = Eval.RunFloat(ratingEval, evalContext);
 
-            // TODO: target.IsInPvPMatch()
+            if (target.IsInPvPMatch)
+                critDamageRatingBonus *= GameDatabase.DifficultyGlobalsPrototype.PvPCritDamageMultiplier;
 
             return critDamageMult + critDamageRatingBonus;
+        }
+
+        public static float GetBlockChance(PowerPrototype powerProto, PropertyCollection attackerProperties, PropertyCollection targetProperties, ulong attackerId)
+        {
+            float blockRatingAdd = targetProperties[PropertyEnum.BlockRatingBonusAdd];
+
+            // Add keyword bonuses for power (may be null)
+            if (powerProto != null)
+                AccumulateKeywordProperties(ref blockRatingAdd, powerProto, targetProperties, attackerProperties, PropertyEnum.BlockRatingBonusVsPowerKwd);
+            
+            // Add keyword bonuses for attacker (may be null)
+            WorldEntity attacker = Game.Current.EntityManager.GetEntity<WorldEntity>(attackerId);
+            attacker?.AccumulateKeywordProperties(PropertyEnum.BlockRatingBonusVsAttackerKwd, targetProperties, ref blockRatingAdd);
+
+            // Apply multiplier
+            float blockRatingMult = Math.Max(1f + targetProperties[PropertyEnum.BlockRatingBonusMult], 0f);
+            float blockRating = Math.Max(blockRatingAdd * blockRatingMult, 0f);
+
+            // Run eval
+            EvalPrototype blockEvalProto = GameDatabase.CombatGlobalsPrototype.EvalBlockChanceFormula;
+            if (blockEvalProto == null) return Logger.WarnReturn(0f, "GetBlockChance(): blockEvalProto == null");
+
+            using EvalContextData evalContext = ObjectPoolManager.Instance.Get<EvalContextData>();
+            evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Entity, targetProperties);
+            evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Other, attackerProperties);
+            evalContext.SetVar_Float(EvalContext.Var1, blockRating);
+
+            if (Eval.Run(blockEvalProto, evalContext, out float blockChance) == false)
+                Logger.Warn($"GetBlockChance(): Failed to calculate block chance for power!\n Power: {powerProto}\n Caster: {attacker}");
+
+            return blockChance;
+        }
+
+        public static float GetDodgeChance(PowerPrototype powerProto, PropertyCollection attackerProperties, PropertyCollection targetProperties, ulong attackerId)
+        {
+            // Calculate raw dodge percentage
+            float dodgeChancePct = targetProperties[PropertyEnum.DodgeChancePct];
+
+            // Add keyword bonuses for power (may be null)
+            if (powerProto != null)
+                AccumulateKeywordProperties(ref dodgeChancePct, powerProto, targetProperties, attackerProperties, PropertyEnum.DodgeChancePctVsPowerKeyword);
+
+            // Calculate dodge rating
+            float dodgeRatingAdd = targetProperties[PropertyEnum.DodgeRatingBonusAdd];
+            float dodgeRatingMult = Math.Max(1f + targetProperties[PropertyEnum.DodgeRatingBonusMult], 0f);
+            float dodgeRating = Math.Max(dodgeRatingAdd * dodgeRatingMult, 0f);
+
+            // Run eval
+            EvalPrototype dodgeEvalProto = GameDatabase.CombatGlobalsPrototype.EvalDodgeChanceFormula;
+            if (dodgeEvalProto == null) return Logger.WarnReturn(0f, "GetDodgeChance(): dodgeEvalProto == null");
+
+            using EvalContextData evalContext = ObjectPoolManager.Instance.Get<EvalContextData>();
+            evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Entity, targetProperties);
+            evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Other, attackerProperties);
+
+            // The eval truncates the value, so we need to multiply the raw dodge chance by 100 to save the decimal part
+            evalContext.SetVar_Int(EvalContext.Var1, MathHelper.RoundToInt(dodgeChancePct * 100f));
+            evalContext.SetVar_Float(EvalContext.Var2, dodgeRating);
+
+            if (Eval.Run(dodgeEvalProto, evalContext, out float dodgeChance) == false)
+            {
+                WorldEntity attacker = Game.Current.EntityManager.GetEntity<WorldEntity>(attackerId);
+                Logger.Warn($"GetDodgeChance(): Failed to calculate dodge chance for power!\n Power: {powerProto}\n Caster: {attacker}");
+            }
+
+            return dodgeChance;
         }
 
         #endregion
@@ -3111,8 +3499,22 @@ namespace MHServerEmu.Games.Powers
 
         protected virtual PowerUseResult ActivateInternal(ref PowerActivationSettings settings)
         {
-            // Send non-combo activations and combos triggered by the server
-            if (IsComboEffect() == false || settings.Flags.HasFlag(PowerActivationSettingsFlags.ServerCombo))
+            PowerPrototype powerProto = Prototype;
+            if (powerProto == null) return Logger.WarnReturn(PowerUseResult.GenericError, "ActivateInternal(): powerProto == null");
+
+            bool isComboEffect = IsComboEffect();
+            bool isProcEffect = IsProcEffect();
+
+            // Set triggering power for combos (this is used to avoid infinite loops via recursion)
+            if (isComboEffect)
+                Properties[PropertyEnum.TriggeringPowerRef, PrototypeDataRef] = settings.TriggeringPowerRef;
+
+            // All procs are activated by the server and need to be replicated to clients
+            if (isProcEffect)
+                settings.Flags |= PowerActivationSettingsFlags.ServerCombo;
+
+            // Send non-combo activations and combos / procs triggered by the server
+            if (isComboEffect == false || settings.Flags.HasFlag(PowerActivationSettingsFlags.ServerCombo))
             {
                 // Send message if there are any interested clients in proximity
                 PlayerConnectionManager networkManager = Owner.Game.NetworkManager;
@@ -3133,13 +3535,12 @@ namespace MHServerEmu.Games.Powers
             // ScoringEvent AvatarUsedPower
             if (Owner is Avatar avatar)
             {
-                var player = avatar.GetOwnerOfType<Player>();
-                var target = Game.EntityManager.GetEntity<WorldEntity>(settings.TargetEntityId);
-                player.OnScoringEvent(new(ScoringEventType.AvatarUsedPower, Prototype, target?.Prototype));
-            }
+                Player player = avatar.GetOwnerOfType<Player>();
+                if (player == null) return Logger.WarnReturn(PowerUseResult.GenericError, "ActivateInternal(): player == null");
 
-            PowerPrototype powerProto = Prototype;
-            if (powerProto == null) return Logger.WarnReturn(PowerUseResult.GenericError, "ActivateInternal(): powerProto == null");
+                WorldEntity target = Game.EntityManager.GetEntity<WorldEntity>(settings.TargetEntityId);
+                player.OnScoringEvent(new(ScoringEventType.AvatarUsedPower, powerProto, target?.Prototype));
+            }
 
             // Make a copy of activation settings
             _lastActivationSettings = settings;
@@ -3165,9 +3566,9 @@ namespace MHServerEmu.Games.Powers
             };
 
             if (GetTargetingShape() == TargetingShapeType.BeamSweep)
-                powerApplication.BeamSweepVar = 0;
+                powerApplication.BeamSweepTick = 0;
 
-            if (IsProcEffect() == false)
+            if (isProcEffect == false)
             {
                 if (Owner == null) return Logger.WarnReturn(PowerUseResult.GenericError, "ActivateInternal(): Owner == null");
                 powerApplication.TargetEntityId = settings.TargetEntityId;
@@ -3420,6 +3821,7 @@ namespace MHServerEmu.Games.Powers
             scheduler.CancelAllEvents(_pendingActivationPhaseEvents);
             CancelAllScheduledActivations();
 
+            scheduler.CancelEvent(_payRecurringCostEvent);
             scheduler.CancelEvent(_reapplyIndexPropertiesEvent);
             CancelDelayedActivation();
 
@@ -3637,7 +4039,7 @@ namespace MHServerEmu.Games.Powers
 
                 if (style.RandomPositionRadius > 0)
                 {
-                    GRandom random = new((int)settings.PowerRandomSeed);
+                    GRandom random = new(settings.PowerRandomSeed);
                     actualTargetPosition += Vector3.RandomUnitVector2D(random) * (random.NextFloat() * style.RandomPositionRadius);
                 }
 
@@ -3676,7 +4078,7 @@ namespace MHServerEmu.Games.Powers
 
                 if (style.RandomPositionRadius > 0)
                 {
-                    GRandom random = new((int)settings.PowerRandomSeed);
+                    GRandom random = new(settings.PowerRandomSeed);
                     actualTargetPosition += Vector3.RandomUnitVector2D(random) * (random.NextFloat() * style.RandomPositionRadius);
                     actualTargetPosition = RegionLocation.ProjectToFloor(Owner.Region, Owner.Cell, actualTargetPosition);
                 }
@@ -3699,6 +4101,9 @@ namespace MHServerEmu.Games.Powers
 
                 if (doNotStartCooldown == false)
                     StartCooldown();
+
+                if (HasEnduranceCostRecurring())
+                    Game.GameEventScheduler?.CancelEvent(_payRecurringCostEvent);
 
                 RemoveTrackedConditions(false);
             }
@@ -4321,6 +4726,43 @@ namespace MHServerEmu.Games.Powers
             return true;
         }
 
+        private static bool CheckBeamSweepTick(PowerPayload payload)
+        {
+            // -1 indicates that this is not a beam sweep payload
+            if (payload.AOESweepTick < 0)
+                return false;
+
+            // Make sure we have an owner in a valid state
+            WorldEntity powerOwner = payload.Game.EntityManager.GetEntity<WorldEntity>(payload.PowerOwnerId);
+            if (powerOwner == null || powerOwner.TestStatus(EntityStatus.Destroyed) || powerOwner.IsInWorld == false)
+                return false;
+
+            // Make sure the owner still has the power
+            Power power = powerOwner.GetPower(payload.PowerProtoRef);
+            if (power == null) return Logger.WarnReturn(false, "TryScheduleNextBeamSweepTick(): power == null");
+
+            int nextTick = payload.AOESweepTick + 1;
+            TimeSpan sweepRate = payload.AOESweepRate;
+
+            // Check if finished sweeping
+            if (nextTick * sweepRate >= payload.ExecutionTime)
+                return false;
+
+            // Schedule the next tick of the sweep
+            PowerApplication powerApplication = new()
+            {
+                UserEntityId = payload.PowerOwnerId,
+                UserPosition = payload.PowerOwnerPosition,
+                TargetEntityId = payload.TargetId,
+                TargetPosition = payload.TargetPosition,
+                MovementTime = payload.MovementTime,
+                BeamSweepTick = nextTick
+            };
+
+            power.SchedulePowerApplication(powerApplication, sweepRate);
+            return true;
+        }
+
         #region Bouncing
 
         private static bool TryBouncePayload(PowerPayload payload)
@@ -4444,7 +4886,18 @@ namespace MHServerEmu.Games.Powers
 
                 game.NetworkManager.SendMessageToInterested(bounceMessageBuilder.Build(), ultimateOwner, AOINetworkPolicyValues.AOIChannelProximity);
 
-                // TODO: Return weapon to the owner (shield, etc.)
+                // Return bouncing weapon to the owner (shield, etc.)
+                if (payload.PowerPrototype.Properties[PropertyEnum.PowerUsesReturningWeapon])
+                {
+                    TimeSpan delay = TimeSpan.Zero;
+                    if (ultimateOwner.IsInWorld)
+                    {
+                        float distance = Vector3.Length(ultimateOwner.RegionLocation.Position - payload.TargetPosition);
+                        delay = TimeSpan.FromSeconds(distance / speed);
+                    }
+
+                    ultimateOwner.ScheduleWeaponReturnEvent(delay);
+                }
             }
 
             // Bouncing over, proceed to ending the power
@@ -4545,14 +4998,42 @@ namespace MHServerEmu.Games.Powers
 
         private void DoRandomTargetSelection(Power triggeredPower, ref PowerActivationSettings settings)
         {
-            // TODO
-            Logger.Debug("DoRandomTargetSelection()");
+            // Not all powers need random targets
+            if (triggeredPower.GetTargetingShape() != TargetingShapeType.SingleTargetRandom)
+                return;
+
+            // Find a valid random target
+            WorldEntity target = triggeredPower.GetRandomTarget();
+            if (target == null)
+                return;
+
+            // If found, update settings
+            settings.TargetEntityId = target.Id;
+            settings.TargetPosition = target.RegionLocation.Position;
+            settings.Flags |= PowerActivationSettingsFlags.NotifyOwner | PowerActivationSettingsFlags.ServerCombo;
         }
 
         private bool FillOutProcEffectPowerApplication(WorldEntity target, ref PowerActivationSettings settings, PowerApplication powerApplication)
         {
-            // TODO
-            Logger.Debug("FillOutProcEffectPowerApplication()");
+            // NOTE: We don't need anything other than properties from these results,
+            // so we can potentially get rid of them if we implement results pooling.
+            powerApplication.PowerResults = settings.PowerResults;
+
+            if (Prototype.GetTargetingStyle().TargetingShape == TargetingShapeType.Self)
+            {
+                powerApplication.TargetEntityId = Owner.Id;
+                powerApplication.TargetPosition = Owner.RegionLocation.Position;
+            }
+            else
+            {
+                powerApplication.TargetEntityId = target != null ? target.Id : Entity.InvalidId;
+                powerApplication.TargetPosition = settings.TargetPosition;
+            }
+
+            PrototypeId triggeringPowerRef = settings.TriggeringPowerRef;
+            if (triggeringPowerRef != PrototypeId.Invalid)
+                Properties[PropertyEnum.TriggeringPowerRef, PrototypeDataRef] = triggeringPowerRef;
+
             return true;
         }
 
@@ -4861,6 +5342,26 @@ namespace MHServerEmu.Games.Powers
             return true;
         }
 
+        private bool ScheduleRecurringCostEvent()
+        {
+            EventScheduler scheduler = Game?.GameEventScheduler;
+            if (scheduler == null) return Logger.WarnReturn(false, "ScheduleRecurringCostEvent(): scheduler == null");
+
+            PowerPrototype powerProto = Prototype;
+            if (powerProto == null) return Logger.WarnReturn(false, "ScheduleRecurringCostEvent(): powerProto == null");
+
+            if (_payRecurringCostEvent.IsValid)
+            {
+                Logger.Warn($"ScheduleRecurringCostEvent(): Overwriting recurring cost event for power [{this}]");
+                scheduler.CancelEvent(_payRecurringCostEvent);
+            }
+
+            scheduler.ScheduleEvent(_payRecurringCostEvent, powerProto.GetRecurringCostInterval(), _pendingEvents);
+            _payRecurringCostEvent.Get().Initialize(this);
+
+            return true;
+        }
+
         private class ScheduledActivateEvent : TargetedScheduledEvent<Power>
         {
             private static readonly Logger Logger = LogManager.CreateLogger();
@@ -4976,6 +5477,11 @@ namespace MHServerEmu.Games.Powers
         {
             public PowerIndexPropertyFlags Flags { get => _param1; set => _param1 = value; }
             protected override CallbackDelegate GetCallback() => (t, p1) => t.ReapplyIndexProperties(p1);
+        }
+
+        private class PayRecurringCostEvent : CallMethodEvent<Power>
+        {
+            protected override CallbackDelegate GetCallback() => (t) => t.PayRecurringCost();
         }
 
         #endregion

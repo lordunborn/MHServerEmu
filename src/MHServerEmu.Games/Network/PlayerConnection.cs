@@ -621,7 +621,17 @@ namespace MHServerEmu.Games.Network
                 orientation = syncOrientation;
 
                 // Update position without sending it to clients (local avatar is moved by its own client, other avatars are moved by locomotion)
-                avatar.ChangeRegionPosition(canMove ? position : null, canRotate ? orientation : null, ChangePositionFlags.DoNotSendToClients);
+                if (avatar.ChangeRegionPosition(canMove ? position : null, canRotate ? orientation : null, ChangePositionFlags.DoNotSendToClients) == ChangePositionResult.PositionChanged)
+                {
+                    // Clear pending action if successfully updated position
+                    if (avatar.IsInPendingActionState(PendingActionState.MovingToRange) == false &&
+                        avatar.IsInPendingActionState(PendingActionState.WaitingForPrevPower) == false &&
+                        avatar.IsInPendingActionState(PendingActionState.FindingLandingSpot) == false)
+                    {
+                        avatar.CancelPendingAction();
+                    }
+                }
+
                 avatar.UpdateNavigationInfluence();
             }
 
@@ -789,7 +799,7 @@ namespace MHServerEmu.Games.Network
             Vector3 targetPosition = continuousPowerUpdate.HasTargetPosition ? new(continuousPowerUpdate.TargetPosition) : Vector3.Zero;
             int randomSeed = continuousPowerUpdate.HasRandomSeed ? (int)continuousPowerUpdate.RandomSeed : 0;
 
-            avatar.SetContinuousPower(powerProtoRef, targetId, targetPosition, randomSeed);
+            avatar.SetContinuousPower(powerProtoRef, targetId, targetPosition, randomSeed, false);
             return true;
         }
 
@@ -828,6 +838,7 @@ namespace MHServerEmu.Games.Network
             // Try to pick up the item as currency
             if (Player.AcquireCurrencyItem(item))
             {
+                Player.CurrentAvatar?.TryActivateOnLootPickupProcs(item);
                 item.Destroy();
                 return true;
             }
@@ -870,6 +881,8 @@ namespace MHServerEmu.Games.Network
 
             // Remove instanced loot restriction
             item.Properties.RemoveProperty(PropertyEnum.RestrictedToPlayerGuid);
+
+            Player.CurrentAvatar?.TryActivateOnLootPickupProcs(item);
 
             return true;
         }

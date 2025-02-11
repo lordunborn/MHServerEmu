@@ -402,6 +402,16 @@ namespace MHServerEmu.Games.GameData.Prototypes
         [DoNotCopy]
         public int MaxPrestigeLevel { get => PrestigeLevels.Length; }
 
+        [DoNotCopy]
+        public EvalPrototype AvatarThrowabilityEvalPrototype { get; private set; }
+
+        public override void PostProcess()
+        {
+            base.PostProcess();
+
+            AvatarThrowabilityEvalPrototype = AvatarThrowabilityEval.As<EvalPrototype>();
+        }
+
         public int GetAvatarLevelCap()
         {
             Curve levelingCurve = GetAvatarLevelingCurve();
@@ -1004,13 +1014,22 @@ namespace MHServerEmu.Games.GameData.Prototypes
         //--
 
         [DoNotCopy]
+        public EvalPrototype EvalInterruptChanceFormulaPrototype { get; private set; }
+
+        [DoNotCopy]
         public EvalPrototype EvalNegStatusResistPctFormulaPrototype { get; private set; }
+
+        [DoNotCopy]
+        public ConditionPrototype ChannelInterruptConditionPrototype { get; private set; }
 
         public override void PostProcess()
         {
             base.PostProcess();
 
+            EvalInterruptChanceFormulaPrototype = EvalInterruptChanceFormula.As<EvalPrototype>();
             EvalNegStatusResistPctFormulaPrototype = EvalNegStatusResistPctFormula.As<EvalPrototype>();
+
+            ChannelInterruptConditionPrototype = ChannelInterruptCondition.As<ConditionPrototype>();
         }
 
         public float GetHardcoreAttenuationFactor(PropertyCollection properties)
@@ -1120,6 +1139,25 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public PrototypeId DangerRoomKeyword { get; protected set; }
         public PrototypeId StealingPowerKeyword { get; protected set; }
         public PrototypeId SummonPowerKeyword { get; protected set; }
+
+        //--
+
+        [DoNotCopy]
+        public KeywordPrototype DestructibleKeywordPrototype { get; private set; }
+        [DoNotCopy]
+        public KeywordPrototype RangedPowerKeywordPrototype { get; private set; }
+        [DoNotCopy]
+        public KeywordPrototype StealthPowerKeywordPrototype { get; private set; }
+
+        public override void PostProcess()
+        {
+            base.PostProcess();
+
+            // Cache frequently used keyword prototype refs
+            DestructibleKeywordPrototype = DestructibleKeyword.As<KeywordPrototype>();
+            RangedPowerKeywordPrototype = RangedPowerKeyword.As<KeywordPrototype>();
+            StealthPowerKeywordPrototype = StealthPowerKeyword.As<KeywordPrototype>();
+        }
     }
 
     public class CurrencyGlobalsPrototype : Prototype

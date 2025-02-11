@@ -32,6 +32,8 @@ namespace MHServerEmu.Games.Entities
         private readonly SortedDictionary<ulong, Condition> _currentConditions = new();
         private readonly Dictionary<StackId, int> _stackCountCache = new();
 
+        private readonly Dictionary<ProcTriggerType, HashSet<ulong>> _cancelOnProcTriggerCache = new();
+
         private readonly EventGroup _pendingEvents = new();
 
         private uint _version = 0;
@@ -211,6 +213,38 @@ namespace MHServerEmu.Games.Entities
             Condition condition = GetConditionByRef(conditionRef);
             if (condition == null) return InvalidConditionId;
             return condition.Id;
+        }
+
+        /// <summary>
+        /// Adds ids of all <see cref="Condition"/> instances contained in this <see cref="ConditionCollection"/> that apply
+        /// the specified negative status effect to the provided list. Returns <see langword="true"/> if any conditions were added.
+        /// </summary>
+        public bool GetNegativeStatusConditions(PrototypeId negativeStatusProtoRef, List<ulong> negativeStatusConditionList)
+        {
+            bool hasNegativeStatus = false;
+
+            List<PrototypeId> negativeStatusList = ListPool<PrototypeId>.Instance.Get();
+
+            foreach (Condition condition in this)
+            {
+                if (condition.IsANegativeStatusEffect(negativeStatusList) == false)
+                    continue;
+
+                foreach (PrototypeId foundNegativeStatusRef in negativeStatusList)
+                {
+                    if (foundNegativeStatusRef == negativeStatusProtoRef)
+                    {
+                        negativeStatusConditionList.Add(condition.Id);
+                        hasNegativeStatus = true;
+                        break;
+                    }
+                }
+
+                negativeStatusList.Clear();
+            }
+
+            ListPool<PrototypeId>.Instance.Return(negativeStatusList);
+            return hasNegativeStatus;
         }
 
         public Iterator IterateConditions(bool skipDisabled)
@@ -643,6 +677,25 @@ namespace MHServerEmu.Games.Entities
             RemoveConditionsFiltered(ConditionFilter.IsConditionWithKeywordFunc, keywordProto);
         }
 
+        public void RemoveCancelOnHitConditions()
+        {
+            RemoveConditionsFiltered(ConditionFilter.IsConditionCancelOnHitFunc);
+        }
+
+        public void RemoveCancelOnKilledConditions()
+        {
+            RemoveConditionsFiltered(ConditionFilter.IsConditionCancelOnKilledFunc);
+        }
+
+        public void RemoveCancelOnProcTriggerConditions(ProcTriggerType triggerType)
+        {
+            if (_cancelOnProcTriggerCache.TryGetValue(triggerType, out HashSet<ulong> conditionIds) == false)
+                return;
+
+            foreach (ulong conditionId in conditionIds)
+                RemoveCondition(conditionId);
+        }
+
         public bool PauseCondition(Condition condition, bool notifyClient)
         {
             if (condition.IsPaused)
@@ -994,6 +1047,7 @@ namespace MHServerEmu.Games.Entities
         private void OnPostAccrueCondition(Condition condition)
         {
             IncrementStackCountCache(condition);
+            CacheCancelOnProcTriggers(condition);
 
             if (condition.ShouldStartPaused(_owner.Region))
             {
@@ -1043,11 +1097,18 @@ namespace MHServerEmu.Games.Entities
         {
             RebuildConditionKeywordsMask(condition.Id);
             DecrementStackCountCache(condition);
+            RemoveCachedCancelOnProcTriggers(condition);
+
+            // Remove proc powers
+            Handle handle = new(this, condition);
+            _owner.UpdateProcEffectPowers(condition.Properties, false);
+            if (handle.Valid() == false)
+                return;
         }
 
         private bool EnableCondition(Condition condition, bool enable)
         {
-            Logger.Debug($"EnableCondition(): {condition} = {enable} (owner={_owner})");
+            //Logger.Debug($"EnableCondition(): {condition} = {enable} (owner={_owner})");
 
             PlayerConnectionManager networkManager = _owner.Game.NetworkManager;
 
@@ -1090,22 +1151,33 @@ namespace MHServerEmu.Games.Entities
             return true;
         }
 
-        private void StartTicker(Condition condition)
+        private bool StartTicker(Condition condition)
         {
-            // TODO
-            //Logger.Debug($"StartTicker(): {condition}");
+            ulong tickerId = condition.PropertyTickerId;
+            if (tickerId != PropertyTicker.InvalidId)
+                return Logger.WarnReturn(false, $"StartTicker(): Attempted to start a ticker for condition [{condition}] that already has ticker id {tickerId}");
+
+            condition.PropertyTickerId = _owner.StartPropertyTickingCondition(condition);
+            return true;
         }
 
         private void StopTicker(Condition condition)
         {
-            // TODO
-            //Logger.Debug($"StopTicker(): {condition}");
+            ulong tickerId = condition.PropertyTickerId;
+            if (tickerId == PropertyTicker.InvalidId)
+                return;
+
+            _owner.StopPropertyTicker(tickerId);
+            condition.PropertyTickerId = PropertyTicker.InvalidId;
         }
 
         private void UpdateTicker(Condition condition)
         {
-            // TODO
-            //Logger.Debug($"UpdateTicker(): {condition}");
+            ulong tickerId = condition.PropertyTickerId;
+            if (tickerId == PropertyTicker.InvalidId)
+                return;
+
+            _owner.UpdatePropertyTicker(tickerId, condition.TimeRemaining, condition.IsPaused);
         }
 
         private void SendConditionPauseTimeMessage(Condition condition)
@@ -1244,6 +1316,47 @@ namespace MHServerEmu.Games.Entities
             }
 
             return count;
+        }
+
+        private bool CacheCancelOnProcTriggers(Condition condition)
+        {
+            ConditionPrototype conditionProto = condition?.ConditionPrototype;
+            if (conditionProto == null) return Logger.WarnReturn(false, "CacheCancelOnProcTriggers(): conditionProto == null");
+
+            if (conditionProto.CancelOnProcTriggers.IsNullOrEmpty())
+                return true;
+
+            foreach (ProcTriggerType triggerType in conditionProto.CancelOnProcTriggers)
+            {
+                if (_cancelOnProcTriggerCache.TryGetValue(triggerType, out HashSet<ulong> conditionIds) == false)
+                {
+                    conditionIds = new();
+                    _cancelOnProcTriggerCache.Add(triggerType, conditionIds);
+                }
+
+                conditionIds.Add(condition.Id);
+            }
+
+            return true;
+        }
+
+        private bool RemoveCachedCancelOnProcTriggers(Condition condition)
+        {
+            ConditionPrototype conditionProto = condition?.ConditionPrototype;
+            if (conditionProto == null) return Logger.WarnReturn(false, "RemoveCachedCancelOnProcTriggers(): conditionProto == null");
+
+            if (conditionProto.CancelOnProcTriggers.IsNullOrEmpty())
+                return true;
+
+            foreach (ProcTriggerType triggerType in conditionProto.CancelOnProcTriggers)
+            {
+                if (_cancelOnProcTriggerCache.TryGetValue(triggerType, out HashSet<ulong> conditionIds) == false)
+                    continue;
+
+                conditionIds.Remove(condition.Id);
+            }
+
+            return true;
         }
 
         public readonly struct StackId : IEquatable<StackId>

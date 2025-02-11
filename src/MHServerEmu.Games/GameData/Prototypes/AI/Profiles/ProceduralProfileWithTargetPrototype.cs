@@ -631,6 +631,11 @@ namespace MHServerEmu.Games.GameData.Prototypes
             if (EffectPower != PrototypeId.Invalid)
                 agent.AIController.AttemptActivatePower(EffectPower, avatar.Id, avatar.RegionLocation.Position);
 
+            // Run OnOrbPickup procs
+            KeywordPrototype orbEntityKeywordProto = GameDatabase.KeywordGlobalsPrototype.OrbEntityKeyword.As<KeywordPrototype>();
+            if (orbProto.HasKeyword(orbEntityKeywordProto))
+                avatar.TryActivateOnOrbPickupProcs(agent);
+
             // Experience
             // Scale exp based on avatar level rather than orb level
             if (orbProto.GetXPAwarded(avatar.CharacterLevel, out long xp, out long minXP, player.CanUseLiveTuneBonuses()))
@@ -641,7 +646,13 @@ namespace MHServerEmu.Games.GameData.Prototypes
             }
 
             // Credits / currency
-            player.AcquireCurrencyItem(agent);
+            if (player.AcquireCurrencyItem(agent))
+            {
+                avatar.TryActivateOnLootPickupProcs(agent);
+
+                if (agent.Properties.HasProperty(PropertyEnum.RunestonesAmount))
+                    avatar.TryActivateOnRunestonePickupProcs();
+            }
 
             // Invoke OrbPickUp event
             agent.Region?.OrbPickUpEvent.Invoke(new(player, agent));            

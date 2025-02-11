@@ -17,6 +17,7 @@ using MHServerEmu.Games.Entities.PowerCollections;
 using MHServerEmu.Games.Events;
 using MHServerEmu.Games.Events.Templates;
 using MHServerEmu.Games.GameData;
+using MHServerEmu.Games.GameData.Calligraphy;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.Loot;
 using MHServerEmu.Games.Navi;
@@ -71,7 +72,7 @@ namespace MHServerEmu.Games.Entities
         Teleport
     }
 
-    public partial class WorldEntity : Entity
+    public partial class WorldEntity : Entity, IKeyworded
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
 
@@ -121,6 +122,8 @@ namespace MHServerEmu.Games.Entities
         public virtual bool IsTeamUpAgent { get => false; }
         public bool IsInWorld { get => RegionLocation.IsValid(); }
         public bool IsAliveInWorld { get => IsInWorld && IsDead == false; }
+        public bool IsInPvPMatch { get => Region?.ContainsPvPMatch() == true; }
+        public bool CanHeal { get => Properties[PropertyEnum.Health] > 0L && Properties[PropertyEnum.HealingBlocked] == false; }
         public bool IsVendor { get => Properties[PropertyEnum.VendorType] != PrototypeId.Invalid; }
         public EntityPhysics Physics { get; private set; }
         public bool HasNavigationInfluence { get; private set; }
@@ -146,7 +149,7 @@ namespace MHServerEmu.Games.Entities
         public bool IsWeaponMissing { get => Properties[PropertyEnum.WeaponMissing]; }
         public bool IsGlobalEventVendor { get => GetVendorGlobalEvent() != PrototypeId.Invalid; }
         public bool IsHighFlying { get => Locomotor?.IsHighFlying ?? false; }
-        public bool IsDestructible { get => HasKeyword(GameDatabase.KeywordGlobalsPrototype.DestructibleKeyword); }
+        public bool IsDestructible { get => HasKeyword(GameDatabase.KeywordGlobalsPrototype.DestructibleKeywordPrototype); }
         public bool IsDestroyProtectedEntity { get => IsControlledEntity || IsTeamUpAgent || this is Avatar; }  // Persistent entities cannot be easily destroyed
         public bool IsDiscoverable { get => CompatibleReplicationChannels.HasFlag(AOINetworkPolicyValues.AOIChannelDiscovery); }
         public bool IsTrackable { get => WorldEntityPrototype?.TrackingDisabled == false; }
@@ -275,12 +278,20 @@ namespace MHServerEmu.Games.Entities
             CancelScheduledLifespanExpireEvent();
             EntityActionComponent?.CancelAll();
 
-            bool notMissile = this is not Missile;
-            // HACK: LOOT AND XP
-            if (this is Agent agent && notMissile && agent is not Avatar && agent.IsTeamUpAgent == false)
+            // Trigger OnPetDeath procs if this is a pet with an owner
+            ulong powerUserOverrideId = PowerUserOverrideId;
+            if (powerUserOverrideId != InvalidId && IsSummonedPet())
             {
-                AwardKillLoot(killer, killFlags, directKiller);
+                WorldEntity owner = Game.EntityManager.GetEntity<WorldEntity>(powerUserOverrideId);
+                if (owner != null && owner.IsInWorld)
+                    owner.TryActivateOnPetDeathProcs(this);
             }
+
+            bool notMissile = this is not Missile;
+            
+            // Loot and XP
+            if (this is Agent agent && notMissile && agent is not Avatar && agent.IsTeamUpAgent == false)
+                AwardKillLoot(killer, killFlags, directKiller);
 
             var region = Region;
 
@@ -291,13 +302,14 @@ namespace MHServerEmu.Games.Entities
                 region?.EntityDeadEvent.Invoke(new(this, killer, player));
             }
 
-            // Set death state properties
-            Properties[PropertyEnum.IsDead] = true;
-
+            // Remove navi influence if needed
             if (worldEntityProto.RemoveNavInfluenceOnKilled)
                 Properties[PropertyEnum.NoEntityCollide] = true;
 
             SpawnSpec?.OnDefeat(killer, false);
+
+            // Remove conditions
+            ConditionCollection?.RemoveCancelOnKilledConditions();
 
             // Send kill message to clients
             var killMessage = NetMessageEntityKill.CreateBuilder()
@@ -1321,7 +1333,94 @@ namespace MHServerEmu.Games.Entities
 
         public bool UpdateProcEffectPowers(PropertyCollection properties, bool assignPowers)
         {
-            return true;
+            // Cannot assign proc powers is not in world
+            if (IsInWorld == false)
+                return true;
+
+            bool success = true;
+
+            EntityManager entityManager = Game.EntityManager;
+
+            using PropertyCollection procProperties = GetProcProperties(properties);
+            foreach (var kvp in procProperties.IteratePropertyRange(Property.ProcPropertyTypesAll))
+            {
+                Property.FromParam(kvp.Key, 1, out PrototypeId procPowerProtoRef);
+                if (procPowerProtoRef == PrototypeId.Invalid)
+                {
+                    Logger.Warn("UpdateProcEffectPowers(): procPowerProtoRef == PrototypeId.Invalid");
+                    continue;
+                }
+
+                WorldEntity caster = this;
+
+                // Check if we have a caster override for this
+                ulong procCasterOverrideId = properties[PropertyEnum.ProcCasterOverride, procPowerProtoRef];
+                if (procCasterOverrideId != InvalidId)
+                {
+                    caster = entityManager.GetEntity<WorldEntity>(procCasterOverrideId);
+                    if (caster == null || caster.IsInWorld == false)
+                        continue;
+                }
+
+                if (assignPowers)
+                {
+                    PowerIndexProperties indexProps = new(0, caster.CharacterLevel, caster.CombatLevel);
+                    PrototypeId triggeringPowerRef = properties[PropertyEnum.TriggeringPowerRef, procPowerProtoRef];
+
+                    if (caster.AssignPower(procPowerProtoRef, indexProps, true, triggeringPowerRef) == null)
+                    {
+                        Logger.Warn($"UpdateProcEffectPowers(): Failed to assign {procPowerProtoRef.GetName()} to [{this}]");
+                        success = false;
+                    }
+                }
+                else
+                {
+                    UnassignPower(procPowerProtoRef);
+                }
+
+                // Try to active certain proc trigger types right away
+                Property.FromParam(kvp.Key, 0, out AssetId procTriggerTypeAssetRef);
+                ProcTriggerType procTriggerType = (ProcTriggerType)AssetDirectory.Instance.GetEnumValue(procTriggerTypeAssetRef);
+                switch (procTriggerType)
+                {
+                    case ProcTriggerType.OnHealthAbove:
+                    case ProcTriggerType.OnHealthAboveToggle:
+                    case ProcTriggerType.OnHealthBelow:
+                    case ProcTriggerType.OnHealthBelowToggle:
+                        // Activate health procs at the end of the frame (for cases when we don't have our health yet)
+                        EventPointer<ScheduledHealthProcUpdateEvent> healthProcUpdate = new();
+                        ScheduleEntityEvent(healthProcUpdate, TimeSpan.Zero, procPowerProtoRef);
+                        break;
+
+                    case ProcTriggerType.OnOverlapBegin:
+                        // Check overlaps that began before this proc was assigned
+                        TryActivateOnOverlapBeginProcs(kvp.Key);
+                        break;
+                }
+            }
+
+            return success;
+        }
+
+        protected virtual void InitializeProcEffectPowers()
+        {
+            if (UpdateProcEffectPowers(Properties, true) == false)
+                Logger.Warn($"InitializeProcEffectPowers(): UpdateProcEffectPowers failed when initializing entity=[{this}]");
+        }
+
+        protected override void OnAttachedPropertiesPreAdd(PropertyCollection properties)
+        {
+            base.OnAttachedPropertiesPreAdd(properties);
+
+            if (UpdateProcEffectPowers(properties, true) == false)
+                Logger.Warn($"OnAttachedPropertiesPreAdd(): UpdateProcEffectPowers failed when attaching properties to entity=[{this}]");
+        }
+
+        protected override void OnAttachedPropertiesPostRemove(PropertyCollection properties)
+        {
+            base.OnAttachedPropertiesPostRemove(properties);
+
+            UpdateProcEffectPowers(properties, false);
         }
 
         public float GetNegStatusResistPercent(int ccResistScore, PropertyCollection otherProperties)
@@ -1375,7 +1474,8 @@ namespace MHServerEmu.Games.Entities
                     success = ApplyPowerResultsInternal(powerResults);
             }
 
-            powerResults.Clear();   // Clear to prevent leaking (TODO: PowerResults pooling)
+            // Clear only conditions here because these results may still be used for procs
+            powerResults.ClearConditionInstances();
             return success;
         }
 
@@ -1443,7 +1543,7 @@ namespace MHServerEmu.Games.Entities
                     continue;
                 }
 
-                TryActivateOnHitProcs(triggerType, powerResults);
+                powerOwner.TryActivateOnHitProcs(triggerType, powerResults);
             }
 
             // OnPowerHit / OnPowerHitNormal
@@ -1470,6 +1570,62 @@ namespace MHServerEmu.Games.Entities
             return true;
         }
 
+        private bool TriggerOnDamagedEffects(PowerResults powerResults)
+        {
+            if (powerResults == null)
+                return false;
+
+            if (IsInWorld == false)
+                return false;
+
+            WorldEntity powerOwner = Game.EntityManager.GetEntity<WorldEntity>(powerResults.UltimateOwnerId);
+
+            float healthDelta = powerResults.Properties[PropertyEnum.Healing];
+
+            foreach (var kvp in powerResults.Properties.IteratePropertyRange(PropertyEnum.Damage))
+            {
+                float damage = kvp.Value;
+                healthDelta -= damage;
+
+                Property.FromParam(kvp.Key, 0, out int damageType);
+
+                ProcTriggerType triggerType = (DamageType)damageType switch
+                {
+                    DamageType.Physical => ProcTriggerType.OnGotDamagedPhysical,
+                    DamageType.Energy   => ProcTriggerType.OnGotDamagedEnergy,
+                    DamageType.Mental   => ProcTriggerType.OnGotDamagedMental,
+                    _                   => ProcTriggerType.None
+                };
+
+                if (triggerType == ProcTriggerType.None)
+                {
+                    Logger.Warn("TriggerOnDamagedEffects(): triggerType == ProcTriggerType.None");
+                    continue;
+                }
+
+                TryActivateOnGotDamagedProcs(triggerType, powerResults, -damage);
+            }
+
+            if (healthDelta < 0f)
+            {
+                // Agent-only: interrupt on cancel on damaged powers
+                OnDamaged(powerResults);
+
+                TryActivateOnGotDamagedProcs(ProcTriggerType.OnGotDamaged, powerResults, healthDelta);
+                TryActivateOnGotDamagedProcs(ProcTriggerType.OnGotDamagedForPctHealth, powerResults, healthDelta);
+                TryActivateOnGotDamagedProcs(ProcTriggerType.OnGotDamagedHealthBelowPct, powerResults, healthDelta);
+
+                if (powerResults.TestFlag(PowerResultFlags.Critical))
+                    TryActivateOnGotDamagedProcs(ProcTriggerType.OnGotDamagedByCrit, powerResults, healthDelta);
+                else if (powerResults.TestFlag(PowerResultFlags.SuperCritical))
+                    TryActivateOnGotDamagedProcs(ProcTriggerType.OnGotDamagedBySuperCrit, powerResults, healthDelta);
+
+                ConditionCollection?.RemoveCancelOnHitConditions();
+            }
+
+            return true;
+        }
+
         private bool ApplyPowerResultsInternal(PowerResults powerResults)
         {
             // TODO: More stuff
@@ -1488,6 +1644,9 @@ namespace MHServerEmu.Games.Entities
 
             // Adjust health
             ApplyHealthPowerResults(powerResults, ultimateOwner);
+
+            if (powerResults.IsAvoided == false)
+                ApplyResourcePowerResults(powerResults);
 
             return true;
         }
@@ -1661,13 +1820,7 @@ namespace MHServerEmu.Games.Entities
 
             // Now apply the health delta
             health += healthDelta;
-            health = Math.Clamp(health, Properties[PropertyEnum.HealthMin], Properties[PropertyEnum.HealthMaxOther]);
-
-            // HACK: Avatars should be invulnerable during the tutorial via a region-wide passive power that sets HealthMin
-            // (see Powers/Player/Passive/TutorialHealthMin.prototype).
-            // We don't have this working yet, so we need a temporary hack here to avoid breaking the tutorial.
-            if (region.PrototypeDataRef == (PrototypeId)13422564811632352998 && this is Avatar && health < 1)
-                health = 1;
+            health = Math.Clamp(health, Properties[PropertyEnum.HealthMin], Properties[PropertyEnum.HealthMax]);
 
             // Change health to the new value
             WorldEntity powerUser = Game.EntityManager.GetEntity<WorldEntity>(powerResults.PowerOwnerId);
@@ -1727,7 +1880,7 @@ namespace MHServerEmu.Games.Entities
 
                 // Procs
                 if (adjustHealth < 0 && powerResults.IsAtMaxRecursionDepth() == false)
-                    TryActivateOnGotDamagedProcs(powerResults);
+                    TriggerOnDamagedEffects(powerResults);
 
                 TriggerEntityActionEvent(EntitySelectorActionEventType.OnGotDamaged);
             }
@@ -1765,6 +1918,303 @@ namespace MHServerEmu.Games.Entities
             return true;
         }
 
+        private void ApplyResourcePowerResults(PowerResults powerResults)
+        {
+            // Primary resource (endurance / spirit)
+            foreach (var kvp in powerResults.Properties.IteratePropertyRange(PropertyEnum.EnduranceChange))
+            {
+                Property.FromParam(kvp.Key, 0, out int manaType);
+                float enduranceChange = kvp.Value;
+
+                // Check if the resource change is within margin of error
+                if (Segment.IsNearZero(enduranceChange))
+                    continue;
+
+                // Make sure we can gain endurance if we are gaining
+                if (enduranceChange > 0f && Properties[PropertyEnum.DisableEnduranceGain, manaType])
+                    continue;
+
+                // Adjust
+                float endurance = Properties[PropertyEnum.Endurance, manaType];
+                endurance += enduranceChange;
+                endurance = Math.Clamp(endurance, 0f, Properties[PropertyEnum.EnduranceMax, manaType]);
+                Properties[PropertyEnum.Endurance, manaType] = endurance;
+            }
+
+            // Secondary resource
+            float secondaryResourceChange = powerResults.Properties[PropertyEnum.SecondaryResourceChange];
+
+            // Check if the resource change is within margin of error
+            if (Segment.IsNearZero(secondaryResourceChange))
+                return;
+
+            // Make sure we can gain secondary resource if we are gaining
+            if (secondaryResourceChange > 0f && Properties[PropertyEnum.DisableSecondaryResourceGain])
+                return;
+
+            // Adjust
+            float secondaryResource = Properties[PropertyEnum.SecondaryResource];
+            secondaryResource += secondaryResourceChange;
+            secondaryResource = Math.Clamp(secondaryResource, 0f, Properties[PropertyEnum.SecondaryResourceMax]);
+            Properties[PropertyEnum.SecondaryResource] = secondaryResource;
+        }
+
+        public void ApplyPropertyTicker(PropertyTicker.TickData tickData)
+        {
+            //Logger.Debug($"ApplyPropertyTicker(): [{tickData}] => [{this}]");
+
+            if (IsInWorld == false || tickData.TickDurationSeconds <= 0f)
+                return;
+
+            using PropertyCollection overTimeProperties = ObjectPoolManager.Instance.Get<PropertyCollection>();
+            foreach (var kvp in tickData.PropertyList)
+                overTimeProperties[kvp.Key] = kvp.Value;
+
+            // Try to find the payload that created this tick
+            PowerPayload payload = null;
+            bool hasConditionPayload = false;
+
+            if (tickData.ConditionId != ConditionCollection.InvalidConditionId)
+            {
+                Condition condition = ConditionCollection?.GetCondition(tickData.ConditionId);
+                payload = condition?.PropertyTickerPayload;
+            }
+
+            if (payload == null)
+            {
+                // If we couldn't find a payload, create a temporary one (TODO: make payloads poolable and get one from the pool)
+                payload = new();
+                payload.Init(Game);
+            }
+            else
+            {
+                // Clean up the payload that we are reusing
+                payload.ClearResult();
+                hasConditionPayload = true;
+            }
+
+            // Initialize and calculate results
+            WorldEntity ultimateCreator = Game.EntityManager.GetEntity<WorldEntity>(tickData.UltimateCreatorId);
+            
+            Vector3 powerOwnerPosition = ultimateCreator != null && ultimateCreator.IsInWorld
+                ? ultimateCreator.RegionLocation.Position
+                : Vector3.Zero;
+
+            bool isHostile = ultimateCreator?.IsHostileTo(this) == true;
+
+            PowerResults results = new();
+            results.Init(tickData.CreatorId, tickData.UltimateCreatorId, Id, powerOwnerPosition, tickData.PowerProto, payload.PowerAssetRefOverride, isHostile);
+            results.SetFlag(PowerResultFlags.OverTime, true);
+
+            if (hasConditionPayload)
+                results.SetKeywordsMask(payload.KeywordsMask);
+            else if (tickData.PowerProto != null)
+                results.SetKeywordsMask(tickData.PowerProto.KeywordsMask);
+
+            // Only condition-based tickers can deal damage over time
+            payload.CalculateOverTimeProperties(this, overTimeProperties, tickData.TickDurationSeconds, hasConditionPayload);
+            payload.CalculatePowerResultsOverTime(results, this, hasConditionPayload);
+
+            // Scale bounds if needed
+            float boundsScaleChange = Properties[PropertyEnum.BoundsScaleRadiusCOTUnitsPerSec] * tickData.TickDurationSeconds;
+            if (Segment.IsNearZero(boundsScaleChange) == false)
+            {
+                // TODO
+                Logger.Debug($"ApplyPropertyTicker(): boundsScaleChange={boundsScaleChange} for [{this}]");
+            }
+
+            // Apply health cost over time (different from damage, e.g. Blade's Thirst)
+            float healthCostOverTime = overTimeProperties[PropertyEnum.PowerHealthCostOverTime];
+            if (ultimateCreator != null && Segment.IsNearZero(healthCostOverTime) == false)
+            {
+                long health = ultimateCreator.Properties[PropertyEnum.Health];
+                if (health > 0)
+                {
+                    // Cap health at 1 so the cost doesn't kill the creator
+                    health = Math.Max(health - MathHelper.RoundToInt64(healthCostOverTime), 1L);
+                    health = Math.Max(health, ultimateCreator.Properties[PropertyEnum.HealthMin]);
+                    ultimateCreator.Properties[PropertyEnum.Health] = health;
+                }
+            }
+
+            if (results.HasMeaningfulResults() == false)
+                return;
+
+            ApplyPowerResults(results);
+
+            // Break stealth if needed
+            WorldEntity creator = Game.EntityManager.GetEntity<WorldEntity>(tickData.CreatorId);
+            Power.TryBreakStealth(creator, ultimateCreator, tickData.PowerProto, isHostile, true);
+        }
+
+        public float ApplyDamageConversion(float damageBase, DamageType damageType, PowerResults powerResults, WorldEntity user, PropertyCollection powerProperties, float difficultyMult)
+        {
+            PowerPrototype powerProto = powerResults.PowerPrototype;
+            if (powerProto == null) return Logger.WarnReturn(damageBase, "ApplyDamageConversion(): powerProto == null");
+
+            DamageConversionContext context = new(damageBase, damageType, powerProto);
+
+            // Convert incoming (target -> target)
+            context.SetIncoming(Properties, this);
+            ApplyDamageConversionInternal(ref context);
+
+            if (user != null && user.IsDead == false)
+            {
+                // Convert outgoing (user -> user)
+                context.SetOutgoing(user.Properties, user, difficultyMult);
+                ApplyDamageConversionInternal(ref context);
+
+                // Convert for power (power -> user)
+                context.SetForPower(powerProperties, user);
+                ApplyDamageConversionInternal(ref context);
+            }
+
+            return context.DamageConverted;
+        }
+
+        private void ApplyDamageConversionInternal(ref DamageConversionContext context)
+        {
+            // Defer property changes because we are likely converting properties on the same collection (target -> target or user -> user)
+            List<(PropertyEnum, float)> conversionResults = ListPool<(PropertyEnum, float)>.Instance.Get();
+
+            PropertyInfoTable propertyInfoTable = GameDatabase.PropertyInfoTable;
+
+            foreach (var kvp in context.SourceProperties.IteratePropertyRange(context.ConversionProperty))
+            {
+                // Check if this conversion property matches our context's damage type
+                Property.FromParam(kvp.Key, 0, out int damageTypeValue);
+                DamageType damageType = (DamageType)damageTypeValue;
+
+                if (damageType != DamageType.Any && damageType != context.DamageType)
+                    continue;
+
+                Property.FromParam(kvp.Key, 1, out PrototypeId convertedPropertyProtoRef);
+                PropertyEnum convertedProperty = propertyInfoTable.GetPropertyEnumFromPrototype(convertedPropertyProtoRef);
+
+                // Validate data type - this system supports only float properties and health
+                PropertyInfo propertyInfo = propertyInfoTable.LookupPropertyInfo(convertedProperty);
+                if (propertyInfo.DataType != PropertyDataType.Real && convertedProperty != PropertyEnum.Health)
+                {
+                    Logger.Warn($"ApplyDamageConversionInternal(): Trying to convert to invalid property type for power {context.PowerPrototype}");
+                    continue;
+                }
+
+                // Convert value
+                float convertedValue = context.DamageBase * kvp.Value;
+
+                // Apply conversion ration
+                float conversionRatio = context.SourceProperties[context.ConversionRatioProperty, convertedPropertyProtoRef];
+                if (Segment.IsNearZero(conversionRatio) == false)
+                    convertedValue /= conversionRatio;
+
+                // Clamp to max value
+                float conversionMax = context.SourceProperties[context.ConversionMaxProperty, convertedPropertyProtoRef];
+                if (Segment.IsNearZero(conversionMax) == false)
+                    convertedValue = Math.Max(convertedValue, conversionMax);
+
+                // Calculate conversion cost (i.e. damage lost a result of this conversion)
+                float convertedPct = 1f;    // Default to full conversion cost
+                Property.FromParam(kvp.Key, 2, out int conversionCostParam);
+                
+                // Clamp conversion cost if needed
+                if (conversionCostParam > 1)
+                {
+                    Properties.GetPropertyMinMaxFloat(convertedProperty, out float min, out float max);
+                    float current = Properties[convertedProperty];
+                    float remainingConvertedProperty = (convertedValue > 0f) ? (max - current) : (current - min);
+                    convertedPct = Math.Abs(remainingConvertedProperty / convertedValue);
+                    convertedPct = Math.Clamp(convertedPct, 0f, 1f);
+                }
+
+                // Remove difficulty multiplier from the converted value
+                if (context.ConversionProperty == PropertyEnum.DamageConversionOutgoing)
+                {
+                    float difficultyMultiplier = context.DifficultyMultiplier;
+                    if (difficultyMultiplier > 0f && difficultyMultiplier < 1f && Segment.IsNearZero(difficultyMultiplier) == false)
+                        convertedValue /= difficultyMultiplier;
+                }
+
+                // Add conversion results to be applied below
+                conversionResults.Add((convertedProperty, convertedValue));
+
+                // Apply conversion cost to the damage
+                if (conversionCostParam != 0)
+                {
+                    float costMultiplier = Math.Clamp(kvp.Value * convertedPct, 0f, 1f);
+                    float damageConverted = context.DamageConverted - (context.DamageBase * costMultiplier);
+                    damageConverted = Math.Max(damageConverted, 0f);
+                    context.DamageConverted = damageConverted;
+                }
+            }
+
+            // Apply resulting property adjustments to the target
+            WorldEntity target = context.Target;
+
+            foreach (var result in conversionResults)
+                target.SetDamageConvertedProperty(result.Item1, result.Item2);
+
+            ListPool<(PropertyEnum, float)>.Instance.Return(conversionResults);
+        }
+
+        private void SetDamageConvertedProperty(PropertyEnum propertyEnum, float delta)
+        {
+            switch (propertyEnum)
+            {
+                // By default simply adjust the value
+                default:
+                    Properties.AdjustProperty(delta, propertyEnum);
+                    break;
+
+                // Special handling for health / mana / secondary resource
+                case PropertyEnum.Health:
+                    if (delta > 0f && Properties[PropertyEnum.DisableHealthGain])
+                        return;
+
+                    long health = Properties[PropertyEnum.Health];
+                    health += MathHelper.RoundToInt64(delta);
+                    health = Math.Clamp(health, 0, Properties[PropertyEnum.HealthMax]);
+
+                    Properties[PropertyEnum.Health] = health;
+
+                    break;
+
+                case PropertyEnum.Endurance:
+                    if (this is not Avatar avatar)
+                        return;
+
+                    foreach (PrimaryResourceManaBehaviorPrototype primaryManaBehaviorProto in avatar.GetPrimaryResourceManaBehaviors())
+                    {
+                        ManaType manaType = primaryManaBehaviorProto.ManaType;
+
+                        if (delta > 0f && Properties[PropertyEnum.DisableEnduranceGain, manaType])
+                            continue;
+
+                        float endurance = Properties[PropertyEnum.Endurance, manaType];
+                        endurance += delta;
+                        endurance = Math.Clamp(endurance, 0f, Properties[PropertyEnum.EnduranceMax, manaType]);
+
+                        Properties[PropertyEnum.Endurance, manaType] = endurance;
+                    }
+
+                    break;
+
+                case PropertyEnum.SecondaryResource:
+                    if (this is not Avatar)
+                        return;
+
+                    if (delta > 0f && Properties[PropertyEnum.DisableSecondaryResourceGain])
+                        return;
+
+                    float secondaryResource = Properties[PropertyEnum.SecondaryResource];
+                    secondaryResource += delta;
+                    secondaryResource = Math.Clamp(secondaryResource, 0f, Properties[PropertyEnum.SecondaryResourceMax]);
+
+                    Properties[PropertyEnum.SecondaryResource] = secondaryResource;
+
+                    break;
+            }
+        }
+
         public void TriggerEntityActionEventAlly(EntitySelectorActionEventType eventType)
         {
             if (SpawnGroup == null) return;
@@ -1797,6 +2247,85 @@ namespace MHServerEmu.Games.Entities
             return power.Activate(ref settings);
         }
 
+        protected PowerUseResult ActivateProcPower(Power procPower, ref PowerActivationSettings settings, WorldEntity activator, bool interruptActivePower = false)
+        {
+            if (IsSimulated == false)
+                return PowerUseResult.OwnerNotSimulated;
+
+            PrototypeId procPowerProtoRef = procPower.PrototypeDataRef;
+            //Logger.Debug($"ActivateProcPower(): {procPowerProtoRef.GetName()} on [{this}]");
+
+            // Apply target override if there is one
+            ulong procTargetOverrideId = activator.Properties[PropertyEnum.ProcTargetOverride, procPowerProtoRef];
+            if (procTargetOverrideId != InvalidId)
+            {
+                WorldEntity procTargetOverride = Game.EntityManager.GetEntity<WorldEntity>(procTargetOverrideId);
+                if (procTargetOverride != null && procTargetOverride.IsInWorld)
+                {
+                    settings.TargetEntityId = procTargetOverride.Id;
+                    settings.TargetPosition = procTargetOverride.RegionLocation.Position;
+                }
+            }
+
+            // Find the target
+            WorldEntity target = null;
+            switch (procPower.GetTargetingShape())
+            {
+                case TargetingShapeType.Self:
+                    target = procPower.Owner;
+                    break;
+
+                case TargetingShapeType.SingleTargetRandom:
+                    target = procPower.GetRandomTarget();
+                    if (target != null)
+                    {
+                        settings.TargetEntityId = target.Id;
+                        settings.TargetPosition = target.RegionLocation.Position;
+                    }
+                    break;
+
+                default:
+                    target = Game.EntityManager.GetEntity<WorldEntity>(settings.TargetEntityId);
+                    break;
+            }
+
+            // Pre-validate activation
+            PowerUseResult result = procPower.CanActivate(target, settings.TargetPosition, settings.Flags);
+            if (result != PowerUseResult.Success)
+                return result;
+
+            // Interrupt the current power if requested
+            if (interruptActivePower && procPower.IsExclusiveActivation())
+            {
+                Power activePower = GetActivePower();
+                activePower?.EndPower(EndPowerFlags.ExplicitCancel | EndPowerFlags.Interrupting);
+            }
+
+            // Set index properties on the proc power
+            procPower.Properties[PropertyEnum.PowerRank] = Properties.HasProperty(PropertyEnum.PowerRank)
+                ? Properties[PropertyEnum.PowerRank]
+                : activator.Properties[PropertyEnum.ProcPowerRank, procPowerProtoRef];
+
+            procPower.Properties[PropertyEnum.CharacterLevel] = CharacterLevel;
+            procPower.Properties[PropertyEnum.CombatLevel] = CombatLevel;
+            procPower.Properties[PropertyEnum.ItemLevel] = Properties[PropertyEnum.ProcPowerItemLevel, procPowerProtoRef];
+            procPower.Properties[PropertyEnum.ItemVariation] = Properties[PropertyEnum.ProcPowerItemVariation, procPowerProtoRef];
+            procPower.Properties[PropertyEnum.InventoryStackCount] = Properties[PropertyEnum.ProcPowerInvStackCount, procPowerProtoRef];
+            procPower.Properties[PropertyEnum.SpawnGroupId] = Properties[PropertyEnum.SpawnGroupId];
+
+            // Set additional settings.
+            // NOTE: TriggeringPowerRef is applied to the owner by conditions that also grant the procs.
+            settings.TriggeringPowerRef = Properties[PropertyEnum.TriggeringPowerRef, procPowerProtoRef];
+            settings.FXRandomSeed = Game.Random.Next(1, 10000);
+
+            // Activate the proc power
+            result = procPower.Activate(ref settings);
+            if (result == PowerUseResult.Success && settings.Flags.HasFlag(PowerActivationSettingsFlags.NoOnPowerUseProcs) == false)
+                TryActivateOnPowerUseProcs(ProcTriggerType.OnPowerUseProcEffect, procPower, ref settings);
+
+            return result;
+        }
+
         private Power GetActivePower()
         {
             if (ActivePowerRef != PrototypeId.Invalid)
@@ -1824,14 +2353,10 @@ namespace MHServerEmu.Games.Entities
 
         #region Combat State
 
-        public virtual void EnterCombat()
+        public virtual bool EnterCombat()
         {
-            // TODO
-        }
-
-        public virtual void ExitCombat()
-        {
-            // TODO
+            // Overriden in Agent
+            return true;
         }
 
         #endregion
@@ -1872,12 +2397,43 @@ namespace MHServerEmu.Games.Entities
 
         public float GetDefenseRating(DamageType damageType)
         {
-            throw new NotImplementedException();
+            float defense = Properties[PropertyEnum.Defense, damageType];
+            float defenseMult = 1f + Properties[PropertyEnum.DefenseChangePercent, damageType];
+
+            if (damageType != DamageType.Any)
+            {
+                defense += Properties[PropertyEnum.Defense, DamageType.Any];
+                defenseMult += Properties[PropertyEnum.DefenseChangePercent, DamageType.Any];
+            }
+
+            return Math.Max(0f, defense * defenseMult);
         }
 
-        public float GetDamageReductionPct(float defenseRating, WorldEntity worldEntity, PowerPrototype powerProto)
+        public float GetDamageReductionPct(float defenseRating, PropertyCollection attackerProperties, PowerPrototype powerProto)
         {
-            throw new NotImplementedException();
+            EvalPrototype evalProto = GameDatabase.CombatGlobalsPrototype.EvalDamageReduction;
+            if (evalProto == null) return Logger.WarnReturn(0f, "GetDamageReductionPct(): evalProto == null");
+
+            return GetDamageReductionPct(Properties, evalProto, defenseRating, attackerProperties, powerProto);
+        }
+
+        private static float GetDamageReductionPct(PropertyCollection targetProperties, EvalPrototype evalProto, float defenseRating,
+            PropertyCollection attackerProperties, PowerPrototype powerProto)
+        {
+            // Block / dodge chances also provide damage reduction
+            float blockChance = Power.GetBlockChance(powerProto, attackerProperties, targetProperties, InvalidId);
+            float dodgeChance = Power.GetDodgeChance(powerProto, attackerProperties, targetProperties, InvalidId);
+
+            using EvalContextData evalContext = ObjectPoolManager.Instance.Get<EvalContextData>();
+            evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Entity, targetProperties);
+            evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Other, attackerProperties);
+            evalContext.SetVar_Float(EvalContext.Var1, defenseRating);
+
+            // The eval truncates values, so we need to multiply by 100 to save the decimal part for block / dodge chances
+            evalContext.SetVar_Int(EvalContext.Var2, MathHelper.RoundToInt(blockChance * 100f));
+            evalContext.SetVar_Int(EvalContext.Var3, MathHelper.RoundToInt(dodgeChance * 100f));
+
+            return Eval.RunFloat(evalProto, evalContext);
         }
 
         public float GetDamageRating(DamageType damageType = DamageType.Any)
@@ -1923,7 +2479,7 @@ namespace MHServerEmu.Games.Entities
                 // Apply tab bonuses for avatars
                 if (Prototype is AvatarPrototype avatarProto)
                 {
-                    var powerProgTableRef = avatarProto.GetPowerProgressionTableTabRefForPower(powerProto.DataRef);
+                    PrototypeId powerProgTableRef = avatarProto.GetPowerProgressionTableTabRefForPower(powerProto.DataRef);
                     if (powerProgTableRef != PrototypeId.Invalid)
                         castSpeedPct += Properties[PropertyEnum.CastSpeedIncrPctTab, powerProgTableRef, avatarProto.DataRef];
                 }
@@ -1946,6 +2502,55 @@ namespace MHServerEmu.Games.Entities
             castSpeedPct = MathF.Max(castSpeedPct, 0.5f);
 
             return castSpeedPct;
+        }
+
+        public float GetEnduranceCostMultiplier(ManaType manaType, PowerPrototype powerProto, bool canSkipCost)
+        {
+            // NOTE: CombatGlobalsPrototype.EnduranceCostChangePctMin is 0f, which is what prevents the multiplier from going negative.
+            CombatGlobalsPrototype combatGlobals = GameDatabase.CombatGlobalsPrototype;
+            if (combatGlobals == null) return Logger.WarnReturn(1f, "GetEnduranceCostMultiplier(): combatGlobals == null");
+
+            // Check for endurance cost skips
+            if (canSkipCost && Properties[PropertyEnum.NoEnduranceCosts, manaType])
+                return 0f;
+
+            // Check for overrides
+            // NOTE: The default value for EnduranceCostChangePctOverride is -1f, which indicates no override
+            // Mana type specific override takes priority over the global one
+            float enduranceCostChangePctOverride = Properties[PropertyEnum.EnduranceCostChangePctOverride, manaType];
+
+            if (enduranceCostChangePctOverride < 0f)
+                enduranceCostChangePctOverride = Properties[PropertyEnum.EnduranceCostChangePctOverride, ManaType.TypeAll];
+
+            if (enduranceCostChangePctOverride >= 0f)
+                return MathF.Max(1f + enduranceCostChangePctOverride, combatGlobals.EnduranceCostChangePctMin);
+
+            // Accumulate modifiers
+            float multiplier = 1f;
+
+            if (manaType != ManaType.TypeAll)
+                multiplier += Properties[PropertyEnum.EnduranceCostChangePct, manaType];
+
+            multiplier += Properties[PropertyEnum.EnduranceCostChangePct, ManaType.TypeAll];
+
+            if (powerProto != null)
+            {
+                // Keyword modifiers
+                if (manaType != ManaType.TypeAll)
+                    Power.AccumulateKeywordProperties(ref multiplier, powerProto, Properties, Properties, PropertyEnum.EnduranceCostChangePctKeywrd, (int)manaType);
+
+                Power.AccumulateKeywordProperties(ref multiplier, powerProto, Properties, Properties, PropertyEnum.EnduranceCostChangePctKeywrd, (int)ManaType.TypeAll);
+
+                // Apply tab modifiers for avatars
+                if (Prototype is AvatarPrototype avatarProto)
+                {
+                    PrototypeId powerProgTableRef = avatarProto.GetPowerProgressionTableTabRefForPower(powerProto.DataRef);
+                    if (powerProgTableRef != PrototypeId.Invalid)
+                        multiplier += Properties[PropertyEnum.EnduranceCostChangePctTab, powerProgTableRef, avatarProto.DataRef];
+                }
+            }
+
+            return MathF.Max(multiplier, combatGlobals.EnduranceCostChangePctMin);
         }
 
         #endregion
@@ -2218,6 +2823,8 @@ namespace MHServerEmu.Games.Entities
             if (Bounds.CollisionType != BoundsCollisionType.None)
                 RegisterForPendingPhysicsResolve();
 
+            InitializeProcEffectPowers();
+
             ConditionCollection?.OnOwnerEnteredWorld();
 
             UpdateInterestPolicies(true, settings);
@@ -2262,6 +2869,8 @@ namespace MHServerEmu.Games.Entities
 
             ConditionCollection?.OnOwnerExitedWorld();
 
+            StopAllPropertyTickers();
+
             PowerCollection?.OnOwnerExitedWorld();
 
             UpdateInterestPolicies(false);
@@ -2272,6 +2881,12 @@ namespace MHServerEmu.Games.Entities
             base.OnDeallocate();
             PowerCollection?.OnOwnerDeallocate();
             ConditionCollection?.OnOwnerDeallocate();
+        }
+
+        public override void OnLifespanExpired()
+        {
+            TryActivateOnLifespanExpiredProcs();
+            Kill();
         }
 
         public virtual void OnDramaticEntranceEnd() { }
@@ -2354,6 +2969,14 @@ namespace MHServerEmu.Games.Entities
 
                     break;
 
+                case PropertyEnum.Endurance:
+                    if (IsInWorld)
+                    {
+                        Property.FromParam(id, 0, out int manaTypeValue);
+                        TryActivateOnEnduranceProcs((ManaType)manaTypeValue);
+                    }
+                    break;
+
                 case PropertyEnum.EnemyBoost:
                     if (IsSimulated)
                     {
@@ -2367,6 +2990,12 @@ namespace MHServerEmu.Games.Entities
 
                         ModChangeModEffects(modProtoRef, newValue);
                     }
+
+                    break;
+
+                case PropertyEnum.Health:
+                    if (IsInWorld && TestStatus(EntityStatus.EnteringWorld) == false)
+                        TryActivateOnHealthProcs();
 
                     break;
 
@@ -2555,12 +3184,23 @@ namespace MHServerEmu.Games.Entities
         public virtual bool OnPowerUnassigned(Power power) { return true; }
         public virtual void OnPowerEnded(Power power, EndPowerFlags flags) { }
         public virtual void OnConditionRemoved(Condition condition) { }
-        public virtual void OnNegativeStatusEffectApplied(ulong conditionId) { }
+
+        public virtual bool OnNegativeStatusEffectApplied(ulong conditionId)
+        {
+            TryActivateOnNegStatusAppliedProcs();
+            return true;
+        }
 
         public virtual void OnOverlapBegin(WorldEntity whom, Vector3 whoPos, Vector3 whomPos) { }
         public virtual void OnOverlapEnd(WorldEntity whom) { }
         public virtual void OnCollide(WorldEntity whom, Vector3 whoPos) { }
-        public virtual void OnSkillshotReflected(Missile missile) { }
+
+        public virtual void OnSkillshotReflected(Missile missile)
+        {
+            TryActivateOnSkillshotReflectProcs();
+        }
+
+        protected virtual void OnDamaged(PowerResults powerResults) { }
 
         #endregion
 
@@ -3012,10 +3652,17 @@ namespace MHServerEmu.Games.Entities
 
         public bool HasConditionWithKeyword(PrototypeId keywordRef)
         {
-            var keywordProto = GameDatabase.GetPrototype<KeywordPrototype>(keywordRef);
-            if (keywordProto == null) return false;
-            if (keywordProto is not PowerKeywordPrototype) return false;
-            return HasConditionWithKeyword(GameDatabase.DataDirectory.GetPrototypeEnumValue(keywordRef, GameDatabase.DataDirectory.KeywordBlueprint));
+            return HasConditionWithKeyword(keywordRef.As<KeywordPrototype>());
+        }
+
+        public bool HasConditionWithKeyword(KeywordPrototype keywordProto)
+        {
+            if (keywordProto == null) return Logger.WarnReturn(false, "HasConditionWithKeyword(): keywordProto == null");
+
+            if (keywordProto is not PowerKeywordPrototype)
+                return false;
+
+            return HasConditionWithKeyword(GameDatabase.DataDirectory.GetPrototypeEnumValue(keywordProto.DataRef, GameDatabase.DataDirectory.KeywordBlueprint));
         }
 
         private bool HasConditionWithKeyword(int keyword)
@@ -3148,6 +3795,10 @@ namespace MHServerEmu.Games.Entities
             }
 
             bool lastUse = used && usesLeft == 0;
+            if (lastUse)
+                TryActivateOnInteractedWithProcs(ProcTriggerType.OnInteractedWithOutOfUses, interactorEntity);
+            else
+                TryActivateOnInteractedWithProcs(ProcTriggerType.OnInteractedWith, interactorEntity);
 
             if (HasLootDropEventType(LootDropEventType.OnInteractedWith))
             {
@@ -3257,6 +3908,18 @@ namespace MHServerEmu.Games.Entities
             return true;
         }
 
+        public void ScheduleTickEvent(PropertyTicker.TickData tickData)
+        {
+            EventPointer<ScheduledTickEvent> scheduledTick = new();
+            ScheduleEntityEvent(scheduledTick, TimeSpan.Zero, tickData);
+        }
+
+        public void ScheduleWeaponReturnEvent(TimeSpan delay)
+        {
+            EventPointer<ScheduledWeaponReturnEvent> scheduledWeaponReturn = new();
+            ScheduleEntityEvent(scheduledWeaponReturn, delay);
+        }
+
         public void CancelExitWorldEvent()
         {
             if (_exitWorldEvent.IsValid)
@@ -3284,15 +3947,31 @@ namespace MHServerEmu.Games.Entities
             protected override CallbackDelegate GetCallback() => (t, p1) => ((WorldEntity)t).UnassignPower(p1);
         }
 
+        private class ScheduledHealthProcUpdateEvent : CallMethodEventParam1<Entity, PrototypeId>
+        {
+            protected override CallbackDelegate GetCallback() => (t, p1) => ((WorldEntity)t).TryActivateOnHealthProcs(p1);
+        }
+
         private class ScheduledPowerResultsEvent : CallMethodEventParam1<Entity, PowerResults>
         {
             protected override CallbackDelegate GetCallback() => (t, p1) => ((WorldEntity)t).ApplyPowerResults(p1);
 
             public override bool OnCancelled()
             {
-                _param1.Clear();    // Clear to prevent leaking (TODO: PowerResults pooling)
+                _param1.Clear();    // Clear to prevent conditions leaking from their pool
                 return true;
             }
+        }
+
+        private class ScheduledTickEvent : CallMethodEventParam1<Entity, PropertyTicker.TickData>
+        {
+            protected override CallbackDelegate GetCallback() => (t, p1) => ((WorldEntity)t).ApplyPropertyTicker(p1);
+        }
+
+        private class ScheduledWeaponReturnEvent : CallMethodEvent<Entity>
+        {
+            protected override CallbackDelegate GetCallback() => (t) => t.Properties[PropertyEnum.WeaponMissing] = false;
+            public override bool OnCancelled() => _eventTarget.Properties[PropertyEnum.WeaponMissing] = false;
         }
 
         private class AwardInteractionLootEvent : CallMethodEventParam1<Entity, ulong>
