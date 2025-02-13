@@ -155,6 +155,7 @@ namespace MHServerEmu.Games.Entities
         public PrototypeId CurrentOpenStashPagePrototypeRef { get; set; }
         public long InfinityXP { get => Properties[PropertyEnum.InfinityXP]; }
         public long OmegaXP { get => Properties[PropertyEnum.OmegaXP]; }
+        public long GazillioniteBalance { get => PlayerConnection.GazillioniteBalance; set => PlayerConnection.GazillioniteBalance = value; }
 
         public Player(Game game) : base(game)
         {
@@ -1061,6 +1062,22 @@ namespace MHServerEmu.Games.Entities
             }
 
             return result;
+        }
+
+        public bool AcquireGazillionite(long amount)
+        {
+            if (amount <= 0) return Logger.WarnReturn(false, "AcquireGazillionite(): amount <= 0");
+
+            long balance = GazillioniteBalance;
+            balance += amount;
+            GazillioniteBalance = balance;
+
+            SendMessage(NetMessageGrantGToPlayerNotification.CreateBuilder()
+                .SetDidSucceed(true)
+                .SetCurrentCurrencyBalance(balance)
+                .Build());
+
+            return true;
         }
 
         protected override bool InitInventories(bool populateInventories)
