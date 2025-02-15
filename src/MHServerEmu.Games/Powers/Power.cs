@@ -25,6 +25,7 @@ using MHServerEmu.Games.Powers.Conditions;
 using MHServerEmu.Games.Properties;
 using MHServerEmu.Games.Properties.Evals;
 using MHServerEmu.Games.Regions;
+using System.Diagnostics;
 
 namespace MHServerEmu.Games.Powers
 {
@@ -3667,6 +3668,7 @@ namespace MHServerEmu.Games.Powers
             if (Prototype.EvalOnPreApply.HasValue())
             {
                 using EvalContextData evalContext = ObjectPoolManager.Instance.Get<EvalContextData>();
+                evalContext.Game = Game;
                 evalContext.SetVar_PropertyCollectionPtr(EvalContext.Default, payload.Properties);
                 evalContext.SetVar_PropertyCollectionPtr(EvalContext.Entity, Owner.Properties);
                 evalContext.SetReadOnlyVar_PropertyCollectionPtr(EvalContext.Var1, Properties);
@@ -5475,8 +5477,25 @@ namespace MHServerEmu.Games.Powers
 
         private class EndPowerEvent : CallMethodEventParam1<Power, EndPowerFlags>
         {
+            private static readonly TimeSpan LogThreshold = TimeSpan.FromMilliseconds(50);
+
+            [ThreadStatic]
+            private static Stopwatch Stopwatch;
+
             public EndPowerFlags Flags { get => _param1; set => _param1 = value; }
-            protected override CallbackDelegate GetCallback() => (t, p1) => t.EndPower(p1);
+            protected override CallbackDelegate GetCallback()
+            {
+                return static (t, p1) =>
+                {
+                    // Extra logging to figure out what is taking so long
+                    Stopwatch ??= new();
+                    Stopwatch.Restart();
+                    t.EndPower(p1);
+                    Stopwatch.Stop();
+                    if (Stopwatch.Elapsed > LogThreshold)
+                        Logger.Debug($"EndPowerEvent for [{t}] took {Stopwatch.Elapsed.TotalMilliseconds} ms");
+                };
+            }
         }
 
         private class ReapplyIndexPropertiesEvent : CallMethodEventParam1<Power, PowerIndexPropertyFlags>
