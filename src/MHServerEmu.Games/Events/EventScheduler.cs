@@ -158,12 +158,12 @@ namespace MHServerEmu.Games.Events
             long startFrame = CurrentTime.CalcNumTimeQuantums(_quantumSize);
             long endFrame = updateEndTime.CalcNumTimeQuantums(_quantumSize);
 
-            // Process all frames that are within our time window
+            // Process all frames within our time window
             for (long currentFrame = startFrame; currentFrame <= endFrame; currentFrame++)
             {
                 _currentFrame = currentFrame;
 
-                // Process events for each millisecond of the frame
+                // Process events for each millisecond of the frame covered by our time window
                 long frameBucketStart = currentFrame == startFrame ? ((long)CurrentTime.TotalMilliseconds % _numFrameBuckets) : 0;
                 long frameBucketEnd = currentFrame == endFrame ? ((long)updateEndTime.TotalMilliseconds % _numFrameBuckets) + 1 : _numFrameBuckets;
 
@@ -191,7 +191,7 @@ namespace MHServerEmu.Games.Events
                     }
                 }
 
-                // Do scheduling for the next frame if we still have more to go
+                // Prepare the next frame
                 if (currentFrame != endFrame)
                 {
                     WindowBucket windowBucket = _windowBuckets[(currentFrame + 1) % _numWindowBuckets];
@@ -204,14 +204,14 @@ namespace MHServerEmu.Games.Events
                     }
 
                     // Prepare events for the next time we reach this window bucket
-                    if (windowBucket.FutureListDict.TryGetValue(currentFrame + 1 + _numWindowBuckets, out LinkedList<ScheduledEvent> futureList))
+                    if (windowBucket.FutureListDict.Remove(currentFrame + 1 + _numWindowBuckets, out LinkedList<ScheduledEvent> futureList))
                     {
                         (windowBucket.NextList, futureList) = (futureList, windowBucket.NextList);
                         _eventPool.ReturnList(futureList);
                     }
 
-                    // Advance time by one frame
-                    CurrentTime = (_currentFrame + 1) * _quantumSize;
+                    // Advance time to the beginning of the next frame
+                    CurrentTime = (currentFrame + 1) * _quantumSize;
                 }
             }
 
@@ -271,7 +271,7 @@ namespace MHServerEmu.Games.Events
 
                 if ((fireTimeFrame - _currentFrame) <= _numWindowBuckets)
                 {
-                    // This event will be happening very soon (the next time this window is reached)
+                    // This event will be happening soon (the next time this window is reached)
                     windowBucket.NextList.AddLast(@event.ProcessListNode);
                 }
                 else
@@ -325,39 +325,49 @@ namespace MHServerEmu.Games.Events
             @event.FireTime = fireTimeAfter;
 
             // Resort this event into the appropriate bucket
-            if (fireTimeFrameAfter != fireTimeFrameBefore)
+            if (fireTimeFrameAfter == fireTimeFrameBefore)
             {
-                @event.ProcessListNode.Remove();
-                WindowBucket windowBucket = _windowBuckets[fireTimeFrameAfter % _numWindowBuckets];
-
-                if ((fireTimeFrameAfter - _currentFrame) < _numWindowBuckets)
-                {
-                    // This event will be happening very soon (the next time this window is reached)
-                    windowBucket.NextList.AddLast(@event.ProcessListNode);
-                }
-                else
-                {
-                    // This event will not be happening within the current window range, put it away for now
-                    if (windowBucket.FutureListDict.TryGetValue(fireTimeFrameAfter, out LinkedList<ScheduledEvent> futureList) == false)
-                    {
-                        futureList = _eventPool.GetList();
-                        windowBucket.FutureListDict.Add(fireTimeFrameAfter, futureList);
-                    }
-
-                    futureList.AddLast(@event.ProcessListNode);
-                }
-            }
-            else
-            {
-                // If the new fire time frame matches the old one, we need to redo bucket sorting
+                // If we are rescheduling an event within the current frame, we need to redo the bucket sort for it.
+                // In other cases it will be bucket sorted in OnTriggered() when the scheduler reaches the frame.
                 if (fireTimeFrameAfter == _currentFrame)
                 {
                     @event.ProcessListNode.Remove();
                     long frameBucketIndex = (long)@event.FireTime.TotalMilliseconds % _numFrameBuckets;
                     _frameBuckets[frameBucketIndex].AddLast(@event.ProcessListNode);
                 }
+            }
+            else
+            {
+                @event.ProcessListNode.Remove();
 
-                // In other cases it will be bucket sorted in OnTriggered() when the scheduler reaches the frame
+                if (fireTimeFrameAfter == _currentFrame)
+                {
+                    // This event is being rescheduled from a window bucket into the current frame
+                    long frameBucketIndex = (long)@event.FireTime.TotalMilliseconds % _numFrameBuckets;
+                    _frameBuckets[frameBucketIndex].AddLast(@event.ProcessListNode);
+                }
+                else
+                {
+                    // This event is being rescheduled into a window bucket
+                    WindowBucket windowBucket = _windowBuckets[fireTimeFrameAfter % _numWindowBuckets];
+
+                    if ((fireTimeFrameAfter - _currentFrame) < _numWindowBuckets)
+                    {
+                        // This event will be happening soon (the next time this window is reached)
+                        windowBucket.NextList.AddLast(@event.ProcessListNode);
+                    }
+                    else
+                    {
+                        // This event will not be happening within the current window range, put it away for now
+                        if (windowBucket.FutureListDict.TryGetValue(fireTimeFrameAfter, out LinkedList<ScheduledEvent> futureList) == false)
+                        {
+                            futureList = _eventPool.GetList();
+                            windowBucket.FutureListDict.Add(fireTimeFrameAfter, futureList);
+                        }
+
+                        futureList.AddLast(@event.ProcessListNode);
+                    }
+                }
             }
 
             return true;
