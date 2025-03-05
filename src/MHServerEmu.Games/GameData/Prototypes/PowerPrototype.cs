@@ -1,4 +1,5 @@
-﻿using MHServerEmu.Core.Extensions;
+﻿using MHServerEmu.Core.Collections;
+using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Memory;
@@ -16,12 +17,6 @@ namespace MHServerEmu.Games.GameData.Prototypes
 {
     public class PowerPrototype : Prototype
     {
-        private static readonly Logger Logger = LogManager.CreateLogger();
-
-        // Local instance refs to speed up access
-        private TargetingReachPrototype _targetingReachPtr;
-        private TargetingStylePrototype _targetingStylePtr;
-
         public PrototypePropertyCollection Properties { get; protected set; }
         public PowerEventActionPrototype[] ActionsTriggeredOnPowerEvent { get; protected set; }
         public PowerActivationType Activation { get; protected set; }
@@ -168,8 +163,16 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         //---
 
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
         // See GetRecurringCostInterval() for why we use 500 ms here.
         private static readonly TimeSpan RecurringCostIntervalDefault = TimeSpan.FromMilliseconds(500);
+
+        private readonly GBitArray _powerEventMask = new();
+
+        // Local instance refs to speed up access
+        private TargetingReachPrototype _targetingReachPtr;
+        private TargetingStylePrototype _targetingStylePtr;
 
         [DoNotCopy]
         public float DamageTuningScore { get; private set; }
@@ -238,7 +241,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
             {
                 foreach (PowerEventActionPrototype triggeredAction in ActionsTriggeredOnPowerEvent)
                 {
-                    // TODO: Populate lookup for power event actions
+                    // Populate lookup for power event actions
+                    _powerEventMask.Set((int)triggeredAction.PowerEvent);
                     
                     if (triggeredAction.EventAction == PowerEventActionType.RescheduleActivationInSeconds && triggeredAction.Power == PrototypeId.Invalid)
                         HasRescheduleActivationEventWithInvalidPowerRef = true;
@@ -332,6 +336,11 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public bool HasKeyword(KeywordPrototype keywordProto)
         {
             return (keywordProto != null && KeywordPrototype.TestKeywordBit(KeywordsMask, keywordProto));
+        }
+
+        public bool HasPowerEvent(PowerEventType eventType)
+        {
+            return _powerEventMask[(int)eventType];
         }
 
         public TargetingReachPrototype GetTargetingReach()
@@ -832,6 +841,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
         }
     }
 
+    #region SituationalTriggerPrototype
+
     public class SituationalTriggerPrototype : Prototype
     {
         public PrototypeId TriggerCollider { get; protected set; }
@@ -839,6 +850,11 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public EntityFilterPrototype EntityFilter { get; protected set; }
         public bool AllowDead { get; protected set; }
         public bool ActivateOnTriggerSuccess { get; protected set; }
+
+        public virtual SituationalTrigger AllocateTrigger(SituationalPowerComponent powerComponent)
+        {
+            return new SituationalTrigger(this, powerComponent);
+        }
     }
 
     public class SituationalTriggerOnKilledPrototype : SituationalTriggerPrototype
@@ -848,12 +864,16 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public bool KilledByOther { get; protected set; }
         public bool KilledBySelf { get; protected set; }
         public bool WasLastInRange { get; protected set; }
+
+        // Not used
     }
 
     public class SituationalTriggerOnHealthThresholdPrototype : SituationalTriggerPrototype
     {
         public bool HealthBelow { get; protected set; }
         public float HealthPercent { get; protected set; }
+
+        // Not used
     }
 
     public class SituationalTriggerOnStatusEffectPrototype : SituationalTriggerPrototype
@@ -861,12 +881,24 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public PrototypeId[] TriggeringProperties { get; protected set; }
         public bool TriggersOnStatusApplied { get; protected set; }
         public PrototypeId[] TriggeringConditionKeywords { get; protected set; }
+
+        public override SituationalTrigger AllocateTrigger(SituationalPowerComponent powerComponent)
+        {
+            return new SituationalTriggerOnStatusEffect(this, powerComponent);
+        }       
     }
 
     public class SituationalTriggerInvAndWorldPrototype : SituationalTriggerPrototype
     {
         public PrototypeId InventoryRef { get; protected set; }
+
+        public override SituationalTrigger AllocateTrigger(SituationalPowerComponent powerComponent)
+        {
+            return new SituationalTriggerInvAndWorld(this, powerComponent);
+        }       
     }
+
+    #endregion
 
     public class SituationalPowerComponentPrototype : Prototype
     {

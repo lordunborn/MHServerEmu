@@ -158,6 +158,7 @@ namespace MHServerEmu.Games.Entities
         public bool IsDiscoverable { get => CompatibleReplicationChannels.HasFlag(AOINetworkPolicyValues.AOIChannelDiscovery); }
         public bool IsTrackable { get => WorldEntityPrototype?.TrackingDisabled == false; }
         public bool IsLiveTuningEnabled { get => WorldEntityPrototype?.IsLiveTuningEnabled() == true; }
+        public bool IsVacuumable { get => WorldEntityPrototype?.IsVacuumable == true; }
         public Dictionary<ulong, long> TankingContributors { get; private set; }
         public Dictionary<ulong, long> DamageContributors { get; private set; }
         public TagPlayers TagPlayers { get; private set; }
@@ -373,6 +374,13 @@ namespace MHServerEmu.Games.Entities
                 Destroy();
             else
                 ScheduleDestroyEvent(removeFromWorldTimer);
+        }
+
+        public void AttachToEntity(WorldEntity target)
+        {
+            if (target == null || this == target) return;
+            if (target.IsInWorld && target.TestStatus(EntityStatus.ExitingWorld) == false)
+                Properties[PropertyEnum.AttachedToEntityId] = target.Id;
         }
 
         #region Summon
@@ -3454,9 +3462,10 @@ namespace MHServerEmu.Games.Entities
             if (oldRegion == newRegion)
                 return;
 
-            Properties[PropertyEnum.MapRegionId] = newRegion != null ? newRegion.Id : 0;
+            if (newRegion != null)
+                ApplyLootTableSourceOverrides(newRegion);
 
-            // TODO other events
+            Properties[PropertyEnum.MapRegionId] = newRegion != null ? newRegion.Id : 0;
         }
 
         public virtual void OnLocomotionStateChanged(LocomotionState oldLocomotionState, LocomotionState newLocomotionState)
@@ -3756,6 +3765,65 @@ namespace MHServerEmu.Games.Entities
                 player.AwardBonusItemFindPoints(bonusItemFindPoints, settings);
             }
 
+            return true;
+        }
+
+        private bool ApplyLootTableSourceOverrides(Region region)
+        {
+            // See if we have an override source (e.g. this is used primarily for chests with variable rewards in Holo-Sim / X-Defense / Danger Room)
+            AssetId lootTableSource = Properties[PropertyEnum.LootTableSource];
+            if (lootTableSource == AssetId.Invalid)
+                return true;
+
+            WorldEntityPrototype worldEntityProto = WorldEntityPrototype;
+            RegionPrototype regionProto = region.Prototype;
+
+            Dictionary<PropertyId, PropertyValue> overrides = DictionaryPool<PropertyId, PropertyValue>.Instance.Get();
+
+            foreach (var kvp in Properties.IteratePropertyRange(PropertyEnum.LootTablePrototype))
+            {
+                Property.FromParam(kvp.Key, 0, out int lootEventValue);
+                LootDropEventType lootEvent = (LootDropEventType)lootEventValue;
+                PrototypeId lootTableOverrideRef = PrototypeId.Invalid;
+
+                // Region property overrides (e.g. affixes) take priority over the region prototype
+
+                // Check event-specific events
+                AssetId lootEventAsset = Property.PropertyEnumToAsset(PropertyEnum.LootTablePrototype, 0, (int)lootEvent);
+                lootTableOverrideRef = region.Properties[PropertyEnum.LootSourceTableOverride, lootTableSource, lootEventAsset];
+                if (lootTableOverrideRef != PrototypeId.Invalid)
+                {
+                    overrides[kvp.Key] = lootTableOverrideRef;
+                    continue;
+                }
+
+                // Region property overrides for unspecified events (OnKilled / OnInteractedWith)
+                if (lootEvent == LootDropEventType.OnKilled || lootEvent == LootDropEventType.OnInteractedWith)
+                {
+                    lootEventAsset = Property.PropertyEnumToAsset(PropertyEnum.LootTablePrototype, 0, (int)LootDropEventType.None);
+                    lootTableOverrideRef = region.Properties[PropertyEnum.LootSourceTableOverride, lootTableSource, lootEventAsset];
+                    if (lootTableOverrideRef != PrototypeId.Invalid)
+                    {
+                        overrides[kvp.Key] = lootTableOverrideRef;
+                        continue;
+                    }
+                }
+
+                // Region prototype overrides
+                lootTableOverrideRef = regionProto.GetLootTableOverride(this, lootTableSource, lootEvent);
+                if (lootTableOverrideRef != PrototypeId.Invalid)
+                {
+                    overrides[kvp.Key] = lootTableOverrideRef;
+                    continue;
+                }
+
+                Logger.Warn($"ApplyLootTableSourceOverrides(): Failed to find override for loot table source {lootTableSource.GetName()} for entity [{this}] in region [{region}]");
+            }
+
+            foreach (var kvp in overrides)
+                Properties[kvp.Key] = kvp.Value;
+
+            DictionaryPool<PropertyId, PropertyValue>.Instance.Return(overrides);
             return true;
         }
 
