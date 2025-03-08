@@ -467,6 +467,7 @@ namespace MHServerEmu.Games.Network
                 case ClientToGameServerMessage.NetMessageTryCancelActivePower:              OnTryCancelActivePower(message); break;             // 13
                 case ClientToGameServerMessage.NetMessageContinuousPowerUpdateToServer:     OnContinuousPowerUpdate(message); break;            // 14
                 case ClientToGameServerMessage.NetMessageCancelPendingAction:               OnCancelPendingAction(message); break;              // 15
+                case ClientToGameServerMessage.NetMessageGamepadMetric:                     OnGamepadMetric(message); break;                    // 31
                 case ClientToGameServerMessage.NetMessagePickupInteraction:                 OnPickupInteraction(message); break;                // 32
                 case ClientToGameServerMessage.NetMessageTryInventoryMove:                  OnTryInventoryMove(message); break;                 // 33
                 case ClientToGameServerMessage.NetMessageInventoryTrashItem:                OnInventoryTrashItem(message); break;               // 35
@@ -484,6 +485,7 @@ namespace MHServerEmu.Games.Network
                 case ClientToGameServerMessage.NetMessageReturnToHub:                       OnReturnToHub(message); break;                      // 55
                 case ClientToGameServerMessage.NetMessageRequestMissionRewards:             OnRequestMissionRewards(message); break;            // 57
                 case ClientToGameServerMessage.NetMessageRequestRemoveAndKillControlledAgent:   OnRequestRemoveAndKillControlledAgent(message); break;   // 58
+                case ClientToGameServerMessage.NetMessageDamageMeter:                       OnDamageMeter(message); break;                      // 59
                 case ClientToGameServerMessage.NetMessageMetaGameUpdateNotification:        OnMetaGameUpdateNotification(message); break;       // 63
                 case ClientToGameServerMessage.NetMessageNotifyFullscreenMovieStarted:      OnNotifyFullscreenMovieStarted(message); break;     // 84
                 case ClientToGameServerMessage.NetMessageNotifyFullscreenMovieFinished:     OnNotifyFullscreenMovieFinished(message); break;    // 85
@@ -850,6 +852,16 @@ namespace MHServerEmu.Games.Network
             return true;
         }
 
+        private bool OnGamepadMetric(MailboxMessage message)    // 31
+        {
+            var gamepadMetric = message.As<NetMessageGamepadMetric>();
+            if (gamepadMetric == null) return Logger.WarnReturn(false, $"OnGamepadMetric(): Failed to retrieve message");
+
+            // Dummy handler, we are not interested in gamepad metrics
+            //Logger.Trace($"OnGamepadMetric():\n{gamepadMetric}");
+            return true;
+        }
+
         private bool OnPickupInteraction(MailboxMessage message)    // 32
         {
             var pickupInteraction = message.As<NetMessagePickupInteraction>();
@@ -1192,7 +1204,17 @@ namespace MHServerEmu.Games.Network
             return true;
         }
 
-        private bool OnMetaGameUpdateNotification(MailboxMessage message)
+        private bool OnDamageMeter(MailboxMessage message) // 59
+        {
+            var damageMeter = message.As<NetMessageDamageMeter>();
+            if (damageMeter == null) return Logger.WarnReturn(false, $"OnDamageMeter(): Failed to retrieve message");
+
+            // Dummy handler, we are currently not interested in damage meter metrics
+            //Logger.Trace($"OnDamageMeter():\n{damageMeter}");
+            return true;
+        }
+
+        private bool OnMetaGameUpdateNotification(MailboxMessage message)   // 63
         {
             var metaGameUpdate = message.As<NetMessageMetaGameUpdateNotification>();
             if (metaGameUpdate == null) return Logger.WarnReturn(false, $"OnMetaGameUpdateNotification(): Failed to retrieve message");
@@ -1201,7 +1223,7 @@ namespace MHServerEmu.Games.Network
             return true;
         }
 
-        private bool OnNotifyFullscreenMovieStarted(MailboxMessage message)
+        private bool OnNotifyFullscreenMovieStarted(MailboxMessage message) // 84
         {
             var movieStarted = message.As<NetMessageNotifyFullscreenMovieStarted>();
             if (movieStarted == null) return Logger.WarnReturn(false, $"OnNotifyFullscreenMovieStarted(): Failed to retrieve message");
@@ -1369,7 +1391,6 @@ namespace MHServerEmu.Games.Network
             if (tryMoveInventoryContentsToGeneral == null) return Logger.WarnReturn(false, $"OnTryMoveInventoryContentsToGeneral(): Failed to retrieve message");
 
             PrototypeId sourceInventoryProtoRef = (PrototypeId)tryMoveInventoryContentsToGeneral.SourceInventoryPrototype;
-            Logger.Debug($"OnTryMoveInventoryContentsToGeneral(): {sourceInventoryProtoRef.GetName()} for {Player}");
 
             Inventory sourceInventory = Player.GetInventoryByRef(sourceInventoryProtoRef);
             if (sourceInventory == null)
@@ -1620,9 +1641,24 @@ namespace MHServerEmu.Games.Network
             var newItemGlintPlayed = message.As<NetMessageNewItemGlintPlayed>();
             if (newItemGlintPlayed == null) return Logger.WarnReturn(false, $"OnNewItemGlintPlayed(): Failed to retrieve message");
 
-            Logger.Warn($"OnNewItemGlintPlayed(): {newItemGlintPlayed}");
+            if (Player.Id != newItemGlintPlayed.PlayerId)
+                return Logger.WarnReturn(false, $"OnNewItemGlintPlayed(): Player entity id mismatch, expected {Player.Id}, got {newItemGlintPlayed.PlayerId}");
 
-            // What causes this to be sent? Do we need it?
+            EntityManager entityManager = Game.EntityManager;
+
+            for (int i = 0; i < newItemGlintPlayed.ItemIdsCount; i++)
+            {
+                ulong itemId = newItemGlintPlayed.ItemIdsList[i];
+                Item item = entityManager.GetEntity<Item>(itemId);
+                if (item == null)
+                    return Logger.WarnReturn(false, "OnNewItemGlintPlayed(): item == null");
+
+                Player owner = item.GetOwnerOfType<Player>();
+                if (owner != Player)
+                    return Logger.WarnReturn(false, $"OnNewItemGlintPlayed(): Player [{Player}] attempted to clear glint of item [{item}] belonging to other player [{owner}]");
+
+                item.Properties.RemoveProperty(PropertyEnum.ItemRecentlyAddedGlint);
+            }
 
             return true;
         }
@@ -1640,7 +1676,7 @@ namespace MHServerEmu.Games.Network
 
             Player owner = item.GetOwnerOfType<Player>();
             if (owner != Player)
-                return Logger.WarnReturn(false, $"OnNewItemHighlightCleared(): Player {Player} attempted to clear highlight of item {item} belonging to other player {owner}");
+                return Logger.WarnReturn(false, $"OnNewItemHighlightCleared(): Player [{Player}] attempted to clear highlight of item [{item}] belonging to other player [{owner}]");
 
             item.SetRecentlyAdded(false);
             return true;
