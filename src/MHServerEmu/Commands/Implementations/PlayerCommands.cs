@@ -17,7 +17,7 @@ namespace MHServerEmu.Commands.Implementations
     [CommandGroup("player", "Changes player data for this account.", AccountUserLevel.User)]
     public class PlayerCommands : CommandGroup
     {
-        [Command("costume", "Changes costume for the current avatar.\nUsage: player costume [name|reset|default]", AccountUserLevel.User)]
+        [Command("costume", "Changes costume for the current avatar.\nUsage: player costume [name|reset|default]", AccountUserLevel.Moderator)]
         public string Costume(string[] @params, FrontendClient client)
         {
             if (client == null) return "You can only invoke this command from the game.";
