@@ -78,29 +78,5 @@ namespace MHServerEmu.Commands.Implementations
             return string.Empty;
         }
 
-        [Command("reloadmotd", "Reloads message of the day settings.\nUsage: server reloadmotd", AccountUserLevel.Admin)]
-        public string ReloadMotd(string[] @params, FrontendClient client)
-        {
-            if (client != null) return "You can only invoke this command from the server console.";
-            
-            var iniFile = new IniFile(Path.Combine(FileHelper.ServerRoot, "Config.ini"));
-            
-            // Build new MOTD, keeping Broadcaster Player Name and Prestige. Can be changed similarly for those.
-            // Only update MOTD.
-            var newMotd = ChatBroadcastMessage.CreateBuilder()
-                .SetRoomType(ChatRoomTypes.CHAT_ROOM_TYPE_BROADCAST_ALL_SERVERS)
-                .SetFromPlayerName(ChatHelper.Motd.FromPlayerName)
-                .SetTheMessage(ChatMessage.CreateBuilder().SetBody(iniFile.GetString("GroupingManager", "MotdText")))
-                .SetPrestigeLevel(ChatHelper.Motd.PrestigeLevel)
-                .Build();
-            
-            var groupingManager = ServerManager.Instance.GetGameService(ServerType.GroupingManager) as GroupingManagerService;
-            if (groupingManager != null)
-            {
-                groupingManager.BroadcastMessage(newMotd);
-            }
-            
-            return "MOTD settings reloaded and broadcast successfully.";
-        }
     }
 }
