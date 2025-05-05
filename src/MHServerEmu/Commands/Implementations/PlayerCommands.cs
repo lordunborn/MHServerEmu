@@ -19,6 +19,7 @@ namespace MHServerEmu.Commands.Implementations
         [Command("costume")]
         [CommandDescription("Changes costume for the current avatar.")]
         [CommandUsage("player costume [name|reset|default]")]
+        [CommandUserLevel(AccountUserLevel.Moderator)]
         [CommandInvokerType(CommandInvokerType.Client)]
         [CommandParamCount(1)]
         public string Costume(string[] @params, NetClient client)
