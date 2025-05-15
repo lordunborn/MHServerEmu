@@ -3107,7 +3107,7 @@ namespace MHServerEmu.Games.Entities
                 foreach (Player player in playerList)
                 {
                     using LootInputSettings inputSettings = ObjectPoolManager.Instance.Get<LootInputSettings>();
-                    inputSettings.Initialize(LootContext.Drop, player, this, CharacterLevel);
+                    inputSettings.Initialize(LootContext.None, player, this, CharacterLevel);
                     Game.LootManager.AwardLootFromTables(tables, inputSettings, recipientId++);
                 }
 
