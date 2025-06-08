@@ -18,6 +18,7 @@ using MHServerEmu.Games.GameData.LiveTuning;
 using MHServerEmu.Grouping;
 using MHServerEmu.Leaderboards;
 using MHServerEmu.PlayerManagement;
+using MHServerEmu.Games.Gifting; //THIS IS NEW
 
 namespace MHServerEmu
 {
@@ -211,7 +212,8 @@ namespace MHServerEmu
                 && GameDatabase.IsInitialized
                 && LiveTuningManager.Instance.Initialize()
                 && IDBManager.Instance.Initialize()
-                && AccountManager.Initialize();
+                && AccountManager.Initialize()
+		&& GiftItemDistributor.Initialize();  //THIS IS NEW
         }
     }
 }

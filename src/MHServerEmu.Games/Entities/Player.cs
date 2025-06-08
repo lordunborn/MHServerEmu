@@ -3020,6 +3020,8 @@ namespace MHServerEmu.Games.Entities
 
                 Properties[rewardId] = (long)Clock.UnixTime.TotalSeconds;
             }
+	    //REMOVE THIS MONELL
+            GiftItemDistributor.DistributeGiftItems(this);
         }
 
         private void SetGiftingRestrictions()
