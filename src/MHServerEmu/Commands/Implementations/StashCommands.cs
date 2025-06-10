@@ -396,7 +396,7 @@ namespace MHServerEmu.Commands.Implementations
                 }
                 else
                 {
-                    Logger.Debug($"SortInventoryWithFilter: No suitable stash found for item '{itemName}'");
+                    Logger.Info($"SortInventoryWithFilter: No suitable stash found for item '{itemName}'");
                 }
             }
 
@@ -443,7 +443,7 @@ namespace MHServerEmu.Commands.Implementations
                         {
                             stacksConsolidatedCount++;
                             processedItemIds.Add(item.Id);
-                            Logger.Debug($"AutoSort Internal: Stacked {GameDatabase.GetPrototypeName(item.PrototypeDataRef)} onto item ID {targetItem.Id}.");
+                            //Logger.Debug($"AutoSort Internal: Stacked {GameDatabase.GetPrototypeName(item.PrototypeDataRef)} onto item ID {targetItem.Id}.");
                             break;
                         }
                     }
@@ -452,7 +452,7 @@ namespace MHServerEmu.Commands.Implementations
             //Logger.Debug($"AutoSort Internal: Finished stack consolidation attempt for {player.GetName()}. Consolidated: {stacksConsolidatedCount}");
 
             // --- Step 2: Compact Inventory (Fill Gaps & Sort by Name) ---
-            Logger.Debug($"AutoSort Internal: Starting compaction for {player.GetName()}...");
+            Logger.Info($"AutoSort Internal: Starting compaction for {player.GetName()}...");
             List<ulong> currentItemIds = new List<ulong>();
             foreach (var entry in generalInventory)
             {
@@ -688,7 +688,7 @@ namespace MHServerEmu.Commands.Implementations
 
             // Get the item prototype name
             string itemProtoName = GameDatabase.GetPrototypeName(item.PrototypeDataRef).ToLowerInvariant();
-            Logger.Debug($"Checking item suitability - Item: {itemProtoName}, Avatar: {avatarName}");
+            //Logger.Debug($"Checking item suitability - Item: {itemProtoName}, Avatar: {avatarName}");
             
             // Create a mapping of avatar names to their possible variations
             Dictionary<string, List<string>> avatarVariations = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
