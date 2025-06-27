@@ -44,41 +44,49 @@ namespace MHServerEmu.Commands.Implementations
             return $"Converted {NumConverted} Eternity Splinters to {gAmount} Gs.";
         }
 
-        [Command("convert")]
-        [CommandDescription("Converts a specified amount of Eternity Splinters to Gs.")]
-        [CommandUsage("store convert [amount]")]
-        [CommandInvokerType(CommandInvokerType.Client)]
-        [CommandParamCount(1)]
-        public string Convert(string[] @params, NetClient client)
-        {
-            if (int.TryParse(@params[0], out int amount) == false)
-                return $"Failed to parse amount {@params[0]}.";
+	[Command("convert")]
+	[CommandDescription("Converts a specified amount of Eternity Splinters to Gs.")]
+	[CommandUsage("store convert [amount]")]
+	[CommandInvokerType(CommandInvokerType.Client)]
+	[CommandParamCount(1)]
+	public string Convert(string[] @params, NetClient client)
+	{
+	    if (int.TryParse(@params[0], out int requestedAmount) == false)
+		return $"Failed to parse amount {@params[0]}.";
 
-            if (amount <= 0)
-                return "Amount must be greater than 0.";
+	    if (requestedAmount < 4)
+		return "Amount must be at least 4 Eternity Splinters.";
 
-            PlayerConnection playerConnection = (PlayerConnection)client;
-            Player player = playerConnection.Player;
+	    // Calculate the largest multiple of 4 we can convert
+	    int convertibleAmount = requestedAmount - (requestedAmount % 4);
+	    int remainingAmount = requestedAmount % 4;
 
-            PropertyId esPropId = new(PropertyEnum.Currency, GameDatabase.CurrencyGlobalsPrototype.EternitySplinters);
+	    PlayerConnection playerConnection = (PlayerConnection)client;
+	    Player player = playerConnection.Player;
 
-            long esBalance = player.Properties[esPropId];
-            if (esBalance < amount)
-                return $"You need at least {amount} Eternity Splinters to convert them to Gs.";
+	    PropertyId esPropId = new(PropertyEnum.Currency, GameDatabase.CurrencyGlobalsPrototype.EternitySplinters);
+	    long esBalance = player.Properties[esPropId];
 
-            var config = ConfigManager.Instance.GetConfig<BillingConfig>();
-            long gAmount = Math.Max((long)(amount * config.ESToGazillioniteConversionRatio), 0);
-            if (gAmount == 0)
-                return "Current server settings do not allow Eternity Splinter to G conversion.";
+	    if (esBalance < convertibleAmount)
+		return $"You need at least {convertibleAmount} Eternity Splinters to convert them to Gs.";
 
-            if (player.AcquireGazillionite(gAmount) == false)
-                return "Failed to acquire Gs.";
+	    var config = ConfigManager.Instance.GetConfig<BillingConfig>();
+	    long gAmount = Math.Max((long)(convertibleAmount * config.ESToGazillioniteConversionRatio), 0);
+	    
+	    if (gAmount == 0)
+		return "Current server settings do not allow Eternity Splinter to G conversion.";
 
-            player.Properties.AdjustProperty(-amount, esPropId);
+	    if (player.AcquireGazillionite(gAmount) == false)
+		return "Failed to acquire Gs.";
 
-            return $"Converted {amount} Eternity Splinters to {gAmount} Gs.";
-        }
+	    player.Properties.AdjustProperty(-convertibleAmount, esPropId);
 
+	    string message = $"Converted {convertibleAmount} Eternity Splinters to {gAmount} Gs.";
+	    if (remainingAmount > 0)
+		message += $" (Remaining unconverted: {remainingAmount} ES)";
+
+	    return message;
+	}
 
         [Command("addg")]
         [CommandDescription("Adds the specified number of Gs to this account.")]
