@@ -47,7 +47,6 @@ namespace MHServerEmu.Games.GameData.PatchManager
                 string fieldName = match.Groups[1].Value;
                 var indices = new List<int>();
 
-                // Extract all array indices for this field
                 var indexCaptures = match.Groups[3].Captures;
                 foreach (Capture capture in indexCaptures)
                 {
@@ -78,11 +77,11 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
     public enum PatchOperation
     {
-        Set,        // Replace/set value
-        Add,        // Add to array/collection
-        Insert,     // Insert at specific index
-        Remove,     // Remove from array/collection
-        Replace     // Replace specific array element
+        Set,
+        Add,
+        Insert,
+        Remove,
+        Replace
     }
 
     public class PatchEntryConverter : JsonConverter<PrototypePatchEntry>
@@ -94,7 +93,6 @@ namespace MHServerEmu.Games.GameData.PatchManager
             using JsonDocument doc = JsonDocument.ParseValue(ref reader);
             var root = doc.RootElement;
 
-            // Check if required properties exist
             if (!root.TryGetProperty("ValueType", out var valueTypeElement))
                 throw new JsonException("Missing required property 'ValueType'");
 
@@ -103,7 +101,6 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
             string valueTypeString = valueTypeElement.GetString();
 
-            //Only replace [] with Array if it doesn't already end with Array
             if (!valueTypeString.EndsWith("Array") && valueTypeString.Contains("[]"))
             {
                 valueTypeString = valueTypeString.Replace("[]", "Array");
@@ -112,7 +109,6 @@ namespace MHServerEmu.Games.GameData.PatchManager
             if (!Enum.TryParse<ValueType>(valueTypeString, out var valueType))
                 throw new JsonException($"Invalid ValueType: {valueTypeString}");
 
-            // Parse operation if present, default to Set
             var operation = PatchOperation.Set;
             if (root.TryGetProperty("Operation", out var operationElement))
             {
@@ -144,26 +140,30 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
         public static ValueBase GetValueBase(JsonElement jsonElement, ValueType valueType)
         {
-            return valueType switch
+            switch (valueType)
             {
-                ValueType.String => new SimpleValue<string>(jsonElement.GetString(), valueType),
-                ValueType.Boolean => new SimpleValue<bool>(jsonElement.GetBoolean(), valueType),
-                ValueType.Float => new SimpleValue<float>(jsonElement.GetSingle(), valueType),
-                ValueType.Integer => new SimpleValue<int>(jsonElement.GetInt32(), valueType),
-                ValueType.Enum => new SimpleValue<string>(jsonElement.GetString(), valueType),
-                ValueType.PrototypeGuid => new SimpleValue<PrototypeGuid>((PrototypeGuid)jsonElement.GetUInt64(), valueType),
-                ValueType.PrototypeId or
-                ValueType.PrototypeDataRef => new SimpleValue<PrototypeId>((PrototypeId)jsonElement.GetUInt64(), valueType),
-                ValueType.LocaleStringId => new SimpleValue<LocaleStringId>((LocaleStringId)jsonElement.GetUInt64(), valueType),
-                ValueType.PrototypeIdArray or
-                ValueType.PrototypeDataRefArray => new ArrayValue<PrototypeId>(jsonElement, valueType, x => (PrototypeId)x.GetUInt64()),
-                ValueType.Prototype => new SimpleValue<Prototype>(ParseJsonPrototype(jsonElement), valueType),
-                ValueType.AssetId => new SimpleValue<string>(jsonElement.GetString(), valueType),
-                ValueType.PrototypeArray => new ArrayValue<Prototype>(jsonElement, valueType, ParseJsonPrototype),
-                ValueType.Vector3 => new SimpleValue<Vector3>(ParseJsonVector3(jsonElement), valueType),
-                ValueType.Properties => new SimpleValue<PropertyCollection>(ParseJsonProperties(jsonElement), valueType),
-                _ => throw new NotSupportedException($"Type {valueType} not support.")
-            };
+                case ValueType.String: return new SimpleValue<string>(jsonElement.GetString(), valueType);
+                case ValueType.Boolean: return new SimpleValue<bool>(jsonElement.GetBoolean(), valueType);
+                case ValueType.Float: return new SimpleValue<float>(jsonElement.GetSingle(), valueType);
+                case ValueType.Integer: return new SimpleValue<int>(jsonElement.GetInt32(), valueType);
+                case ValueType.Enum: return new SimpleValue<string>(jsonElement.GetString(), valueType);
+                case ValueType.PrototypeGuid: return new SimpleValue<PrototypeGuid>((PrototypeGuid)jsonElement.GetUInt64(), valueType);
+                case ValueType.PrototypeId:
+                case ValueType.PrototypeDataRef: return new SimpleValue<PrototypeId>((PrototypeId)jsonElement.GetUInt64(), valueType);
+                case ValueType.LocaleStringId: return new SimpleValue<LocaleStringId>((LocaleStringId)jsonElement.GetUInt64(), valueType);
+                case ValueType.AssetId: return new SimpleValue<string>(jsonElement.GetString(), valueType);
+                case ValueType.Vector3: return new SimpleValue<Vector3>(ParseJsonVector3(jsonElement), valueType);
+
+                case ValueType.Prototype:
+                case ValueType.Properties:
+                case ValueType.PrototypeArray:
+                case ValueType.PrototypeIdArray:
+                case ValueType.PrototypeDataRefArray:
+                    return new JsonValue(jsonElement.Clone(), valueType);
+
+                default:
+                    throw new NotSupportedException($"Type {valueType} not support.");
+            }
         }
 
         private static Vector3 ParseJsonVector3(JsonElement jsonElement)
@@ -176,6 +176,75 @@ namespace MHServerEmu.Games.GameData.PatchManager
                 throw new InvalidOperationException("Json element is not Vector3");
 
             return new Vector3(jsonArray[0].GetSingle(), jsonArray[1].GetSingle(), jsonArray[2].GetSingle());
+        }
+
+        public static object ParseJsonElement(JsonElement value, Type targetType)
+        {
+            if (typeof(Prototype).IsAssignableFrom(targetType) && !targetType.IsArray)
+            {
+                return ParseJsonPrototype(value);
+            }
+            if (targetType.IsArray)
+            {
+                var elementType = targetType.GetElementType();
+                var jsonArray = value.EnumerateArray().ToArray();
+                var newArray = Array.CreateInstance(elementType, jsonArray.Length);
+
+                for (int i = 0; i < jsonArray.Length; i++)
+                {
+                    var elementValue = ParseJsonElement(jsonArray[i], elementType);
+                    newArray.SetValue(elementValue, i);
+                }
+                return newArray;
+            }
+            if (targetType == typeof(PropertyCollection))
+            {
+                return ParseJsonProperties(value);
+            }
+
+            if (targetType == typeof(PrototypeId))
+            {
+                if (value.ValueKind == JsonValueKind.Number && value.TryGetUInt64(out ulong ulongValue))
+                    return (PrototypeId)ulongValue;
+            }
+
+            if (targetType == typeof(AssetId))
+            {
+                if (value.ValueKind == JsonValueKind.Number && value.TryGetUInt64(out ulong ulongValue))
+                    return (AssetId)ulongValue;
+            }
+
+            if (targetType == typeof(PrototypeGuid))
+            {
+                if (value.ValueKind == JsonValueKind.Number && value.TryGetUInt64(out ulong ulongValue))
+                    return (PrototypeGuid)ulongValue;
+            }
+
+            if (targetType == typeof(LocaleStringId))
+            {
+                if (value.ValueKind == JsonValueKind.Number && value.TryGetUInt64(out ulong ulongValue))
+                    return (LocaleStringId)ulongValue;
+            }
+
+            switch (value.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return value.GetString();
+                case JsonValueKind.Number:
+                    if (value.TryGetUInt64(out ulong ulongValue))
+                        return ulongValue;
+                    else if (value.TryGetInt64(out long decimalValue))
+                        return decimalValue;
+                    else if (value.TryGetDouble(out double doubleValue))
+                        return doubleValue;
+                    else
+                        return value.GetRawText();
+                case JsonValueKind.True:
+                case JsonValueKind.False:
+                    return value.GetBoolean();
+                default:
+                    return value.ToString();
+            }
         }
 
         public static Prototype ParseJsonPrototype(JsonElement jsonElement)
@@ -200,8 +269,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
                 var fieldInfo = prototype.GetType().GetProperty(property.Name);
                 if (fieldInfo == null)
                 {
-                   
-                    if (property.Name != "PolymorphicData") // Ignore PolymorphicData, it's not a real property
+                    if (property.Name != "PolymorphicData")
                     {
                         Logger.Warn($"ParseJsonPrototype: Field '{property.Name}' not found on prototype of type '{classType.Name}'.");
                     }
@@ -210,31 +278,9 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
                 try
                 {
-                    
-                    if (typeof(Prototype).IsAssignableFrom(fieldInfo.PropertyType) && !fieldInfo.PropertyType.IsArray)
-                    {
-                        var nestedPrototype = ParseJsonPrototype(property.Value);
-                        fieldInfo.SetValue(prototype, nestedPrototype);
-                    }
-                    else if (fieldInfo.PropertyType.IsArray && typeof(Prototype).IsAssignableFrom(fieldInfo.PropertyType.GetElementType()))
-                    {
-                        var elementType = fieldInfo.PropertyType.GetElementType();
-                        var jsonArray = property.Value.EnumerateArray().ToArray();
-                        var newArray = Array.CreateInstance(elementType, jsonArray.Length);
-
-                        for (int i = 0; i < jsonArray.Length; i++)
-                        {
-                            var elementPrototype = ParseJsonPrototype(jsonArray[i]);
-                            newArray.SetValue(elementPrototype, i);
-                        }
-                        fieldInfo.SetValue(prototype, newArray);
-                    }
-                    else
-                    {
-                        object valueToSet = ParseJsonElement(property.Value, fieldInfo.PropertyType);
-                        object convertedValue = PrototypePatchManager.ConvertValue(valueToSet, fieldInfo.PropertyType);
-                        fieldInfo.SetValue(prototype, convertedValue);
-                    }
+                    object valueToSet = ParseJsonElement(property.Value, fieldInfo.PropertyType);
+                    object convertedValue = PrototypePatchManager.ConvertValue(valueToSet, fieldInfo.PropertyType);
+                    fieldInfo.SetValue(prototype, convertedValue);
                 }
                 catch (Exception ex)
                 {
@@ -253,7 +299,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
             foreach (var property in jsonElement.EnumerateObject())
             {
                 var propEnum = (PropertyEnum)Enum.Parse(typeof(PropertyEnum), property.Name);
-                PropertyInfo propertyInfo = infoTable.LookupPropertyInfo(propEnum);
+                MHServerEmu.Games.Properties.PropertyInfo propertyInfo = infoTable.LookupPropertyInfo(propEnum);
                 PropertyId propId = ParseJsonPropertyId(property.Value, propEnum, propertyInfo);
                 PropertyValue propValue = ParseJsonPropertyValue(property.Value, propertyInfo);
                 properties.SetProperty(propValue, propId);
@@ -262,7 +308,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
             return properties;
         }
 
-        public static PropertyId ParseJsonPropertyId(JsonElement jsonElement, PropertyEnum propEnum, PropertyInfo propInfo)
+        public static PropertyId ParseJsonPropertyId(JsonElement jsonElement, PropertyEnum propEnum, MHServerEmu.Games.Properties.PropertyInfo propInfo)
         {
             int paramCount = propInfo.ParamCount;
             if (paramCount == 0) return new(propEnum);
@@ -303,7 +349,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
             return new(propEnum, paramValues);
         }
 
-        public static PropertyValue ParseJsonPropertyValue(JsonElement jsonElement, PropertyInfo propInfo)
+        public static PropertyValue ParseJsonPropertyValue(JsonElement jsonElement, MHServerEmu.Games.Properties.PropertyInfo propInfo)
         {
             if (propInfo.ParamCount > 0)
             {
@@ -339,53 +385,6 @@ namespace MHServerEmu.Games.GameData.PatchManager
             }
 
             return propInfo.DefaultValue;
-        }
-
-        public static object ParseJsonElement(JsonElement value, Type fieldType)
-        {
-            if (fieldType == typeof(PrototypeId))
-            {
-                if (value.ValueKind == JsonValueKind.Number && value.TryGetUInt64(out ulong ulongValue))
-                    return (PrototypeId)ulongValue;
-            }
-
-            if (fieldType == typeof(AssetId))
-            {
-                if (value.ValueKind == JsonValueKind.Number && value.TryGetUInt64(out ulong ulongValue))
-                    return (AssetId)ulongValue;
-            }
-
-            if (fieldType == typeof(PrototypeGuid))
-            {
-                if (value.ValueKind == JsonValueKind.Number && value.TryGetUInt64(out ulong ulongValue))
-                    return (PrototypeGuid)ulongValue;
-            }
-
-            if (fieldType == typeof(LocaleStringId))
-            {
-                if (value.ValueKind == JsonValueKind.Number && value.TryGetUInt64(out ulong ulongValue))
-                    return (LocaleStringId)ulongValue;
-            }
-
-            switch (value.ValueKind)
-            {
-                case JsonValueKind.String:
-                    return value.GetString();
-                case JsonValueKind.Number:
-                    if (value.TryGetUInt64(out ulong ulongValue))
-                        return ulongValue;
-                    else if (value.TryGetInt64(out long decimalValue))
-                        return decimalValue;
-                    else if (value.TryGetDouble(out double doubleValue))
-                        return doubleValue;
-                    else
-                        return value.GetRawText();
-                case JsonValueKind.True:
-                case JsonValueKind.False:
-                    return value.GetBoolean();
-                default:
-                    return value.ToString();
-            }
         }
 
         public override void Write(Utf8JsonWriter writer, PrototypePatchEntry value, JsonSerializerOptions options)
@@ -434,24 +433,35 @@ namespace MHServerEmu.Games.GameData.PatchManager
         public override object GetValue() => Value;
     }
 
-    public class ArrayValue<T> : SimpleValue<T[]>
+    public class JsonValue : ValueBase
     {
-        public ArrayValue(JsonElement jsonElement, ValueType valueType, Func<JsonElement, T> elementParser)
-            : base(ParseJsonElement(jsonElement, elementParser), valueType) { }
+        public override ValueType ValueType { get; }
+        public JsonElement Value { get; }
+        private object _parsedValue;
 
-        private static T[] ParseJsonElement(JsonElement jsonElement, Func<JsonElement, T> elementParser)
+        public JsonValue(JsonElement value, ValueType valueType)
         {
-            if (jsonElement.ValueKind != JsonValueKind.Array)
-                throw new InvalidOperationException("Json element is not array");
+            Value = value;
+            ValueType = valueType;
+        }
 
-            var jsonArray = jsonElement.EnumerateArray().ToArray();
-            if (jsonArray.Length == 0) return [];
-
-            var result = new T[jsonArray.Length];
-            for (int i = 0; i < jsonArray.Length; i++)
-                result[i] = elementParser(jsonArray[i]);
-
-            return result;
+        public override object GetValue()
+        {
+            if (_parsedValue == null)
+            {
+                Type targetType = ValueType switch
+                {
+                    ValueType.Prototype => typeof(Prototype),
+                    ValueType.Properties => typeof(PropertyCollection),
+                    ValueType.PrototypeArray => typeof(Prototype[]),
+                    ValueType.PrototypeIdArray => typeof(PrototypeId[]),
+                    ValueType.PrototypeDataRefArray => typeof(PrototypeId[]),
+                    _ => typeof(object)
+                };
+                _parsedValue = PatchEntryConverter.ParseJsonElement(Value, targetType);
+            }
+            return _parsedValue;
         }
     }
 }
+
