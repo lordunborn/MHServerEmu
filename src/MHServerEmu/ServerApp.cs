@@ -21,6 +21,7 @@ using MHServerEmu.Grouping;
 using MHServerEmu.Leaderboards;
 using MHServerEmu.PlayerManagement;
 using MHServerEmu.PlayerManagement.Players;
+using MHServerEmu.Games.Gifting;
 
 namespace MHServerEmu
 {
