@@ -42,6 +42,7 @@ using MHServerEmu.Games.Regions.MatchQueues;
 using MHServerEmu.Games.Social.Communities;
 using MHServerEmu.Games.Social.Guilds;
 using MHServerEmu.Games.Social.Parties;
+using MHServerEmu.Games.Gifting;
 
 namespace MHServerEmu.Games.Entities
 {
