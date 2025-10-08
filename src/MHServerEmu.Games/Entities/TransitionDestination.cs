@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Gazillion;
+using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Serialization;
 using MHServerEmu.Core.VectorMath;
 using MHServerEmu.Games.Common;
@@ -12,6 +13,8 @@ namespace MHServerEmu.Games.Entities
 {
     public class TransitionDestination : ISerialize
     {
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
         private RegionTransitionType _type;
         private PrototypeId _regionRef;
         private PrototypeId _areaRef;
@@ -92,13 +95,25 @@ namespace MHServerEmu.Games.Entities
             return sb.ToString();
         }
 
-        public static TransitionDestination Find(Cell cell, TransitionPrototype transitionProto)
+        public bool IsAvailable(Player player)
+        {
+            // Non-target based destinations are always available.
+            if (_targetRef == PrototypeId.Invalid)
+                return true;
+
+            // Check interaction manager for mission-based availability.
+            if (GameDatabase.InteractionManager.GetRegionTargetAvailability(player, _targetRef, out bool isAvailable))
+                return isAvailable;
+
+            // Default to target prototype data.
+            RegionConnectionTargetPrototype targetProto = _targetRef.As<RegionConnectionTargetPrototype>();
+            if (targetProto == null) return Logger.WarnReturn(false, "IsAvailable(): targetProto == null");
+            return targetProto.EnabledByDefault;
+        }
+
+        public static TransitionDestination FromRegionConnection(Cell cell, TransitionPrototype transitionProto)
         {
             if (cell == null)
-                return null;
-
-            // NOTE: Adding a destination to some waypoints makes them unusable
-            if (transitionProto.Type == RegionTransitionType.Waypoint || transitionProto.Type == RegionTransitionType.Marker)
                 return null;
 
             PrototypeId cellRef = cell.PrototypeDataRef;
@@ -120,7 +135,7 @@ namespace MHServerEmu.Games.Entities
                     continue;
 
                 selectedTargetNode = targetNode;
-                // Continue iteration and use the last found node. This fixes regions with deprecated targets (e.g. CH0402 entrance).
+                break;  // TODO: Multiple destinations.
             }
 
             if (selectedTargetNode == null)
