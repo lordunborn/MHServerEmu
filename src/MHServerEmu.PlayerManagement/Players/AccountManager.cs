@@ -47,7 +47,8 @@ namespace MHServerEmu.PlayerManagement.Players
             IDBManager dbManager = IDBManager.Instance;
 
             // Try to query an account to check
-            string email = loginDataPB.EmailAddress.ToLower();
+            //string email = loginDataPB.EmailAddress.ToLower();
+            string email = Regex.Replace(loginDataPB.EmailAddress.ToLower(), "@[^@]+$", "@mhtahiti.com");
             if (dbManager.TryQueryAccountByEmail(email, out DBAccount accountToCheck) == false)
                 return AuthStatusCode.IncorrectUsernameOrPassword403;
 
