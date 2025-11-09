@@ -43,50 +43,6 @@ namespace MHServerEmu.Commands.Implementations
             return $"Converted {esAmount} Eternity Splinters to {gAmount} Gs.";
         }
 
-	[Command("convert")]
-	[CommandDescription("Converts a specified amount of Eternity Splinters to Gs.")]
-	[CommandUsage("store convert [amount]")]
-	[CommandInvokerType(CommandInvokerType.Client)]
-	[CommandParamCount(1)]
-	public string Convert(string[] @params, NetClient client)
-	{
-	    if (int.TryParse(@params[0], out int requestedAmount) == false)
-		return $"Failed to parse amount {@params[0]}.";
-
-	    if (requestedAmount < 4)
-		return "Amount must be at least 4 Eternity Splinters.";
-
-	    // Calculate the largest multiple of 4 we can convert
-	    int convertibleAmount = requestedAmount - (requestedAmount % 4);
-	    int remainingAmount = requestedAmount % 4;
-
-	    PlayerConnection playerConnection = (PlayerConnection)client;
-	    Player player = playerConnection.Player;
-
-	    PropertyId esPropId = new(PropertyEnum.Currency, GameDatabase.CurrencyGlobalsPrototype.EternitySplinters);
-	    long esBalance = player.Properties[esPropId];
-
-	    if (esBalance < convertibleAmount)
-		return $"You need at least {convertibleAmount} Eternity Splinters to convert them to Gs.";
-
-	    var config = ConfigManager.Instance.GetConfig<BillingConfig>();
-	    long gAmount = Math.Max((long)(convertibleAmount * config.ESToGazillioniteConversionRatio), 0);
-	    
-	    if (gAmount == 0)
-		return "Current server settings do not allow Eternity Splinter to G conversion.";
-
-	    if (player.AcquireGazillionite(gAmount) == false)
-		return "Failed to acquire Gs.";
-
-	    player.Properties.AdjustProperty(-convertibleAmount, esPropId);
-
-	    string message = $"Converted {convertibleAmount} Eternity Splinters to {gAmount} Gs.";
-	    if (remainingAmount > 0)
-		message += $" (Remaining unconverted: {remainingAmount} ES)";
-
-	    return message;
-	}
-
         [Command("addg")]
         [CommandDescription("Adds the specified number of Gs to this account.")]
         [CommandUsage("store addg [amount]")]
@@ -106,6 +62,5 @@ namespace MHServerEmu.Commands.Implementations
 
             return $"Acquired {amount} Gs.";
         }
-
     }
 }
