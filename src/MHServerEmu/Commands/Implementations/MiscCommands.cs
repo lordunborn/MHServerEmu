@@ -228,7 +228,7 @@ namespace MHServerEmu.Commands.Implementations
             {
                 Player player = ((PlayerConnection)client).Player;
                 PrototypeId targetProtoRef = (PrototypeId)6101407482858775734;
-                PrototypeId omegaDifficulty = (PrototypeId)424700179461639950;
+                PrototypeId omegaDifficulty = (PrototypeId)586640101754933627;
                 if (omegaDifficulty == PrototypeId.Invalid)
                 {
                     return "Error: Could not find 'Difficulty/Tiers/Tier4Cosmic.prototype'.";
