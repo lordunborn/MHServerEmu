@@ -154,6 +154,10 @@ namespace MHServerEmu.Games.GameData.PatchManager
             if (targetType.IsInstanceOfType(rawValue))
                 return rawValue;
 
+            // Handle array types - don't try to convert arrays with Convert.ChangeType
+            if (targetType.IsArray && rawValue.GetType().IsArray)
+                return rawValue;
+
             TypeConverter converter = TypeDescriptor.GetConverter(targetType);
             if (converter != null && converter.CanConvertFrom(rawValue.GetType()))
                 return converter.ConvertFrom(rawValue);
@@ -166,6 +170,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
             try
             {
                 Type fieldType = fieldInfo.PropertyType;
+                
                 if (entry.ArrayValue)
                 {
                     if (entry.ArrayIndex != -1)
@@ -281,6 +286,10 @@ namespace MHServerEmu.Games.GameData.PatchManager
                 valueEntry = prototype;
             }
 
+            // If valueEntry is already the correct type (e.g., Prototype), return it directly
+            if (elementType.IsInstanceOfType(valueEntry))
+                return valueEntry;
+
             return ConvertValue(valueEntry, elementType);            
         }
 
@@ -301,3 +310,4 @@ namespace MHServerEmu.Games.GameData.PatchManager
         }
     }
 }
+
