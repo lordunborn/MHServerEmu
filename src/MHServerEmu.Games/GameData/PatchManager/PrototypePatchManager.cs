@@ -154,9 +154,35 @@ namespace MHServerEmu.Games.GameData.PatchManager
             if (targetType.IsInstanceOfType(rawValue))
                 return rawValue;
 
-            // Handle array types - don't try to convert arrays with Convert.ChangeType
+            // Handle array types - convert to correct element type if needed
             if (targetType.IsArray && rawValue.GetType().IsArray)
+            {
+                Type targetElementType = targetType.GetElementType();
+                Type sourceElementType = rawValue.GetType().GetElementType();
+                
+                // If element types are compatible, create new array with correct type
+                if (targetElementType != sourceElementType && 
+                    (targetElementType.IsAssignableFrom(sourceElementType) || sourceElementType.IsAssignableFrom(targetElementType)))
+                {
+                    Array sourceArray = (Array)rawValue;
+                    Array targetArray = Array.CreateInstance(targetElementType, sourceArray.Length);
+                    
+                    for (int i = 0; i < sourceArray.Length; i++)
+                    {
+                        object element = sourceArray.GetValue(i);
+                        if (element != null && targetElementType.IsInstanceOfType(element))
+                            targetArray.SetValue(element, i);
+                        else if (element != null)
+                            targetArray.SetValue(ConvertValue(element, targetElementType), i);
+                        else
+                            targetArray.SetValue(null, i);
+                    }
+                    
+                    return targetArray;
+                }
+                
                 return rawValue;
+            }
 
             TypeConverter converter = TypeDescriptor.GetConverter(targetType);
             if (converter != null && converter.CanConvertFrom(rawValue.GetType()))
@@ -310,4 +336,5 @@ namespace MHServerEmu.Games.GameData.PatchManager
         }
     }
 }
+
 

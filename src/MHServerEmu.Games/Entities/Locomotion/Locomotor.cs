@@ -99,6 +99,21 @@ namespace MHServerEmu.Games.Entities.Locomotion
         private TimeSpan _updateNavigationInfluenceTime;
         private float _rotationDirection;
 
+        // Speed anomaly detection system
+        private readonly Queue<MovementSample> _movementSamples = new(20);
+        private TimeSpan _lastAnomalyCheckTime;
+        private Vector3 _lastAnomalyCheckPosition;
+        private int _consecutiveAnomalies;
+        private float _totalDistanceTraveled;
+        private TimeSpan _totalMovementTime;
+        private TimeSpan _lastWarningLogTime;
+        private const int MaxSamplesForAnalysis = 15;
+        private const float AnomalyDetectionInterval = 0.2f; // Check every 200ms
+        private const float SuspiciousSpeedMultiplier = 1.5f; // 50% over expected
+        private const float DefiniteHackMultiplier = 2.0f; // 100% over expected
+        private const int ConsecutiveAnomaliesForWarning = 5; // Increased from 3
+        private const float WarningLogCooldownSeconds = 10.0f; // Only log once per 10 seconds
+
         public Locomotor()
         {
             FollowEntityGiveUpEvent = new();
@@ -452,6 +467,165 @@ namespace MHServerEmu.Games.Entities.Locomotion
                 }
             }
             PushLocomotionStateChanges();
+
+            // Don't run duplicate detection in Locomote - we check in SetSyncState for client updates
+        }
+
+        /// <summary>
+        /// Analyzes movement patterns to detect speed hacking using statistical methods.
+        /// Only logs detections without taking action.
+        /// </summary>
+        private void AnalyzeMovementForSpeedAnomalies(TimeSpan currentTime)
+        {
+            // Initialize on first run
+            if (_lastAnomalyCheckTime == TimeSpan.Zero)
+            {
+                _lastAnomalyCheckTime = currentTime;
+                _lastAnomalyCheckPosition = _owner.RegionLocation.Position;
+                return;
+            }
+
+            float timeDelta = (float)(currentTime - _lastAnomalyCheckTime).TotalSeconds;
+            if (timeDelta < 0.01f) // Skip if called too frequently (< 10ms)
+                return;
+
+            Vector3 currentPosition = _owner.RegionLocation.Position;
+            float distanceMoved = Vector3.Distance(currentPosition, _lastAnomalyCheckPosition);
+
+            // Calculate expected maximum speed for current state
+            float expectedBaseSpeed = LocomotionState.BaseMoveSpeed > 0 ? LocomotionState.BaseMoveSpeed : _runSpeed;
+            if (expectedBaseSpeed <= 0)
+                expectedBaseSpeed = _runSpeed > 0 ? _runSpeed : 500.0f; // Fallback default
+
+            if (IsWalking && _walkSpeed > 0)
+                expectedBaseSpeed = _walkSpeed;
+            if (_moveSpeedOverride > 0)
+                expectedBaseSpeed = _moveSpeedOverride;
+
+            // Record movement sample
+            var sample = new MovementSample
+            {
+                Timestamp = currentTime,
+                Distance = distanceMoved,
+                TimeDelta = timeDelta,
+                ExpectedSpeed = expectedBaseSpeed,
+                ActualSpeed = distanceMoved / timeDelta,
+                Position = currentPosition
+            };
+
+            _movementSamples.Enqueue(sample);
+            if (_movementSamples.Count > MaxSamplesForAnalysis)
+                _movementSamples.Dequeue();
+
+            // Update cumulative statistics
+            _totalDistanceTraveled += distanceMoved;
+            _totalMovementTime += TimeSpan.FromSeconds(timeDelta);
+
+            // Perform multi-metric analysis
+            if (_movementSamples.Count >= 3) // Lowered threshold for faster detection
+            {
+                float speedRatio = sample.ActualSpeed / sample.ExpectedSpeed;
+                bool isAnomaly = false;
+                string anomalyReason = string.Empty;
+
+                // Metric 1: Instant speed check
+                if (speedRatio > DefiniteHackMultiplier)
+                {
+                    isAnomaly = true;
+                    anomalyReason = $"Instant speed {speedRatio:F2}x expected";
+                }
+                else if (speedRatio > SuspiciousSpeedMultiplier)
+                {
+                    // Metric 2: Sustained speed analysis
+                    var recentSamples = _movementSamples.TakeLast(Math.Min(5, _movementSamples.Count));
+                    float avgSpeedRatio = recentSamples.Average(s => s.ActualSpeed / s.ExpectedSpeed);
+                    
+                    if (avgSpeedRatio > SuspiciousSpeedMultiplier)
+                    {
+                        isAnomaly = true;
+                        anomalyReason = $"Sustained speed {avgSpeedRatio:F2}x expected over {recentSamples.Count()} samples";
+                    }
+                }
+
+                // Metric 3: Movement burst detection
+                if (_movementSamples.Count >= 10)
+                {
+                    var last10Samples = _movementSamples.TakeLast(10).ToList();
+                    float totalExpected = last10Samples.Sum(s => s.ExpectedSpeed * s.TimeDelta);
+                    float totalActual = last10Samples.Sum(s => s.Distance);
+                    
+                    if (totalExpected > 0)
+                    {
+                        float burstRatio = totalActual / totalExpected;
+
+                        if (burstRatio > 1.8f) // 80% faster than expected over 10 samples
+                        {
+                            isAnomaly = true;
+                            anomalyReason = $"Movement burst detected: {burstRatio:F2}x expected over 10 samples";
+                        }
+                    }
+                }
+
+                // Metric 4: Statistical deviation check
+                if (_movementSamples.Count >= MaxSamplesForAnalysis)
+                {
+                    var speedRatios = _movementSamples.Select(s => s.ActualSpeed / s.ExpectedSpeed).ToList();
+                    float mean = speedRatios.Average();
+                    float variance = speedRatios.Average(sr => (sr - mean) * (sr - mean));
+                    float stdDev = (float)Math.Sqrt(variance);
+
+                    // If current speed is more than 3 standard deviations from mean AND mean is high
+                    if (mean > 1.3f && speedRatio > mean + (3 * stdDev))
+                    {
+                        isAnomaly = true;
+                        anomalyReason = $"Statistical outlier: {speedRatio:F2}x (mean: {mean:F2}, stdDev: {stdDev:F2})";
+                    }
+                }
+
+                // Track consecutive anomalies
+                if (isAnomaly)
+                {
+                    _consecutiveAnomalies++;
+                    
+                    // Only log at threshold and respect cooldown to prevent spam
+                    if (_consecutiveAnomalies >= ConsecutiveAnomaliesForWarning)
+                    {
+                        float timeSinceLastWarning = (float)(currentTime - _lastWarningLogTime).TotalSeconds;
+                        if (timeSinceLastWarning >= WarningLogCooldownSeconds || _lastWarningLogTime == TimeSpan.Zero)
+                        {
+                            float avgSpeed = _totalDistanceTraveled / (float)_totalMovementTime.TotalSeconds;
+                            Logger.Warn($"[SPEED HACK] {_owner} | {anomalyReason} | " +
+                                      $"Speed: {sample.ActualSpeed:F1}/{sample.ExpectedSpeed:F1} u/s | " +
+                                      $"Avg: {avgSpeed:F1} u/s | Anomalies: {_consecutiveAnomalies}");
+                            _lastWarningLogTime = currentTime;
+                        }
+                    }
+                }
+                else
+                {
+                    // Reset consecutive counter if we get a legitimate sample
+                    if (_consecutiveAnomalies > 0)
+                        _consecutiveAnomalies = Math.Max(0, _consecutiveAnomalies - 1);
+                }
+            }
+
+            // Update for next check
+            _lastAnomalyCheckTime = currentTime;
+            _lastAnomalyCheckPosition = currentPosition;
+        }
+
+        /// <summary>
+        /// Resets speed anomaly detection tracking. Call when teleporting or on legitimate state changes.
+        /// </summary>
+        public void ResetSpeedAnomalyDetection()
+        {
+            _movementSamples.Clear();
+            _lastAnomalyCheckTime = _owner?.Game?.CurrentTime ?? TimeSpan.Zero;
+            _lastAnomalyCheckPosition = _owner?.RegionLocation.Position ?? Vector3.Zero;
+            _consecutiveAnomalies = 0;
+            _totalDistanceTraveled = 0;
+            _totalMovementTime = TimeSpan.Zero;
+            _lastWarningLogTime = TimeSpan.Zero;
         }
 
         public bool GetPathGoal(out Vector3 goalPosition)
@@ -1078,6 +1252,9 @@ namespace MHServerEmu.Games.Entities.Locomotion
             _initRotation = false;
             LocomotionState.BaseMoveSpeed = DefaultRunSpeed;
             LocomotionState.Height = 0;
+
+            // Reset speed anomaly detection when state is reset
+            ResetSpeedAnomalyDetection();
         }
 
         private void UnregisterFollowEvents()
@@ -1242,6 +1419,9 @@ namespace MHServerEmu.Games.Entities.Locomotion
             _hasOrientationSyncState = false;
             LocomotionState.Set(locomotionState);
             LocomotionState.Method = (LocomotionState.Method == LocomotorMethod.Default) ? _defaultMethod : LocomotionState.Method;
+            
+            // Speed hack detection - analyze client-reported movement
+            AnalyzeMovementForSpeedAnomalies(_owner.Game.CurrentTime);
             
             if (_owner.Game.AdminCommandManager.TestAdminFlag(AdminFlags.LocomotionSync))
             {
@@ -1495,4 +1675,18 @@ namespace MHServerEmu.Games.Entities.Locomotion
             Flags = flags;
         }
     }
+
+    /// <summary>
+    /// Represents a movement sample for speed anomaly detection.
+    /// </summary>
+    internal struct MovementSample
+    {
+        public TimeSpan Timestamp;
+        public float Distance;
+        public float TimeDelta;
+        public float ExpectedSpeed;
+        public float ActualSpeed;
+        public Vector3 Position;
+    }
 }
+

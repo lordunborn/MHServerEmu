@@ -11,7 +11,7 @@ namespace MHServerEmu.Games.Gifting
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
         private static readonly string ClaimsPath = Path.Combine(FileHelper.DataDirectory, "GiftClaims.dat");
-        private static readonly Dictionary<(string PlayerName, ulong ItemId), DateTime> _claims = new();
+        private static readonly Dictionary<(ulong PlayerDbId, ulong ItemId), DateTime> _claims = new();
         private static readonly object _lockObject = new();
 
         public static void Initialize()
@@ -20,30 +20,44 @@ namespace MHServerEmu.Games.Gifting
             LoadFromDisk();
         }
 
-        public static bool HasClaimed(string playerName, ulong itemId)
+        public static bool HasClaimed(ulong playerDbId, ulong itemId)
         {
             lock (_lockObject)
             {
-                return _claims.ContainsKey((playerName, itemId));
+                return _claims.ContainsKey((playerDbId, itemId));
             }
         }
 
-        public static void SaveClaim(string playerName, ulong itemId)
+        public static bool CanClaimDaily(ulong playerDbId, ulong itemId)
         {
             lock (_lockObject)
             {
-                _claims[(playerName, itemId)] = DateTime.UtcNow;
-                _ = SaveClaimAsync(playerName, itemId);
+                if (_claims.TryGetValue((playerDbId, itemId), out DateTime lastClaimTime))
+                {
+                    // Can claim if last claim was on a different day (UTC)
+                    return lastClaimTime.Date < DateTime.UtcNow.Date;
+                }
+                // Never claimed before, can claim
+                return true;
             }
         }
 
-        public  static async Task SaveClaimAsync(string playerName, ulong itemId)
+        public static void SaveClaim(ulong playerDbId, ulong itemId)
+        {
+            lock (_lockObject)
+            {
+                _claims[(playerDbId, itemId)] = DateTime.UtcNow;
+                _ = SaveClaimAsync(playerDbId, itemId);
+            }
+        }
+
+        public  static async Task SaveClaimAsync(ulong playerDbId, ulong itemId)
         {
             await Task.Run(() =>
             {
                 lock (_lockObject)
                 {
-                    _claims[(playerName, itemId)] = DateTime.UtcNow;
+                    _claims[(playerDbId, itemId)] = DateTime.UtcNow;
                     SaveToDisk();
                 }
             });
@@ -63,10 +77,10 @@ namespace MHServerEmu.Games.Gifting
                 int count = reader.ReadInt32();
                 for (int i = 0; i < count; i++)
                 {
-                    string playerName = reader.ReadString();
+                    ulong playerDbId = reader.ReadUInt64();
                     ulong itemId = reader.ReadUInt64();
                     long ticks = reader.ReadInt64();
-                    _claims[(playerName, itemId)] = new DateTime(ticks);
+                    _claims[(playerDbId, itemId)] = new DateTime(ticks);
                 }
                 Logger.Info($"Loaded {count} gift claims from storage");
             }
@@ -82,9 +96,9 @@ namespace MHServerEmu.Games.Gifting
             {
                 using var writer = new BinaryWriter(File.Create(ClaimsPath));
                 writer.Write(_claims.Count);
-                foreach (var ((playerName, itemId), claimTime) in _claims)
+                foreach (var ((playerDbId, itemId), claimTime) in _claims)
                 {
-                    writer.Write(playerName);
+                    writer.Write(playerDbId);
                     writer.Write(itemId);
                     writer.Write(claimTime.Ticks);
                 }
@@ -97,3 +111,4 @@ namespace MHServerEmu.Games.Gifting
         }
     }
 }
+
