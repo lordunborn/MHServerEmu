@@ -109,8 +109,8 @@ namespace MHServerEmu.Games.Entities.Locomotion
         private TimeSpan _lastWarningLogTime;
         private const int MaxSamplesForAnalysis = 15;
         private const float AnomalyDetectionInterval = 0.3f; // Check every 300ms
-        private const float SuspiciousSpeedMultiplier = 1.8f; // 80% over expected (after accounting for powers)
-        private const float DefiniteHackMultiplier = 1.5f; // 50% over expected (clear hack)
+        private const float SuspiciousSpeedMultiplier = 1.5f; // 50% over expected (after accounting for powers)
+        private const float DefiniteHackMultiplier = 2.0f; // 100% over expected (clear hack)
         private const float ExtremeHackMultiplier = 5.0f; // 400% over - instant detection
         private const int ConsecutiveAnomaliesForWarning = 6; // Require sustained pattern
         private const float WarningLogCooldownSeconds = 15.0f; // Log once per 15 seconds
