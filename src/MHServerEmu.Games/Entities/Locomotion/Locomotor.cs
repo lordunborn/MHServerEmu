@@ -108,11 +108,12 @@ namespace MHServerEmu.Games.Entities.Locomotion
         private TimeSpan _totalMovementTime;
         private TimeSpan _lastWarningLogTime;
         private const int MaxSamplesForAnalysis = 15;
-        private const float AnomalyDetectionInterval = 0.2f; // Check every 200ms
-        private const float SuspiciousSpeedMultiplier = 1.5f; // 50% over expected
-        private const float DefiniteHackMultiplier = 2.0f; // 100% over expected
-        private const int ConsecutiveAnomaliesForWarning = 5; // Increased from 3
-        private const float WarningLogCooldownSeconds = 10.0f; // Only log once per 10 seconds
+        private const float AnomalyDetectionInterval = 0.3f; // Check every 300ms
+        private const float SuspiciousSpeedMultiplier = 1.8f; // 80% over expected (after accounting for powers)
+        private const float DefiniteHackMultiplier = 1.5f; // 50% over expected (clear hack)
+        private const float ExtremeHackMultiplier = 5.0f; // 400% over - instant detection
+        private const int ConsecutiveAnomaliesForWarning = 6; // Require sustained pattern
+        private const float WarningLogCooldownSeconds = 15.0f; // Log once per 15 seconds
 
         public Locomotor()
         {
@@ -472,7 +473,7 @@ namespace MHServerEmu.Games.Entities.Locomotion
         }
 
         /// <summary>
-        /// Analyzes movement patterns to detect speed hacking using statistical methods.
+        /// Analyzes movement patterns to detect speed hacking using power-aware detection.
         /// Only logs detections without taking action.
         /// </summary>
         private void AnalyzeMovementForSpeedAnomalies(TimeSpan currentTime)
@@ -486,21 +487,16 @@ namespace MHServerEmu.Games.Entities.Locomotion
             }
 
             float timeDelta = (float)(currentTime - _lastAnomalyCheckTime).TotalSeconds;
-            if (timeDelta < 0.01f) // Skip if called too frequently (< 10ms)
-                return;
+            if (timeDelta < AnomalyDetectionInterval) return;
 
             Vector3 currentPosition = _owner.RegionLocation.Position;
             float distanceMoved = Vector3.Distance(currentPosition, _lastAnomalyCheckPosition);
+            float actualSpeed = distanceMoved / timeDelta;
 
-            // Calculate expected maximum speed for current state
-            float expectedBaseSpeed = LocomotionState.BaseMoveSpeed > 0 ? LocomotionState.BaseMoveSpeed : _runSpeed;
-            if (expectedBaseSpeed <= 0)
-                expectedBaseSpeed = _runSpeed > 0 ? _runSpeed : 500.0f; // Fallback default
-
-            if (IsWalking && _walkSpeed > 0)
-                expectedBaseSpeed = _walkSpeed;
-            if (_moveSpeedOverride > 0)
-                expectedBaseSpeed = _moveSpeedOverride;
+            // Get pure base speed (no tolerances - we apply those to thresholds instead)
+            float baseSpeed = GetServerTrustedMaxSpeed();
+            if (baseSpeed <= 0)
+                baseSpeed = _runSpeed > 0 ? _runSpeed : 500.0f;
 
             // Record movement sample
             var sample = new MovementSample
@@ -508,8 +504,8 @@ namespace MHServerEmu.Games.Entities.Locomotion
                 Timestamp = currentTime,
                 Distance = distanceMoved,
                 TimeDelta = timeDelta,
-                ExpectedSpeed = expectedBaseSpeed,
-                ActualSpeed = distanceMoved / timeDelta,
+                ExpectedSpeed = baseSpeed,
+                ActualSpeed = actualSpeed,
                 Position = currentPosition
             };
 
@@ -520,65 +516,64 @@ namespace MHServerEmu.Games.Entities.Locomotion
             // Update cumulative statistics
             _totalDistanceTraveled += distanceMoved;
             _totalMovementTime += TimeSpan.FromSeconds(timeDelta);
+            _lastAnomalyCheckTime = currentTime;
+            _lastAnomalyCheckPosition = currentPosition;
 
-            // Perform multi-metric analysis
-            if (_movementSamples.Count >= 3) // Lowered threshold for faster detection
+            // Perform analysis
+            if (_movementSamples.Count >= 5)
             {
-                float speedRatio = sample.ActualSpeed / sample.ExpectedSpeed;
+                float speedRatio = actualSpeed / baseSpeed;
                 bool isAnomaly = false;
                 string anomalyReason = string.Empty;
+                
+                var activePower = _owner.ActivePower;
+                string powerName = activePower != null ? GameDatabase.GetFormattedPrototypeName(activePower.PrototypeDataRef) : "None";
+                bool isTravelPower = activePower != null && activePower.IsTravelPower();
 
-                // Metric 1: Instant speed check
-                if (speedRatio > DefiniteHackMultiplier)
+                // Calculate threshold multiplier based on current state
+                float thresholdMultiplier = 1.0f;
+                if (isTravelPower)
+                {
+                    // Travel powers already use their EvalMoveSpeed - no additional tolerance needed
+                    thresholdMultiplier = 1.0f;
+                }
+                else if (IsMovementPower)
+                    thresholdMultiplier = 1.8f; // Movement powers get 80% boost
+                else
+                    thresholdMultiplier = 1.15f; // Normal movement gets 15% tolerance
+
+                // Extreme hack - instant detection, no tolerance
+                if (speedRatio > ExtremeHackMultiplier * thresholdMultiplier)
                 {
                     isAnomaly = true;
-                    anomalyReason = $"Instant speed {speedRatio:F2}x expected";
+                    anomalyReason = $"EXTREME speed {speedRatio:F2}x base speed";
+                    _consecutiveAnomalies = ConsecutiveAnomaliesForWarning;
                 }
-                else if (speedRatio > SuspiciousSpeedMultiplier)
+                // Clear hack - sustained over limit (with threshold tolerance)
+                else if (speedRatio > DefiniteHackMultiplier * thresholdMultiplier)
                 {
-                    // Metric 2: Sustained speed analysis
                     var recentSamples = _movementSamples.TakeLast(Math.Min(5, _movementSamples.Count));
                     float avgSpeedRatio = recentSamples.Average(s => s.ActualSpeed / s.ExpectedSpeed);
                     
-                    if (avgSpeedRatio > SuspiciousSpeedMultiplier)
+                    if (avgSpeedRatio > DefiniteHackMultiplier * thresholdMultiplier * 0.8f)
                     {
                         isAnomaly = true;
-                        anomalyReason = $"Sustained speed {avgSpeedRatio:F2}x expected over {recentSamples.Count()} samples";
+                        anomalyReason = $"Clear hack - sustained {avgSpeedRatio:F2}x over {recentSamples.Count()} samples";
                     }
                 }
-
-                // Metric 3: Movement burst detection
-                if (_movementSamples.Count >= 10)
+                // Suspicious speed - only if NOT using movement/travel power
+                else if (speedRatio > SuspiciousSpeedMultiplier * thresholdMultiplier)
                 {
-                    var last10Samples = _movementSamples.TakeLast(10).ToList();
-                    float totalExpected = last10Samples.Sum(s => s.ExpectedSpeed * s.TimeDelta);
-                    float totalActual = last10Samples.Sum(s => s.Distance);
-                    
-                    if (totalExpected > 0)
+                    if (!isTravelPower && !IsMovementPower)
                     {
-                        float burstRatio = totalActual / totalExpected;
-
-                        if (burstRatio > 1.8f) // 80% faster than expected over 10 samples
+                        var recentSamples = _movementSamples.TakeLast(Math.Min(8, _movementSamples.Count));
+                        float avgSpeedRatio = recentSamples.Average(s => s.ActualSpeed / s.ExpectedSpeed);
+                        
+                        if (avgSpeedRatio > SuspiciousSpeedMultiplier * thresholdMultiplier * 0.9f)
                         {
                             isAnomaly = true;
-                            anomalyReason = $"Movement burst detected: {burstRatio:F2}x expected over 10 samples";
+                            anomalyReason = $"Suspicious - sustained {avgSpeedRatio:F2}x without movement power";
                         }
-                    }
-                }
-
-                // Metric 4: Statistical deviation check
-                if (_movementSamples.Count >= MaxSamplesForAnalysis)
-                {
-                    var speedRatios = _movementSamples.Select(s => s.ActualSpeed / s.ExpectedSpeed).ToList();
-                    float mean = speedRatios.Average();
-                    float variance = speedRatios.Average(sr => (sr - mean) * (sr - mean));
-                    float stdDev = (float)Math.Sqrt(variance);
-
-                    // If current speed is more than 3 standard deviations from mean AND mean is high
-                    if (mean > 1.3f && speedRatio > mean + (3 * stdDev))
-                    {
-                        isAnomaly = true;
-                        anomalyReason = $"Statistical outlier: {speedRatio:F2}x (mean: {mean:F2}, stdDev: {stdDev:F2})";
                     }
                 }
 
@@ -587,31 +582,89 @@ namespace MHServerEmu.Games.Entities.Locomotion
                 {
                     _consecutiveAnomalies++;
                     
-                    // Only log at threshold and respect cooldown to prevent spam
                     if (_consecutiveAnomalies >= ConsecutiveAnomaliesForWarning)
                     {
                         float timeSinceLastWarning = (float)(currentTime - _lastWarningLogTime).TotalSeconds;
                         if (timeSinceLastWarning >= WarningLogCooldownSeconds || _lastWarningLogTime == TimeSpan.Zero)
                         {
-                            float avgSpeed = _totalDistanceTraveled / (float)_totalMovementTime.TotalSeconds;
+                            float avgActual = _movementSamples.Average(s => s.ActualSpeed);
+                            float avgExpected = _movementSamples.Average(s => s.ExpectedSpeed);
+                            string movementType = IsWalking ? "Walk" : "Run";
+                            string speedSource = _owner.MovementSpeedOverride > 0 ? "Override" : 
+                                               _moveSpeedOverride > 0 ? "Local" : 
+                                               IsMovementPower ? "MovePower" : "Base";
+                            
                             Logger.Warn($"[SPEED HACK] {_owner} | {anomalyReason} | " +
-                                      $"Speed: {sample.ActualSpeed:F1}/{sample.ExpectedSpeed:F1} u/s | " +
-                                      $"Avg: {avgSpeed:F1} u/s | Anomalies: {_consecutiveAnomalies}");
+                                $"Current: {actualSpeed:F1} vs Base: {baseSpeed:F1} ({speedRatio:F2}x) | " +
+                                $"Avg: {avgActual:F1}/{avgExpected:F1} | {movementType} | {speedSource} | " +
+                                $"Travel: {isTravelPower} | Power: {powerName} | Threshold: {thresholdMultiplier:F2}x | Count: {_consecutiveAnomalies}");
+                            
                             _lastWarningLogTime = currentTime;
                         }
                     }
                 }
                 else
                 {
-                    // Reset consecutive counter if we get a legitimate sample
+                    // Decay consecutive counter gradually
                     if (_consecutiveAnomalies > 0)
                         _consecutiveAnomalies = Math.Max(0, _consecutiveAnomalies - 1);
                 }
             }
+        }
 
-            // Update for next check
-            _lastAnomalyCheckTime = currentTime;
-            _lastAnomalyCheckPosition = currentPosition;
+        /// <summary>
+        /// Gets the server-expected movement speed for the current state (including active powers).
+        /// Uses server-validated values capped at known limits.
+        /// </summary>
+        private float GetServerTrustedMaxSpeed()
+        {
+            // Start with server-authoritative prototype speed
+            float baseSpeed = IsWalking && _walkSpeed > 0 ? _walkSpeed : _runSpeed;
+            
+            // Check for server-controlled overrides
+            if (_moveSpeedOverride > 0.0f)
+                baseSpeed = _moveSpeedOverride;
+            
+            if (_owner.MovementSpeedOverride > 0.0f)
+                baseSpeed = _owner.MovementSpeedOverride;
+            
+            // If we have a valid LocomotionState.BaseMoveSpeed (set by active powers), use it
+            // but validate it against known server limits to prevent client manipulation
+            if (LocomotionState.BaseMoveSpeed > 0)
+            {
+                var activePower = _owner.ActivePower;
+                bool isTravelPower = activePower != null && activePower.IsTravelPower();
+                
+                if (isTravelPower)
+                {
+                    // Travel powers use EvalMoveSpeed from their power prototype (typically 1000)
+                    // Just do sanity check to catch extreme manipulation
+                    float reasonableMax = 3000.0f; // No legitimate travel power should exceed this
+                    
+                    if (LocomotionState.BaseMoveSpeed <= reasonableMax)
+                        baseSpeed = LocomotionState.BaseMoveSpeed;
+                    else
+                    {
+                        Logger.Warn($"[Speed Detection] {_owner} Travel power speed REJECTED (>{reasonableMax}): {LocomotionState.BaseMoveSpeed}");
+                        baseSpeed = reasonableMax; // Client sent impossible value
+                    }
+                }
+                else if (IsMovementPower)
+                {
+                    // Movement powers can boost speed but have reasonable limits
+                    // Accept LocomotionState if it's not more than 3x prototype (reasonable buff limit)
+                    float reasonableMax = (_runSpeed > 0 ? _runSpeed : 500.0f) * 3.0f;
+                    if (LocomotionState.BaseMoveSpeed <= reasonableMax)
+                        baseSpeed = LocomotionState.BaseMoveSpeed;
+                }
+                // For normal movement, if LocomotionState is close to prototype, use it (accounts for buffs)
+                else if (LocomotionState.BaseMoveSpeed <= baseSpeed * 1.5f)
+                {
+                    baseSpeed = LocomotionState.BaseMoveSpeed;
+                }
+            }
+            
+            return baseSpeed;
         }
 
         /// <summary>
