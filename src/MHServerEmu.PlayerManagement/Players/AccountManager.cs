@@ -119,6 +119,7 @@ namespace MHServerEmu.PlayerManagement.Players
             if (dbManager.InsertAccount(account) == false)
                 return AccountOperationResult.DatabaseError;
 
+            Logger.Info($"CreateAccount(): account=[{account}]");
             return AccountOperationResult.Success;
         }
 
@@ -150,6 +151,7 @@ namespace MHServerEmu.PlayerManagement.Players
             ServerManager.Instance.SendMessageToService(GameServiceType.PlayerManager, playerNameChanged);
             ServerManager.Instance.SendMessageToService(GameServiceType.GroupingManager, playerNameChanged);
 
+            Logger.Info($"ChangeAccountPlayerName(): account=[{account}], oldPlayerName={oldPlayerName}");
             return AccountOperationResult.Success;
         }
 
@@ -167,11 +169,12 @@ namespace MHServerEmu.PlayerManagement.Players
             if (dbManager.TryQueryAccountByEmail(email, out DBAccount account) == false)
                 return AccountOperationResult.EmailNotFound;
 
-            // Update the password and write the new hash/salt to the database
             account.PasswordHash = CryptographyHelper.HashPassword(newPassword, out byte[] salt);
             account.Salt = salt;
             account.Flags &= ~AccountFlags.IsPasswordExpired;
             dbManager.UpdateAccount(account);
+
+            Logger.Info($"ChangeAccountPassword(): account=[{account}]");
             return AccountOperationResult.Success;
         }
 
@@ -186,9 +189,10 @@ namespace MHServerEmu.PlayerManagement.Players
             if (dbManager.TryQueryAccountByEmail(email, out DBAccount account) == false)
                 return AccountOperationResult.EmailNotFound;
 
-            // Write the new user level to the database
             account.UserLevel = userLevel;
             dbManager.UpdateAccount(account);
+
+            Logger.Info($"SetAccountUserLevel(): account=[{account}], userLevel=[{userLevel}]");
             return AccountOperationResult.Success;
         }
 
@@ -211,10 +215,10 @@ namespace MHServerEmu.PlayerManagement.Players
             if (account.Flags.HasFlag(flag))
                 return AccountOperationResult.FlagAlreadySet;
 
-            // Update flags and write to the database
-            Logger.Trace($"Setting flag {flag} for account {account}");
             account.Flags |= flag;
             IDBManager.Instance.UpdateAccount(account);
+
+            Logger.Info($"SetFlag(): account=[{account}], flag=[{flag}]");
             return AccountOperationResult.Success;
         }
 
@@ -237,10 +241,10 @@ namespace MHServerEmu.PlayerManagement.Players
             if (account.Flags.HasFlag(flag) == false)
                 return AccountOperationResult.FlagNotSet;
 
-            // Update flags and write to the database
-            Logger.Trace($"Clearing flag {flag} for account {account}");
             account.Flags &= ~flag;
             IDBManager.Instance.UpdateAccount(account);
+
+            Logger.Info($"ClearFlag(): account=[{account}], flag=[{flag}]");
             return AccountOperationResult.Success;
         }
 
