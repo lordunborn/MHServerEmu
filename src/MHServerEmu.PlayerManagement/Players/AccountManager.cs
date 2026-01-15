@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Gazillion;
+﻿using Gazillion;
 using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
@@ -28,7 +27,7 @@ namespace MHServerEmu.PlayerManagement.Players
     /// <summary>
     /// Provides <see cref="DBAccount"/> management functions.
     /// </summary>
-    public static partial class AccountManager
+    public static class AccountManager
     {
         private const int EmailMaxLength = 320;
         private const int PasswordMinLength = 3;
@@ -101,8 +100,9 @@ namespace MHServerEmu.PlayerManagement.Players
             if (ValidateEmail(email) == false)
                 return AccountOperationResult.EmailInvalid;
 
-            if (ValidatePlayerName(playerName) == false)
-                return AccountOperationResult.PlayerNameInvalid;
+            AccountOperationResult playerNameResult = ValidatePlayerName(playerName);
+            if (playerNameResult != AccountOperationResult.Success)
+                return playerNameResult;
 
             if (ValidatePassword(password) == false)
                 return AccountOperationResult.PasswordInvalid;
@@ -132,9 +132,9 @@ namespace MHServerEmu.PlayerManagement.Players
         {
             IDBManager dbManager = IDBManager.Instance;
 
-            // Validate input before doing database queries
-            if (ValidatePlayerName(newPlayerName) == false)
-                return AccountOperationResult.PlayerNameInvalid;
+            AccountOperationResult playerNameResult = ValidatePlayerName(newPlayerName);
+            if (playerNameResult != AccountOperationResult.Success)
+                return playerNameResult;
 
             if (dbManager.TryQueryAccountByEmail(email, out DBAccount account) == false)
                 return AccountOperationResult.EmailNotFound;
@@ -305,9 +305,9 @@ namespace MHServerEmu.PlayerManagement.Players
         /// <summary>
         /// Returns <see langword="true"/> if the provided player name <see cref="string"/> is valid.
         /// </summary>
-        private static bool ValidatePlayerName(string playerName)
+        private static AccountOperationResult ValidatePlayerName(string playerName)
         {
-            return GetPlayerNameRegex().Match(playerName).Success;    // 1-16 alphanumeric characters
+            return PlayerNameValidator.Instance.ValidatePlayerName(playerName);
         }
         
         /// <summary>
@@ -317,8 +317,5 @@ namespace MHServerEmu.PlayerManagement.Players
         {
             return password.Length.IsWithin(PasswordMinLength, PasswordMaxLength);
         }
-
-        [GeneratedRegex(@"^[a-zA-Z0-9]{1,16}$")]
-        private static partial Regex GetPlayerNameRegex();
     }
 }
