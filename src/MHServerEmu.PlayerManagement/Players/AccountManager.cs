@@ -1,4 +1,5 @@
-﻿using Gazillion;
+﻿using System.Text.RegularExpressions;
+using Gazillion;
 using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
