@@ -1,6 +1,8 @@
-﻿using MHServerEmu.Core.Collisions;
+﻿using MHServerEmu.Core.Collections;
+using MHServerEmu.Core.Collisions;
 using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Helpers;
+using MHServerEmu.Core.Memory;
 using MHServerEmu.Core.VectorMath;
 using MHServerEmu.Games.Entities;
 using MHServerEmu.Games.GameData.Prototypes;
@@ -85,7 +87,7 @@ namespace MHServerEmu.Games.Navi
             Aabb sweepBound = new (Vector3.MinPerElem(line.Start, line.End), Vector3.MaxPerElem(line.Start, line.End));
             Vector3 velocity = Vector3.Normalize2D(line.Direction);
 
-            List<HitCellInfo> hitCells = new ();
+            using var hitCellsHandle = ListPool<HitCellInfo>.Instance.Get(out List<HitCellInfo> hitCells);
             foreach (Cell cell in _region.IterateCellsInVolume(sweepBound))
             {
                 HitCellInfo info = new(cell);
@@ -344,7 +346,7 @@ namespace MHServerEmu.Games.Navi
             Vector3 velocity = line.Direction.To2D();
             Vector3 direction = Vector3.SafeNormalize2D(velocity);
 
-            List<HitCellInfo> hitCells = new();
+            using var hitCellsHandle = ListPool<HitCellInfo>.Instance.Get(out List<HitCellInfo> hitCells);
             foreach (Cell cell in _region.IterateCellsInVolume(sweepBound))
             {
                 HitCellInfo info = new (cell);
@@ -577,7 +579,7 @@ namespace MHServerEmu.Games.Navi
             float magnitude = MathHelper.SquareRoot(magnitudeSq);
             Vector3 direction = velocity / magnitude;
 
-            Stack<NaviTriangle> triStack = new();
+            PoolableStack<NaviTriangle> triStack = StackPool<NaviTriangle>.Instance.Get();
             using NaviSerialCheck naviSerialCheck = new(_naviMesh.NaviCdt);
 
             triStack.Push(GetFacingStartTriangle(start2d, direction));
@@ -674,6 +676,7 @@ namespace MHServerEmu.Games.Navi
                 result = SweepResult.Success;
             }
 
+            StackPool<NaviTriangle>.Instance.Return(triStack);
             return result;
         }
 
