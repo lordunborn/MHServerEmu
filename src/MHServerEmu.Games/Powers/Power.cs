@@ -195,7 +195,7 @@ namespace MHServerEmu.Games.Powers
 
             if (Owner is Avatar avatar && (avatar.HasPowerInPowerProgression(PrototypeDataRef) || avatar.HasMappedPower(PrototypeDataRef)))
             {
-                Dictionary<PropertyId, PropertyValue> bonusDict = DictionaryPool<PropertyId, PropertyValue>.Instance.Get();
+                using var bonusDictHandle = DictionaryPool<PropertyId, PropertyValue>.Instance.Get(out Dictionary<PropertyId, PropertyValue> bonusDict);
 
                 foreach (var kvp in avatar.Properties.IteratePropertyRange(PropertyEnum.PowerChargesMaxBonusForKwd))
                     bonusDict.Add(kvp.Key, kvp.Value);
@@ -215,8 +215,6 @@ namespace MHServerEmu.Games.Powers
 
                     avatar.Properties[PropertyEnum.PowerChargesMaxBonus, PrototypeDataRef] = kvp.Value;
                 }
-
-                DictionaryPool<PropertyId, PropertyValue>.Instance.Return(bonusDict);
             }
 
             return true;
@@ -998,8 +996,8 @@ namespace MHServerEmu.Games.Powers
             payload.OnDeliverPayload();
 
             // Find targets for this power application
-            List<WorldEntity> targetList = ListPool<WorldEntity>.Instance.Get();
-            List<PowerResults> targetResultsList = ListPool<PowerResults>.Instance.Get();
+            using var targetListHandle = ListPool<WorldEntity>.Instance.Get(out List<WorldEntity> targetList);
+            using var targetResultsListHandle = ListPool<PowerResults>.Instance.Get(out List<PowerResults> targetResultsList);
 
             GetTargets(targetList, payload);
             payload.Properties[PropertyEnum.TargetsHit] = targetList.Count;
@@ -1122,9 +1120,6 @@ namespace MHServerEmu.Games.Powers
                 if (applied == false)
                     ownerResults.Clear(); // leak prevention
             }
-
-            ListPool<WorldEntity>.Instance.Return(targetList);
-            ListPool<PowerResults>.Instance.Return(targetResultsList);
 
             // Break stealth if needed
             TryBreakStealth(powerOwner, ultimateOwner, powerProto, isHostile, false);
@@ -1921,7 +1916,7 @@ namespace MHServerEmu.Games.Powers
             if (conditionCollection == null)
                 return;
 
-            List<TrackedCondition> unpausedConditionList = ListPool<TrackedCondition>.Instance.Get();
+            using var unpausedConditionListHandle = ListPool<TrackedCondition>.Instance.Get(out List<TrackedCondition> unpausedConditionList);
 
             for (int i = 0; i < _trackedConditionList.Count; i++)
             {
@@ -1940,13 +1935,11 @@ namespace MHServerEmu.Games.Powers
             // Readd conditions that were unpaused
             foreach (TrackedCondition unpausedCondition in unpausedConditionList)
                 _trackedConditionList.Add(unpausedCondition);
-
-            ListPool<TrackedCondition>.Instance.Return(unpausedConditionList);
         }
 
         private void RemoveTrackedConditions(bool allowUnpause)
         {
-            List<TrackedCondition> unpausedConditionList = ListPool<TrackedCondition>.Instance.Get();
+            using var unpausedConditionListHandle = ListPool<TrackedCondition>.Instance.Get(out List<TrackedCondition> unpausedConditionList);
 
             EntityManager entityManager = Game.EntityManager;
 
@@ -1981,7 +1974,6 @@ namespace MHServerEmu.Games.Powers
             }
 
             RefreshConditionIndexProperties();
-            ListPool<TrackedCondition>.Instance.Return(unpausedConditionList);
         }
 
         private void RefreshConditionIndexProperties()
@@ -3749,14 +3741,12 @@ namespace MHServerEmu.Games.Powers
                 // Owner is excluded from power activation messages unless explicitly flagged or this is a combo power triggered by the server (therefore the client is not aware of it)
                 bool skipOwner = settings.Flags.HasFlag(PowerActivationSettingsFlags.NotifyOwner) == false && settings.Flags.HasFlag(PowerActivationSettingsFlags.ServerCombo) == false;
 
-                List<PlayerConnection> interestedClientList = ListPool<PlayerConnection>.Instance.Get();
+                using var interestedClientListHandle = ListPool<PlayerConnection>.Instance.Get(out List<PlayerConnection> interestedClientList);
                 if (networkManager.GetInterestedClients(interestedClientList, Owner, AOINetworkPolicyValues.AOIChannelProximity, skipOwner))
                 {
                     NetMessageActivatePower activatePowerMessage = ArchiveMessageBuilder.BuildActivatePowerMessage(this, ref settings);
                     networkManager.SendMessageToMultiple(interestedClientList, activatePowerMessage);
                 }
-
-                ListPool<PlayerConnection>.Instance.Return(interestedClientList);
             }
 
             // ScoringEvent AvatarUsedPower
@@ -4059,7 +4049,7 @@ namespace MHServerEmu.Games.Powers
             // The owner's client should have canceled the power it requested on its own
             bool skipOwner = flags.HasFlag(EndPowerFlags.ClientRequest);
 
-            List<PlayerConnection> interestedClientList = ListPool<PlayerConnection>.Instance.Get();
+            using var interestedClientListHandle = ListPool<PlayerConnection>.Instance.Get(out List<PlayerConnection> interestedClientList);
             if (networkManager.GetInterestedClients(interestedClientList, Owner, AOINetworkPolicyValues.AOIChannelProximity, skipOwner))
             {
                 // NOTE: Although NetMessageCancelPower is not an archive, it uses power prototype enums
@@ -4072,8 +4062,6 @@ namespace MHServerEmu.Games.Powers
 
                 networkManager.SendMessageToMultiple(interestedClientList, cancelPowerMessage);
             }
-
-            ListPool<PlayerConnection>.Instance.Return(interestedClientList);
         }
 
         protected virtual bool OnEndPowerCheckLoopEnd(EndPowerFlags flags)
@@ -4552,13 +4540,12 @@ namespace MHServerEmu.Games.Powers
             if (region == null) return Logger.WarnReturn(false, "GetAOETargets(): region == null");
 
             // Look for potential targets in the AOE shape
-            List<WorldEntity> potentialTargetList = ListPool<WorldEntity>.Instance.Get();
+            using var potentialTargetListHandle = ListPool<WorldEntity>.Instance.Get(out List<WorldEntity> potentialTargetList);
             GetPotentialTargetsInShape(region, radius, in aoePosition, in aoeDirection, powerProto, potentialTargetList);
 
             // Set up random
             if (reachProto.RandomAOETargets && randomSeed == 0)
             {
-                ListPool<WorldEntity>.Instance.Return(potentialTargetList);
                 return Logger.WarnReturn(false,
                     $"GetAOETargets(): A power has RandomAOETargets set true, but no random seed to do it with!\n Power: {powerProto}\n Owner: {owner}\n");
             }
@@ -4593,7 +4580,6 @@ namespace MHServerEmu.Games.Powers
                 }
             }
 
-            ListPool<WorldEntity>.Instance.Return(potentialTargetList);
             return true;
         }
 
