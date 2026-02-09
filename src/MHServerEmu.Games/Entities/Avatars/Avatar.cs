@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Gazillion;
+using MHServerEmu.Core.Collections;
 using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
@@ -59,8 +60,8 @@ namespace MHServerEmu.Games.Entities.Avatars
         private readonly EventPointer<PowerTeleportEvent> _powerTeleportEvent = new();
         private readonly EventPointer<DeathDialogEvent> _deathDialogEvent = new();
 
-        private readonly EventPointer<EnableEnduranceRegenEvent>[] _enableEnduranceRegenEvents = new EventPointer<EnableEnduranceRegenEvent>[(int)ManaType.NumTypes];
-        private readonly EventPointer<UpdateEnduranceEvent>[] _updateEnduranceEvents = new EventPointer<UpdateEnduranceEvent>[(int)ManaType.NumTypes];
+        private InlineArray2<EventPointer<EnableEnduranceRegenEvent>> _enableEnduranceRegenEvents;
+        private InlineArray2<EventPointer<UpdateEnduranceEvent>> _updateEnduranceEvents;
 
         private RepVar_string _playerName = new();
         private ulong _ownerPlayerDbId;
@@ -356,7 +357,7 @@ namespace MHServerEmu.Games.Entities.Avatars
 
         public override ChangePositionResult ChangeRegionPosition(Vector3? position, Orientation? orientation, ChangePositionFlags flags = ChangePositionFlags.None)
         {
-            if (RegionLocation.IsValid() == false)
+            if (RegionLocation.IsValid == false)
                 return Logger.WarnReturn(ChangePositionResult.NotChanged, "ChangeRegionPosition(): Cannot change region position without entering the world first");
 
             // We only need to do AOI processing if the avatar is changing its position
@@ -1322,7 +1323,7 @@ namespace MHServerEmu.Games.Entities.Avatars
 
                     if (targetIsValid)
                     {
-                        if (target?.RegionLocation.IsValid() == true)
+                        if (target?.RegionLocation.IsValid == true)
                         {
                             // Update target position
                             switch (continuousPower.GetTargetingShape())
@@ -6915,9 +6916,9 @@ namespace MHServerEmu.Games.Entities.Avatars
             }
         }
 
-        public override void OnAreaChanged(RegionLocation oldLocation, RegionLocation newLocation)
+        public override void OnAreaChanged(ref RegionLocation oldLocation, ref RegionLocation newLocation)
         {
-            base.OnAreaChanged(oldLocation, newLocation);
+            base.OnAreaChanged(ref oldLocation, ref newLocation);
 
             var oldArea = oldLocation.Area;
             var newArea = newLocation.Area;
@@ -6944,9 +6945,9 @@ namespace MHServerEmu.Games.Entities.Avatars
             }
         }
 
-        public override void OnCellChanged(RegionLocation oldLocation, RegionLocation newLocation, ChangePositionFlags flags)
+        public override void OnCellChanged(ref RegionLocation oldLocation, ref RegionLocation newLocation, ChangePositionFlags flags)
         {
-            base.OnCellChanged(oldLocation, newLocation, flags);
+            base.OnCellChanged(ref oldLocation, ref newLocation, flags);
 
             Cell oldCell = oldLocation.Cell;
             Cell newCell = newLocation.Cell;
