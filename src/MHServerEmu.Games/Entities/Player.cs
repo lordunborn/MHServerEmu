@@ -94,6 +94,8 @@ namespace MHServerEmu.Games.Entities
         private readonly EventPointer<CommunityPartyCircleChangedEvent> _communityPartyCircleChangedEvent = new();
         private readonly EventPointer<WorldViewUpdateEvent> _worldViewUpdateEvent = new();
         private readonly EventPointer<TeleportToPartyMemberEvent> _teleportToPartyMemberEvent = new();
+        private readonly EventPointer<AutosaveEvent> _autosaveEvent = new();
+
         private readonly EventGroup _pendingEvents = new();
 
         private readonly PropertyCollection _permaBuffProperties = new();
@@ -522,6 +524,7 @@ namespace MHServerEmu.Games.Entities
             ClearPlayerTradeInventory();
 
             InitializeVendors();
+            ScheduleAutosave();
             ScheduleCheckHoursPlayedEvent();
             UpdateUISystemLocks();
 
@@ -4790,6 +4793,32 @@ namespace MHServerEmu.Games.Entities
 
         #endregion
 
+        #region Autosave
+
+        private void ScheduleAutosave()
+        {
+            if (_autosaveEvent.IsValid)
+                return;
+
+            TimeSpan autoSaveInterval = TimeSpan.FromMinutes(Game.CustomGameOptions.AutosaveIntervalMinutes);
+            if (autoSaveInterval <= TimeSpan.Zero)
+                return;
+
+            ScheduleEntityEvent(_autosaveEvent, autoSaveInterval);
+        }
+
+        private void Autosave()
+        {
+            if (PlayerConnection == null)
+                return;
+
+            Logger.Info($"Autosaving {this}...");
+            PlayerConnection.SaveWithNotification();
+            ScheduleAutosave();
+        }
+
+        #endregion
+
         #region Scheduled Events
 
         private class ScheduledHUDTutorialResetEvent : CallMethodEvent<Entity>
@@ -4825,6 +4854,11 @@ namespace MHServerEmu.Games.Entities
         private class TeleportToPartyMemberEvent : CallMethodEventParam1<Entity, ulong>
         {
             protected override CallbackDelegate GetCallback() => (t, p1) => ((Player)t).TeleportToPartyMember(p1);
+        }
+
+        private class AutosaveEvent : CallMethodEvent<Entity>
+        {
+            protected override CallbackDelegate GetCallback() => (t) => ((Player)t).Autosave();
         }
 
         #endregion
