@@ -171,7 +171,7 @@ namespace MHServerEmu.Games.Gifting
                         if (itemProto != null)
                         {
                             for (int i = 0; i < entry.Count; i++)
-                                player.Game.LootManager.GiveItem(itemProto.DataRef, LootContext.Drop, player);
+                                player.Game.LootManager.GiveItem(itemProto.DataRef, LootContext.CashShop, player);
                             GiftClaimStorage.SaveClaim(playerDbId, entry.ItemPrototype);
                             giftsDistributed++;
                             //Logger.Info($"Successfully distributed {entry.Count}x {itemProto} to player {email}");
@@ -219,7 +219,7 @@ namespace MHServerEmu.Games.Gifting
                         if (itemProto != null)
                         {
                             for (int i = 0; i < entry.Count; i++)
-                                player.Game.LootManager.GiveItem(itemProto.DataRef, LootContext.Drop, player);
+                                player.Game.LootManager.GiveItem(itemProto.DataRef, LootContext.CashShop, player);
                             GiftClaimStorage.SaveClaim(playerDbId, entry.ItemPrototype);
                             giftsDistributed++;
                             //Logger.Info($"Successfully distributed player-specific {entry.Count}x {itemProto} to {email}");
