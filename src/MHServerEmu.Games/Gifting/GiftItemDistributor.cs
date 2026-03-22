@@ -2,6 +2,7 @@ using MHServerEmu.Core.Logging;
 using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.Loot;
 using System.Text.Json;
+using System.Text;
 using MHServerEmu.Core.Helpers;
 using MHServerEmu.Games.GameData.Prototypes;  // Add this for ItemPrototype
 using MHServerEmu.Games.Common;
@@ -14,6 +15,7 @@ namespace MHServerEmu.Games.Gifting
 {
     public class GiftItemEntry
     {
+        public string ClaimId { get; set; }  // Optional unique claim key for treating same item as separate gifts
         public ulong ItemPrototype { get; set; }  // Store as ulong
         public int Count { get; set; }
         public DateTime AddedDate { get; set; }
@@ -24,6 +26,7 @@ namespace MHServerEmu.Games.Gifting
     public class PlayerSpecificGiftEntry
     {
         public string Email { get; set; }  // Player email to receive the gift
+        public string ClaimId { get; set; }  // Optional unique claim key for treating same item as separate gifts
         public ulong ItemPrototype { get; set; }
         public int Count { get; set; }
         public DateTime AddedDate { get; set; }
@@ -39,6 +42,29 @@ namespace MHServerEmu.Games.Gifting
         private static List<GiftItemEntry> _cachedItems;
         private static List<PlayerSpecificGiftEntry> _playerSpecificItems;
         private static Dictionary<ulong, List<PlayerSpecificGiftEntry>> _playerSpecificItemsByDbId;
+
+        private static ulong ResolveClaimKey(ulong itemPrototype, string claimId)
+        {
+            // Backward compatibility: if no ClaimId is provided, preserve legacy behavior (keyed by item id).
+            if (string.IsNullOrWhiteSpace(claimId))
+                return itemPrototype;
+
+            // Stable 64-bit FNV-1a hash to convert ClaimId text to claim storage key.
+            const ulong fnvOffsetBasis = 14695981039346656037;
+            const ulong fnvPrime = 1099511628211;
+
+            ulong hash = fnvOffsetBasis;
+            byte[] bytes = Encoding.UTF8.GetBytes(claimId.Trim());
+
+            foreach (byte b in bytes)
+            {
+                hash ^= b;
+                hash *= fnvPrime;
+            }
+
+            // Avoid returning 0 as a claim key.
+            return hash == 0 ? itemPrototype : hash;
+        }
 
         public static bool Initialize()
         {
@@ -139,6 +165,8 @@ namespace MHServerEmu.Games.Gifting
             {
                 foreach (var entry in _cachedItems)
                 {
+                    ulong claimKey = ResolveClaimKey(entry.ItemPrototype, entry.ClaimId);
+
                     if (entry.AddedDate > currentTime)
                     {
                         //Logger.Debug($"Gift {entry.ItemPrototype} not yet available. Current time: {currentTime}, Gift available: {entry.AddedDate}");
@@ -155,13 +183,13 @@ namespace MHServerEmu.Games.Gifting
                     if (entry.IsDaily)
                     {
                         // Daily gifts: check if claimed today
-                        if (GiftClaimStorage.CanClaimDaily(playerDbId, entry.ItemPrototype))
+                        if (GiftClaimStorage.CanClaimDaily(playerDbId, claimKey))
                             shouldClaim = true;
                     }
                     else
                     {
                         // One-time gifts: check if ever claimed
-                        if (!GiftClaimStorage.HasClaimed(playerDbId, entry.ItemPrototype))
+                        if (!GiftClaimStorage.HasClaimed(playerDbId, claimKey))
                             shouldClaim = true;
                     }
 
@@ -171,8 +199,8 @@ namespace MHServerEmu.Games.Gifting
                         if (itemProto != null)
                         {
                             for (int i = 0; i < entry.Count; i++)
-                                player.Game.LootManager.GiveItem(itemProto.DataRef, LootContext.CashShop, player);
-                            GiftClaimStorage.SaveClaim(playerDbId, entry.ItemPrototype);
+                                player.Game.LootManager.GiveItem(itemProto.DataRef, LootContext.Drop, player);
+                            GiftClaimStorage.SaveClaim(playerDbId, claimKey);
                             giftsDistributed++;
                             //Logger.Info($"Successfully distributed {entry.Count}x {itemProto} to player {email}");
                         }
@@ -187,6 +215,8 @@ namespace MHServerEmu.Games.Gifting
             {
                 foreach (var entry in playerSpecificGifts)
                 {
+                    ulong claimKey = ResolveClaimKey(entry.ItemPrototype, entry.ClaimId);
+
                     if (entry.AddedDate > currentTime)
                     {
                         //Logger.Debug($"Player-specific gift {entry.ItemPrototype} not yet available for {email}");
@@ -203,13 +233,13 @@ namespace MHServerEmu.Games.Gifting
                     if (entry.IsDaily)
                     {
                         // Daily gifts: check if claimed today
-                        if (GiftClaimStorage.CanClaimDaily(playerDbId, entry.ItemPrototype))
+                        if (GiftClaimStorage.CanClaimDaily(playerDbId, claimKey))
                             shouldClaim = true;
                     }
                     else
                     {
                         // One-time gifts: check if ever claimed
-                        if (!GiftClaimStorage.HasClaimed(playerDbId, entry.ItemPrototype))
+                        if (!GiftClaimStorage.HasClaimed(playerDbId, claimKey))
                             shouldClaim = true;
                     }
 
@@ -219,8 +249,8 @@ namespace MHServerEmu.Games.Gifting
                         if (itemProto != null)
                         {
                             for (int i = 0; i < entry.Count; i++)
-                                player.Game.LootManager.GiveItem(itemProto.DataRef, LootContext.CashShop, player);
-                            GiftClaimStorage.SaveClaim(playerDbId, entry.ItemPrototype);
+                                player.Game.LootManager.GiveItem(itemProto.DataRef, LootContext.Drop, player);
+                            GiftClaimStorage.SaveClaim(playerDbId, claimKey);
                             giftsDistributed++;
                             //Logger.Info($"Successfully distributed player-specific {entry.Count}x {itemProto} to {email}");
                         }
@@ -233,5 +263,3 @@ namespace MHServerEmu.Games.Gifting
         }
     }
 }
-
-
