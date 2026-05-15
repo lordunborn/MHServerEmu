@@ -208,7 +208,6 @@ namespace MHServerEmu.PlayerManagement.Auth
         {
             playerDbId = 0;
             
-	    string transformedEmail = Regex.Replace(email.ToLower(), "@[^@]+$", "@mhtahiti.com");
 
             if (_platformTicketManager.TryGetValue(token, out ulong sessionId) == false)
                 return Logger.WarnReturn(false, $"VerifyPlatformTicket(): Invalid token {token}");
@@ -226,7 +225,7 @@ namespace MHServerEmu.PlayerManagement.Auth
             if (session.Account is not DBAccount account)
                 return Logger.WarnReturn(false, $"VerifyPlatformTicket(): No account for session 0x{sessionId:X}");
 
-            if (account.Email.Equals(transformedEmail, StringComparison.OrdinalIgnoreCase) == false)
+            if (account.Email.Equals(email, StringComparison.OrdinalIgnoreCase) == false)
                 return Logger.WarnReturn(false, $"VerifyPlatformTicket(): Email mismatch for sessionId 0x{sessionId:X}");
 
             playerDbId = (ulong)account.Id;
