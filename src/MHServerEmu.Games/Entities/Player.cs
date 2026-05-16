@@ -4210,6 +4210,10 @@ namespace MHServerEmu.Games.Entities
                 Properties[PropertyEnum.LoginCount] = loginCount;
             }
 
+
+	    //REMOVE THIS MONELL
+            GiftItemDistributor.DistributeGiftItems(this);
+
             // Send gifting restrictions update.
             // NOTE: Currently we don't actually need this since we don't rely on external services,
             // but I'm leaving this here for consistency with our packet captures.
@@ -4277,8 +4281,6 @@ namespace MHServerEmu.Games.Entities
 
                 Properties[rewardId] = (long)Clock.UnixTime.TotalSeconds;
             }
-	    //REMOVE THIS MONELL
-            GiftItemDistributor.DistributeGiftItems(this);
         }
 
         private void GiveEventDailyGifts()
