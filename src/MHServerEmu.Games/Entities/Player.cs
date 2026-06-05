@@ -799,12 +799,12 @@ namespace MHServerEmu.Games.Entities
         /// <summary>
         /// Updates <see cref="StashTabOptions"/> with the data from a <see cref="NetMessageStashTabOptions"/>.
         /// </summary>
-        public bool UpdateStashTabOptions(NetMessageStashTabOptions optionsMessage)
+        public void UpdateStashTabOptions(NetMessageStashTabOptions optionsMessage)
         {
             PrototypeId inventoryRef = (PrototypeId)optionsMessage.InventoryRefId;
 
-            if (!Verify.IsTrue(Inventory.IsPlayerStashInventory(inventoryRef))) return false;
-            if (!Verify.IsNotNull(GetInventoryByRef(inventoryRef))) return false;
+            if (!Verify.IsTrue(Inventory.IsPlayerStashInventory(inventoryRef))) return;
+            if (!Verify.IsNotNull(GetInventoryByRef(inventoryRef))) return;
 
             if (_stashTabOptionsDict.TryGetValue(inventoryRef, out StashTabOptions options) == false)
             {
@@ -826,26 +826,24 @@ namespace MHServerEmu.Games.Entities
 
             if (optionsMessage.HasColor)
                 options.Color = (StashTabColor)optionsMessage.Color;
-
-            return true;
         }
 
         /// <summary>
         /// Inserts the stash tab with the specified <see cref="PrototypeId"/> into the specified position.
         /// </summary>
-        public bool StashTabInsert(PrototypeId insertedStashRef, int newSortOrder)
+        public void StashTabInsert(PrototypeId insertedStashRef, int newSortOrder)
         {
-            if (!Verify.IsTrue(newSortOrder >= 0)) return false;
-            if (!Verify.IsTrue(insertedStashRef != PrototypeId.Invalid)) return false;
-            if (!Verify.IsTrue(Inventory.IsPlayerStashInventory(insertedStashRef))) return false;
-            if (!Verify.IsNotNull(GetInventoryByRef(insertedStashRef))) return false;
+            if (!Verify.IsTrue(newSortOrder >= 0)) return;
+            if (!Verify.IsTrue(insertedStashRef != PrototypeId.Invalid)) return;
+            if (!Verify.IsTrue(Inventory.IsPlayerStashInventory(insertedStashRef))) return;
+            if (!Verify.IsNotNull(GetInventoryByRef(insertedStashRef))) return;
 
             // Get options for the tab we need to insert
             if (_stashTabOptionsDict.TryGetValue(insertedStashRef, out StashTabOptions options))
             {
                 // Only new tabs are allowed to be in the same location
                 if (!Verify.IsTrue(options.SortOrder != newSortOrder, "Inserting at the same location! We should have already validated for this!"))
-                    return false;
+                    return;
             }
             else
             {
@@ -856,7 +854,7 @@ namespace MHServerEmu.Games.Entities
 
             // No need to sort if only have a single tab
             if (_stashTabOptionsDict.Count == 1)
-                return true;
+                return;
 
             // Assign the new sort order to the tab
             int oldSortOrder = options.SortOrder;
@@ -918,8 +916,6 @@ namespace MHServerEmu.Games.Entities
                     fixedOrder++;
                 }
             }
-
-            return true;
         }
 
         public bool OnStashInventoryViewed(PrototypeId stashInventoryProtoRef)
