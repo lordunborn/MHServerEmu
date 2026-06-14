@@ -17,8 +17,6 @@ namespace MHServerEmu.Games.GameData.LiveTuning
 
     public class LiveTuningEventRule
     {
-        private static readonly Logger Logger = LogManager.CreateLogger();
-
         // Arbitrary epoch date to count the number of weeks for our weekly rotation (first Sunday of 2000).
         // We start at Sunday because that's index 0 in the DayOfWeek enum.
         private static readonly DateTime WeeklyRotationEpoch = new(2000, 1, 2);
@@ -47,8 +45,8 @@ namespace MHServerEmu.Games.GameData.LiveTuning
         {
             LiveTuningEventScheduler scheduler = LiveTuningEventScheduler.Instance;
 
-            if (Events.IsNullOrEmpty())
-                return Logger.WarnReturn(false, $"Validate(): Rule {Name} has no event references.");
+            if (!Verify.IsTrue(Events.HasValue(), $"Rule {Name} has no event references."))
+                return false;
 
             foreach (string eventName in Events)
             {
@@ -57,20 +55,20 @@ namespace MHServerEmu.Games.GameData.LiveTuning
                     continue;
 
                 LiveTuningEvent @event = scheduler.GetEvent(eventName);
-                if (@event == null)
-                    return Logger.WarnReturn(false, $"Validate(): Rule {Name} references unknown event '{eventName}'");
+                if (!Verify.IsNotNull(@event, $"Rule {Name} references unknown event '{eventName}'"))
+                    return false;
             }
 
             switch (Type)
             {
                 case LiveTuningEventRuleType.WeeklyRotation:
-                    if (StartDayOfWeek == null)
-                        return Logger.WarnReturn(false, $"Validate(): Rule {Name} is of type WeeklyRotation, but it specifies no StartDayOfWeek");
+                    if (!Verify.IsTrue(StartDayOfWeek != null, $"Rule {Name} is of type WeeklyRotation, but it specifies no StartDayOfWeek"))
+                        return false;
                     break;
 
                 case LiveTuningEventRuleType.DayOfWeek:
-                    if (StartDayOfWeek == null)
-                        return Logger.WarnReturn(false, $"Validate(): Rule {Name} is of type DayOfWeek, but it specifies no StartDayOfWeek");
+                    if (!Verify.IsTrue(StartDayOfWeek != null, $"Rule {Name} is of type DayOfWeek, but it specifies no StartDayOfWeek"))
+                        return false;
                     break;
 
                 case LiveTuningEventRuleType.DayOfWeekRotation:
@@ -80,14 +78,14 @@ namespace MHServerEmu.Games.GameData.LiveTuning
 
                 case LiveTuningEventRuleType.SpecialDate:
                 case LiveTuningEventRuleType.SpecialDateLunar:
-                    if (StartMonth == null)
-                        return Logger.WarnReturn(false, $"Validate(): Rule {Name} is of type SpecialDate, but it specifies no StartMonth");
+                    if (!Verify.IsTrue(StartMonth != null, $"Rule {Name} is of type SpecialDate, but it specifies no StartMonth"))
+                        return false;
 
-                    if (StartDay == null)
-                        return Logger.WarnReturn(false, $"Validate(): Rule {Name} is of type SpecialDate, but it specifies no StartDay");
+                    if (!Verify.IsTrue(StartDay != null, $"Rule {Name} is of type SpecialDate, but it specifies no StartDay"))
+                        return false;
 
-                    if (DurationDays == null)
-                        return Logger.WarnReturn(false, $"Validate(): Rule {Name} is of type SpecialDate, but it specifies no DurationDays");
+                    if (!Verify.IsTrue(DurationDays != null, $"Rule {Name} is of type SpecialDate, but it specifies no DurationDays"))
+                        return false;
 
                     break;
             }
@@ -160,11 +158,8 @@ namespace MHServerEmu.Games.GameData.LiveTuning
                 DateTime epoch = WeeklyRotationEpoch.Add(weekStartOffset);
 
                 int weekNumber = ((int)(now - epoch).TotalDays) / 7;
-                if (weekNumber < 0)
-                {
-                    Logger.Warn("GetActiveEvents(): weekNumber < 0");
+                if (!Verify.IsTrue(weekNumber >= 0))
                     weekNumber = 0;
-                }
 
                 if (Events.Length > 0)
                 {
@@ -228,7 +223,7 @@ namespace MHServerEmu.Games.GameData.LiveTuning
             }
             catch (Exception e)
             {
-                Logger.WarnException(e, $"Failed to convert lunar date [year={year}, month={lunarMonth}, day={lunarDay}] to Gregorian DateTime.");
+                Verify.IsTrue(false, $"Failed to convert lunar date to Gregorian DateTime ({e.Message}). [year={year}, month={lunarMonth}, day={lunarDay}]");
                 gregorianDateTime = default;
                 return false;
             }
