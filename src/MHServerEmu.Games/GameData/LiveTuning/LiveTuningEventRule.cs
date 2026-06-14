@@ -70,11 +70,11 @@ namespace MHServerEmu.Games.GameData.LiveTuning
                     if (!Verify.IsTrue(StartDayOfWeek != null, $"Rule {Name} is of type DayOfWeek, but it specifies no StartDayOfWeek"))
                         return false;
                     break;
-
-                case LiveTuningEventRuleType.DayOfWeekRotation:
-                    if (StartDayOfWeek == null)
-                        return Logger.WarnReturn(false, $"Validate(): Rule {Name} is of type DayOfWeekRotation, but it specifies no StartDayOfWeek");
-                    break;
+		
+		case LiveTuningEventRuleType.DayOfWeekRotation:
+		    if (!Verify.IsTrue(StartDayOfWeek != null, $"Rule {Name} is of type DayOfWeekRotation, but it specifies no StartDayOfWeek"))
+		    	return false;
+		    break;
 
                 case LiveTuningEventRuleType.SpecialDate:
                 case LiveTuningEventRuleType.SpecialDateLunar:
