@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Logging;
 
@@ -119,7 +119,7 @@ namespace MHServerEmu.Games.GameData.LiveTuning
                     if (now.DayOfWeek != StartDayOfWeek)
                         return 0;
 
-                    eventInstance = now.DayOfYear;
+                    // eventInstance will be determined by the rotation logic below.
 
                     break;
 
@@ -169,21 +169,18 @@ namespace MHServerEmu.Games.GameData.LiveTuning
             }
             else if (Type == LiveTuningEventRuleType.DayOfWeekRotation)
             {
-                // Determine which occurrence of this weekday it is within the current month (1-5).
-                int weekOccurrence = (now.Day - 1) / 7 + 1;
+                // Cycle through the Events array each week on the specified weekday, wrapping to the top when the list ends.
+                TimeSpan weekStartOffset = TimeSpan.FromDays((int)(StartDayOfWeek ?? DayOfWeek.Sunday));
+                DateTime epoch = WeeklyRotationEpoch.Add(weekStartOffset);
 
-                if (weekOccurrence == 5)
+                int weekNumber = ((int)(now - epoch).TotalDays) / 7;
+                if (!Verify.IsTrue(weekNumber >= 0))
+                    weekNumber = 0;
+
+                if (Events.Length > 0)
                 {
-                    // 5th occurrence: activate all listed events simultaneously.
-                    foreach (string eventName in Events)
-                        added += AddActiveEvent(activeEvents, eventName, eventInstance);
-                }
-                else
-                {
-                    // 1st-4th occurrence: activate the event at the matching index.
-                    int eventIndex = weekOccurrence - 1;
-                    if (eventIndex < Events.Length)
-                        added += AddActiveEvent(activeEvents, Events[eventIndex], eventInstance);
+                    string eventName = Events[weekNumber % Events.Length];
+                    added += AddActiveEvent(activeEvents, eventName, weekNumber);
                 }
             }
             else
