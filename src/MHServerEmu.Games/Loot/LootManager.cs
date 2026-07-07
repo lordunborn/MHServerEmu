@@ -177,6 +177,9 @@ namespace MHServerEmu.Games.Loot
             if (LootVaporizer.VaporizeLootResultSummary(player, lootResultSummary, sourceEntityId) == false)
                 return true;
 
+            // Apply loot filter before spawning
+            LootFilterHelper.ApplyFilters(player, lootResultSummary, recipient.PrototypeDataRef);
+
             // Spawn what's left
 
             // Temp property collection for transfering properties
@@ -290,6 +293,11 @@ namespace MHServerEmu.Games.Loot
                     callbackNode.OnResultsEvaluation(player, null);
             }
 
+            // Apply loot filter before creating items
+            PrototypeId avatarProtoRef = player?.CurrentAvatar?.PrototypeDataRef ?? PrototypeId.Invalid;
+            LootFilterHelper.ApplyFilters(player, lootResultSummary, avatarProtoRef);
+
+            
             // Create items
             if (lootTypes.HasFlag(LootType.Item))
             {

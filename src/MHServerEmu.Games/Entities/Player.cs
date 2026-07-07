@@ -100,6 +100,8 @@ namespace MHServerEmu.Games.Entities
 
         private readonly PropertyCollection _permaBuffProperties = new();
 
+        public Loot.PlayerLootFilter LootFilter { get; private set; }
+
         private ReplicatedPropertyCollection _avatarProperties = new();
         private ulong _shardId;     // This was probably used for database sharding, we don't need this
         private RepVar_string _playerName = new();
@@ -219,6 +221,7 @@ namespace MHServerEmu.Games.Entities
 
             Game.EntityManager.AddPlayer(this);
             MatchQueueStatus.SetOwner(this);
+            LootFilterLogCollator.BeginSession(Id, GetName());
 
             // Perma buff properties are attached as child to avatar properties because avatar properties are persistent, while perma buffs are not.
             _avatarProperties.AddChildCollection(_permaBuffProperties);
@@ -506,6 +509,7 @@ namespace MHServerEmu.Games.Entities
             InitializeVendors();
             ScheduleAutosave();
             ScheduleCheckHoursPlayedEvent();
+            LootFilter = PlayerLootFilterStorage.Load(DatabaseUniqueId);
             UpdateUISystemLocks();
 
             Game.GuildManager.OnPlayerEnteringGame(this);
@@ -550,6 +554,7 @@ namespace MHServerEmu.Games.Entities
             MissionManager.Deallocate();
             AchievementManager.Deallocate();
             Game.EntityManager.RemovePlayer(this);
+            LootFilterLogCollator.EndSession(Id);
             base.OnDeallocate();
         }
 

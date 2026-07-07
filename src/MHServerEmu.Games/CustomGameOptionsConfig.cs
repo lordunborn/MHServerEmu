@@ -22,5 +22,10 @@ namespace MHServerEmu.Games
         public bool UsePrestigeLootTable { get; private set; } = false;
         public bool EnableUltimatePrestige { get; private set; } = false;
         public bool ApplyHiddenPvPDamageModifiers { get; private set; } = false;
+
+        // LOOT FILTER
+        public bool LootFilterEnable { get; private set; } = true;
+        public bool LootFilterCharacterSpecificEnable { get; private set; } = true;
+        public bool LootFilterLoggingEnable { get; private set; } = false;
     }
 }
