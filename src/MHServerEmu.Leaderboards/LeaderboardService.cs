@@ -53,6 +53,9 @@ namespace MHServerEmu.Leaderboards
                 // Process rewards
                 _rewardManager.Update();
 
+                // Check automated event leaderboard schedule
+                _database.UpdateAutomatedEventScheduleIfNeeded();
+
                 Thread.Sleep(UpdateTimeMS);
             }
 

@@ -107,6 +107,54 @@ namespace MHServerEmu.Games.GameData.LiveTuning
             ServiceMessage.SetLiveTuningEventMessage message = new(_eventMessageText);
             ServerManager.Instance.SendMessageToService(GameServiceType.GroupingManager, message);
         }
+        public void GetActiveEvents(SortedDictionary<string, int> activeEvents)
+        {
+            if (_rules.Count == 0)
+                return;
+
+            DateTime now = GetCurrentDateTime();
+
+            foreach (LiveTuningEventRule rule in _rules)
+                rule.GetActiveEvents(now, activeEvents);
+        }
+        public void GetEventLeaderboardState(HashSet<PrototypeGuid> controlledLeaderboards, HashSet<PrototypeGuid> activeLeaderboards)
+        {
+            if (controlledLeaderboards == null || activeLeaderboards == null)
+                return;
+
+            SortedDictionary<string, int> activeEvents = new();
+            GetActiveEvents(activeEvents);
+
+            foreach (var kvp in _events)
+            {
+                string eventName = kvp.Key;
+                LiveTuningEvent liveEvent = kvp.Value;
+
+                if (liveEvent?.Leaderboards == null || liveEvent.Leaderboards.Length == 0)
+                    continue;
+
+                bool isActive = activeEvents.ContainsKey(eventName);
+
+                foreach (string leaderboardName in liveEvent.Leaderboards)
+                {
+                    if (string.IsNullOrWhiteSpace(leaderboardName))
+                        continue;
+
+                    PrototypeId leaderboardProtoRef = GameDatabase.GetPrototypeRefByName(leaderboardName);
+                    if (leaderboardProtoRef == PrototypeId.Invalid)
+                    {
+                        Logger.Warn($"GetEventLeaderboardState(): Invalid leaderboard '{leaderboardName}' for event '{eventName}'");
+                        continue;
+                    }
+
+                    PrototypeGuid leaderboardGuid = GameDatabase.GetPrototypeGuid(leaderboardProtoRef);
+                    controlledLeaderboards.Add(leaderboardGuid);
+
+                    if (isActive)
+                        activeLeaderboards.Add(leaderboardGuid);
+                }
+            }
+        }
 
         private void InitializeEvents()
         {

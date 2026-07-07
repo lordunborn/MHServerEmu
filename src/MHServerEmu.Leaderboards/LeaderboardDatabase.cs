@@ -13,9 +13,10 @@ using MHServerEmu.DatabaseAccess.Models.Leaderboards;
 using MHServerEmu.DatabaseAccess.SQLite;
 using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.Prototypes;
+using MHServerEmu.Games.GameData.LiveTuning;
 
 namespace MHServerEmu.Leaderboards
-{   
+{
     /// <summary>
     /// A singleton that manages runtime leaderboard data.
     /// </summary>
@@ -100,6 +101,7 @@ namespace MHServerEmu.Leaderboards
             try
             {
                 schedulers = FileHelper.DeserializeJson<LeaderboardScheduler[]>(schedulePath, LeaderboardScheduler.JsonSerializerOptions);
+                ApplyAutomatedEventSchedule(schedulers);
                 LeaderboardScheduler.ValidateMetaLeaderboards(schedulers);
             }
             catch (Exception e)
@@ -223,7 +225,7 @@ namespace MHServerEmu.Leaderboards
             {
                 var config = ConfigManager.Instance.GetConfig<LeaderboardsConfig>();
                 string schedulePath = Path.Combine(LeaderboardsDirectory, config.ScheduleFile);
-                
+
                 List<DBLeaderboard> updatedLeaderboards = new();
                 List<DBLeaderboardInstance> updatedInstances = new();
                 if (LoadSchedule(schedulePath, updatedLeaderboards, updatedInstances))
@@ -232,6 +234,87 @@ namespace MHServerEmu.Leaderboards
                     ApplyScheduleChanges(updatedLeaderboards, updatedInstances);
                 }
             }
+        }
+
+        private string _lastAutomatedEventScheduleSignature = string.Empty;
+
+        public void UpdateAutomatedEventScheduleIfNeeded()
+        {
+            if (IsInitialized == false)
+                return;
+
+            string currentSignature = GetAutomatedEventScheduleSignature();
+
+            if (currentSignature == _lastAutomatedEventScheduleSignature)
+                return;
+
+            _lastAutomatedEventScheduleSignature = currentSignature;
+
+            Logger.Info($"Automated event leaderboard schedule changed: {currentSignature}");
+
+            ReloadAndReapplySchedule();
+        }
+
+        private string GetAutomatedEventScheduleSignature()
+        {
+            SortedDictionary<string, int> activeEvents = new();
+            LiveTuningEventScheduler.Instance.GetActiveEvents(activeEvents);
+
+            if (activeEvents.Count == 0)
+                return "NoActiveEvents";
+
+            return string.Join("|", activeEvents.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+        }
+
+        private void ApplyAutomatedEventSchedule(LeaderboardScheduler[] schedulers)
+        {
+            if (schedulers == null || schedulers.Length == 0)
+                return;
+
+            HashSet<PrototypeGuid> controlledLeaderboards = new();
+            HashSet<PrototypeGuid> activeLeaderboards = new();
+
+            LiveTuningEventScheduler.Instance.GetEventLeaderboardState(controlledLeaderboards, activeLeaderboards);
+
+            if (controlledLeaderboards.Count == 0)
+                return;
+
+            DateTime activationTime = Clock.UtcNowPrecise;
+            activationTime = new DateTime(
+                activationTime.Year,
+                activationTime.Month,
+                activationTime.Day,
+                activationTime.Hour,
+                activationTime.Minute,
+                0,
+                DateTimeKind.Utc);
+
+            int enabledCount = 0;
+            int disabledCount = 0;
+
+            foreach (LeaderboardScheduler scheduler in schedulers)
+            {
+                if (controlledLeaderboards.Contains(scheduler.LeaderboardId) == false)
+                    continue;
+
+                bool shouldEnable = activeLeaderboards.Contains(scheduler.LeaderboardId);
+
+                scheduler.IsEnabled = shouldEnable;
+
+                if (shouldEnable)
+                {
+                    scheduler.StartTime = activationTime;
+                    scheduler.MaxResetCount = 0;
+                    enabledCount++;
+                }
+                else
+                {
+                    disabledCount++;
+                }
+
+            }
+
+            Logger.Info($"Applied automated event leaderboard schedule: enabled={enabledCount}, disabled={disabledCount}, controlled={controlledLeaderboards.Count}");
         }
 
         /// <summary>
@@ -250,12 +333,12 @@ namespace MHServerEmu.Leaderboards
         /// Applies leaderboard schedule changes to runtime data.
         /// </summary>
         private void ApplyScheduleChanges(List<DBLeaderboard> updatedLeaderboards, List<DBLeaderboardInstance> updatedInstances)
-        {            
+        {
             foreach (DBLeaderboard updatedLeaderboard in updatedLeaderboards)
             {
                 Leaderboard leaderboard = GetLeaderboard((PrototypeGuid)updatedLeaderboard.LeaderboardId);
                 if (leaderboard == null)
-                    continue;                
+                    continue;
 
                 // Update leaderboard scheduler
                 leaderboard.Scheduler.Initialize(updatedLeaderboard);
@@ -480,7 +563,7 @@ namespace MHServerEmu.Leaderboards
         private bool GetLeaderboardTableData(PrototypeGuid leaderboardId, ulong instanceId, out LeaderboardTableData tableData)
         {
             tableData = null;
-            
+
             Leaderboard leaderboard = GetLeaderboard(leaderboardId);
             if (leaderboard == null)
                 return false;
@@ -496,7 +579,7 @@ namespace MHServerEmu.Leaderboards
         /// <summary>
         /// Builds <see cref="LeaderboardScoreData"/> for a participant in the specified leaderboard instance.
         /// </summary>
-        private bool GetLeaderboardScoreData(PrototypeGuid leaderboardId, ulong instanceId, ulong participantId, ulong avatarId, 
+        private bool GetLeaderboardScoreData(PrototypeGuid leaderboardId, ulong instanceId, ulong participantId, ulong avatarId,
             out LeaderboardScoreData scoreData)
         {
             scoreData = null;
@@ -531,7 +614,7 @@ namespace MHServerEmu.Leaderboards
             if (instanceId != 0)
                 scoreDataBuilder.SetInstanceId(instanceId);
 
-            if (type == LeaderboardType.Player) 
+            if (type == LeaderboardType.Player)
             {
                 scoreDataBuilder.SetAvatarId(avatarId);
                 scoreDataBuilder.SetPlayerId(participantId);
@@ -627,7 +710,7 @@ namespace MHServerEmu.Leaderboards
             using var leaderboardsHandle = ListPool<Leaderboard>.Instance.Get(out List<Leaderboard> leaderboards);
             GetLeaderboards(leaderboards);
 
-            foreach (var leaderboard in leaderboards)                
+            foreach (var leaderboard in leaderboards)
                 leaderboard.ActiveInstance?.SaveEntries(true);
         }
 

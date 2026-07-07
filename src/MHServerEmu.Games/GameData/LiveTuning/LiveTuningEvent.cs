@@ -10,7 +10,7 @@ namespace MHServerEmu.Games.GameData.LiveTuning
         public string FilePath { get; init; }
         public string DailyGift { get; init; }
         public string[] InstancedMissions { get; init; }
-
+        public string[] Leaderboards { get; init; }
         public LiveTuningEvent() { }
 
         public override string ToString()
