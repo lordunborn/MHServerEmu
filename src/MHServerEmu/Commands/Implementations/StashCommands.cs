@@ -25,6 +25,16 @@ namespace MHServerEmu.Commands.Implementations
         private static readonly Logger Logger = LogManager.CreateLogger();
         private readonly Dictionary<string, List<PrototypeId>> _categoryStashMap = new();
 
+        [Command("index")]
+        [CommandInvokerType(CommandInvokerType.Client)]
+        public string Index(string[] @params, NetClient client)
+        {
+            PlayerConnection playerConnection = (PlayerConnection)client;
+            if (playerConnection?.Player == null) return "Invalid player connection";
+
+            return CompactInventory(playerConnection.Player);
+        }
+
         [Command("internal")]
         [CommandInvokerType(CommandInvokerType.Client)]
         public string Internal(string[] @params, NetClient client)
@@ -122,4 +132,4 @@ namespace MHServerEmu.Commands.Implementations
         }
     }
 }
-                   
+
