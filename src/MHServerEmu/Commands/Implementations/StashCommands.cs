@@ -20,12 +20,13 @@ using System.Text;
 namespace MHServerEmu.Commands.Implementations
 {
     [CommandGroup("stash")]
+    [CommandGroupFlags(CommandGroupFlags.SingleCommand)]
     public class StashCommands : CommandGroup
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
         private readonly Dictionary<string, List<PrototypeId>> _categoryStashMap = new();
 
-        [Command("index")]
+        [DefaultCommand]
         [CommandInvokerType(CommandInvokerType.Client)]
         public string Index(string[] @params, NetClient client)
         {
