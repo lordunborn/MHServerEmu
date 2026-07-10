@@ -25,7 +25,7 @@ namespace MHServerEmu.Games.Loot
 
         private readonly ItemResolver _resolver;
         private readonly LootSpawnGrid _lootSpawnGrid;
-        private readonly WorldEntityPrototype _creditsItemProto; 
+        private readonly WorldEntityPrototype _creditsItemProto;
 
         public Game Game { get; }
 
@@ -84,7 +84,7 @@ namespace MHServerEmu.Games.Loot
                     GiveLootFromTable(lootTableProtoRef, inputSettings);
                 }
             }
-            
+
             // Spawn mission-specific loot (e.g. brood biomass in chapter 7)
             if (inputSettings.LootContext == LootContext.Drop &&
                 inputSettings.EventType >= LootDropEventType.OnKilled &&
@@ -126,7 +126,7 @@ namespace MHServerEmu.Games.Loot
 
             Logger.Info("--- Loot Table Test Over ---");
         }
-        
+
         /// <summary>
         /// Spawns loot contained in the provided <see cref="LootResultSummary"/> in the game world.
         /// </summary>
@@ -170,6 +170,9 @@ namespace MHServerEmu.Games.Loot
             // Check if there is any spawnable loot
             if ((lootTypes & (LootType.Item | LootType.Agent | LootType.Credits | LootType.Currency)) == 0)
                 return true;
+
+            // Apply custom loot filters (Ring, Medal, Insignia) - pure removal, no credits/PetTech XP
+            LootFilterHelper.ApplyFilters(player, lootResultSummary, recipient.PrototypeDataRef);
 
             // Finalize vaporization (early exit if everything was vaporized)
             ulong sourceEntityId = sourceEntity != null ? sourceEntity.Id : Entity.InvalidId;
@@ -297,7 +300,7 @@ namespace MHServerEmu.Games.Loot
             PrototypeId avatarProtoRef = player?.CurrentAvatar?.PrototypeDataRef ?? PrototypeId.Invalid;
             LootFilterHelper.ApplyFilters(player, lootResultSummary, avatarProtoRef);
 
-            
+
             // Create items
             if (lootTypes.HasFlag(LootType.Item))
             {

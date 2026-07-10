@@ -27,5 +27,33 @@ namespace MHServerEmu.Games
         public bool LootFilterEnable { get; private set; } = true;
         public bool LootFilterCharacterSpecificEnable { get; private set; } = true;
         public bool LootFilterLoggingEnable { get; private set; } = false;
+
+        // Item Auto Pickup
+        public bool EnableItemAutoPickup { get; private set; } = true;
+        public float ItemAutoPickupRadius { get; private set; } = 1400f;
+        public int ItemAutoPickupIntervalMs { get; private set; } = 1500;
+        public bool EnableCraftingIngredientAutoPickup { get; private set; } = true;
+        public bool CraftingIngredientAutoPickupToStash { get; private set; } = true;
+        public bool EnableCraftingIngredientAutoPickupVerboseLogging { get; private set; } = false;
+        public bool EnableGlyphAutoPickup { get; private set; } = true;
+        public bool GlyphAutoPickupToStash { get; private set; } = true;
+        public bool EnableRelicAutoPickup { get; private set; } = true;
+        public bool RelicAutoPickupToStash { get; private set; } = true;
+        public bool RelicAutoPickupEquipIfSameTypeEquipped { get; private set; } = true;
+
+        // Stash Affinity
+        public bool StashAffinityEnable { get; private set; } = true;
+        public bool StashAffinityLoggingEnable { get; private set; } = false;
+
+        // Throwable Options
+        public bool DisableInteractiveThrowables { get; private set; } = true;
+        public bool AutoCancelThrowableOnPowerUse { get; private set; } = true;
+        public bool AutoThrowOnMovementPower { get; private set; } = true;
+
+        // Item Chest Auto Open
+        public bool EnableItemChestAutoOpen { get; private set; } = true;
+        public int ItemChestAutoOpenCooldownMs { get; private set; } = 1000;
+        public string ItemChestAutoOpenWhitelist { get; private set; } = "Chest,Crate,LootBox,Giftbox,GiftBox";
+        public bool EnableItemChestAutoOpenVerboseLogging { get; private set; } = false;
     }
 }

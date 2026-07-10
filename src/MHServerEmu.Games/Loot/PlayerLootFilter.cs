@@ -314,14 +314,12 @@ namespace MHServerEmu.Games.Loot
             }
 
             string filterKey = null;
-
-            // 1. Slot-based check (Ring, Medal, Insignia)
             AgentPrototype agentProto = avatarProtoRef.As<AgentPrototype>();
             EquipmentInvUISlot slot = itemProto.GetInventorySlotForAgent(agentProto);
+
+            // 1. Slot-based check (Ring, Medal, Insignia)
             if (FilterableSlots.Contains(slot))
-            {
                 filterKey = slot.ToString().ToLowerInvariant();
-            }
 
             // 2. Type-based check (TeamUpGear, Catalyst)
             if (filterKey == null)
@@ -332,11 +330,18 @@ namespace MHServerEmu.Games.Loot
                     filterKey = "catalyst";
             }
 
+            // 3. Uru-Forged slot check (boolean toggle, identified by equipment slot, NOT rarity).
+            // Rarity-based detection was removed: it matched ANY item type carrying that rarity tier
+            // regardless of whether it was actually Uru-Forged gear, silently filtering out unrelated
+            // items (e.g. Runeword Glyphs) that happened to roll the same rarity.
+            if (filterKey == null && slot == EquipmentInvUISlot.UruForged)
+                filterKey = "uruforged";
+
             if (filterKey == null)
             {
                 if (lootFilterLogging)
                 {
-                    string msg = $"[LootFilter] Unmatched item [{itemProto.GetType().Name}] protoName=[{itemProto.DataRef.GetName()}]";
+                    string msg = $"[LootFilter] Unmatched item [{itemProto.GetType().Name}] slot=[{slot}] protoName=[{itemProto.DataRef.GetName()}]";
                     Logger.Trace(msg);
                     LootFilterLogCollator.WriteLine(playerId, msg);
                 }
@@ -350,13 +355,8 @@ namespace MHServerEmu.Games.Loot
                 if (GetEffectiveBoolean(filter, filterKey, avatarName) == false)
                     return false;
 
-                if (filterKey == "uruforged" && itemSpec.RarityProtoRef == GameDatabase.LootGlobalsPrototype.RarityUruForged)
-                {
-                    reason = "uruforged boolean filter";
-                    return true;
-                }
-
-                return false;
+                reason = $"{filterKey} boolean filter (ON)";
+                return true;
             }
 
             // Effective threshold = HIGHER rarity tier of global vs the active character's override.
@@ -388,11 +388,7 @@ namespace MHServerEmu.Games.Loot
 
             string protoName = itemProto.DataRef.GetName();
 
-            return protoName.Contains("MysticalEnergiesCatalyst", StringComparison.OrdinalIgnoreCase)
-                || protoName.Contains("AdvancedTechnologicalSystemsCatalyst", StringComparison.OrdinalIgnoreCase)
-                || protoName.Contains("CosmicSpiritCatalyst", StringComparison.OrdinalIgnoreCase)
-                || protoName.Contains("GeneticMutationCatalyst", StringComparison.OrdinalIgnoreCase)
-                || protoName.Contains("RadioactiveIsotopeCatalyst", StringComparison.OrdinalIgnoreCase);
+            return protoName.Contains("Catalyst", StringComparison.OrdinalIgnoreCase);
         }
 
         // --- Escalation helpers ---
