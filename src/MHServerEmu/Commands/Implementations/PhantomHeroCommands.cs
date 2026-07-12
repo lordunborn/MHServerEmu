@@ -17,7 +17,7 @@ namespace MHServerEmu.Commands.Implementations
     public class PhantomHeroCommands : CommandGroup
     {
         [Command("spawn")]
-        [CommandDescription("Spawn phantom-hero NPCs near you. Args: [count=5] [level=your level], or [heroname] [level] to spawn a specific hero. Phantoms auto-level with you unless an explicit level is given.")]
+        [CommandDescription("Spawn phantom-hero NPCs near you. Args: [count=4] [level=your level], or [heroname] [level] to spawn a specific hero. Phantoms auto-level with you unless an explicit level is given.")]
         [CommandInvokerType(CommandInvokerType.Client)]
         public string Spawn(string[] @params, NetClient client)
         {
@@ -62,8 +62,9 @@ namespace MHServerEmu.Commands.Implementations
                     : $"Failed to spawn {matches[0].ShortName}: {heroError}";
             }
 
-            // Numeric path: spawn N random heroes.
-            count = @params.Length >= 1 ? System.Math.Clamp(count, 1, 50) : 5;
+            // Numeric path: spawn N random heroes. Default 4 — a party is 5
+            // total INCLUDING the human caller, not 5 phantoms plus the caller.
+            count = @params.Length >= 1 ? System.Math.Clamp(count, 1, 50) : 4;
 
             int spawned = 0, failed = 0;
             var firstError = string.Empty;
@@ -153,7 +154,7 @@ namespace MHServerEmu.Commands.Implementations
         }
 
         [Command("gear")]
-        [CommandDescription("Re-roll phantom gear. Usage: gear (all phantoms) | gear [hero] (one phantom). Gear rolls at each phantom's current level.")]
+        [CommandDescription("Re-roll phantom gear, or inspect gear. Usage: gear (all phantoms) | gear [hero] (one phantom) | gear equipped [hero] (what's actually equipped right now, per slot) | gear candidates [hero] [slot] (full possible pool for a slot, e.g. Artifact01, also written to the server log — use to find item names for PhantomGearItemBlacklist)")]
         [CommandInvokerType(CommandInvokerType.Client)]
         public string Gear(string[] @params, NetClient client)
         {
@@ -163,6 +164,18 @@ namespace MHServerEmu.Commands.Implementations
 
             if (player.Game.CustomGameOptions.PhantomHeroesEnable == false)
                 return "Phantom Heroes is disabled on this server.";
+
+            if (@params.Length >= 1 && @params[0].Equals("candidates", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (@params.Length < 3) return "Usage: phantom gear candidates [hero] [slot]";
+                return player.ListPhantomGearCandidates(@params[1], @params[2]);
+            }
+
+            if (@params.Length >= 1 && @params[0].Equals("equipped", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (@params.Length < 2) return "Usage: phantom gear equipped [hero]";
+                return player.ListPhantomEquippedGear(@params[1]);
+            }
 
             return player.RerollPhantomGear(@params.Length >= 1 ? @params[0] : null);
         }

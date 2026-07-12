@@ -32,6 +32,18 @@ namespace MHServerEmu.Games.Entities
         private readonly List<ulong> _phantomPlayerIds = new();
         private readonly List<PhantomIntent> _phantomDescriptors = new();
 
+        // Runtime phantom-Player id -> DatabaseUniqueId, snapshotted at the
+        // end of every successful SyncPhantomParty(). Lets us send a proper
+        // per-member ePME_Remove event for phantoms that drop out of the
+        // roster even after their entity has already been destroyed (the
+        // DatabaseUniqueId can no longer be read off the live entity by
+        // then). See SyncPhantomParty for why this matters.
+        private readonly Dictionary<ulong, ulong> _syncedPhantomMemberDbIds = new();
+
+        // Party vs Raid — changed via eGOP_ConvertToRaid/ConvertToParty
+        // (see SetPhantomPartyGroupType). Resets to Party on full teardown.
+        private GroupType _phantomPartyGroupType = GroupType.GroupType_Party;
+
         public IReadOnlyList<ulong> PhantomAvatarIds => _phantomAvatarIds;
         public IReadOnlyList<ulong> PhantomPlayerIds => _phantomPlayerIds;
         public int PhantomHeroCount => _phantomAvatarIds.Count;
@@ -138,11 +150,81 @@ namespace MHServerEmu.Games.Entities
         }
 
         /// <summary>
+        /// Despawns exactly one phantom, identified by its synthetic
+        /// DatabaseUniqueId (falling back to name if the client's kick
+        /// request doesn't carry a matching id — see the diagnostic log
+        /// below) — used to service the "Kick" party operation
+        /// (eGOP_KickPlayer). Mirrors the destroy sequence in
+        /// Avatar.OnPhantomDeathDespawn.
+        /// </summary>
+        internal bool DespawnPhantomByDbId(ulong targetPlayerDbId, string targetPlayerName = null)
+        {
+            var mgr = Game?.EntityManager;
+            if (mgr == null) return false;
+
+            for (int i = 0; i < _phantomPlayerIds.Count; i++)
+            {
+                Player phantom = mgr.GetEntity<Player>(_phantomPlayerIds[i]);
+                if (phantom == null) continue;
+
+                bool idMatch = targetPlayerDbId != 0 && phantom.DatabaseUniqueId == targetPlayerDbId;
+                bool nameMatch = string.IsNullOrEmpty(targetPlayerName) == false
+                    && phantom.GetName().Equals(targetPlayerName, System.StringComparison.OrdinalIgnoreCase);
+                if (idMatch == false && nameMatch == false) continue;
+
+                ulong avatarId = _phantomAvatarIds[i];
+                UnregisterPhantom(avatarId);
+
+                try
+                {
+                    Avatar av = mgr.GetEntity<Avatar>(avatarId);
+                    if (av != null)
+                    {
+                        if (av.IsInWorld) av.ExitWorld();
+                        av.Destroy();
+                    }
+                }
+                catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom] kick avatar 0x{avatarId:X} failed: {ex.Message}"); }
+
+                try
+                {
+                    if (phantom.IsInGame) phantom.ExitGame();
+                    phantom.Destroy();
+                }
+                catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom] kick phantom-player 0x{phantom.Id:X} failed: {ex.Message}"); }
+
+                return true;
+            }
+
+            // No match — log what was requested vs. what's actually tracked
+            // so a real mismatch (vs. a genuine "not found") is diagnosable
+            // from the server log instead of guessing blind.
+            var known = new System.Text.StringBuilder();
+            for (int i = 0; i < _phantomPlayerIds.Count; i++)
+            {
+                Player phantom = mgr.GetEntity<Player>(_phantomPlayerIds[i]);
+                if (phantom == null) continue;
+                if (known.Length > 0) known.Append(", ");
+                known.Append($"{phantom.GetName()}=0x{phantom.DatabaseUniqueId:X}");
+            }
+            PhantomHostLogger.Warn($"[Phantom] kick failed to match: requested dbId=0x{targetPlayerDbId:X} name='{targetPlayerName}'; known phantoms: [{known}]");
+            return false;
+        }
+
+        /// <summary>
         /// Destroys every phantom (avatar + owning phantom-Player) currently
         /// tracked and clears the list. Callable from any Avatar the human is
         /// controlling — `!phantom clear` routes here.
         /// </summary>
-        public int PurgePhantoms()
+        /// <param name="announceLeave">
+        /// Send the synthetic "you left the party" chat/UI signal. True for
+        /// a real clear (command, logout); false for a region-transfer
+        /// purge, where the same phantoms are about to respawn in the new
+        /// region and announcing a "left the party" that's immediately
+        /// followed by them rejoining would just be chat spam on every
+        /// zone change.
+        /// </param>
+        public int PurgePhantoms(bool announceLeave = true)
         {
             if (_phantomAvatarIds.Count == 0) return 0;
             var mgr = Game?.EntityManager;
@@ -180,6 +262,7 @@ namespace MHServerEmu.Games.Entities
             _phantomPlayerIds.Clear();
             _phantomDescriptors.Clear();
             SyncPhantomParty();
+            if (announceLeave) SendSyntheticLeavePartyResult();
             return removed;
         }
 
@@ -214,7 +297,7 @@ namespace MHServerEmu.Games.Entities
                     GearRefs = d.GearRefs != null ? new List<ulong>(d.GearRefs) : null,
                 });
             }
-            int n = PurgePhantoms();
+            int n = PurgePhantoms(announceLeave: false);
             PhantomHostLogger.Info($"[Phantom] snapshot for transfer: {mig.PhantomIntents.Count} intent(s), purged {n} live phantom(s)");
         }
 
@@ -302,6 +385,43 @@ namespace MHServerEmu.Games.Entities
 
             ulong groupId = ComputeSyntheticGroupId();
 
+            // Anyone tracked as synced last time but no longer in the live
+            // roster needs an explicit per-member Remove event. The
+            // client's party roster is keyed incrementally — it mirrors the
+            // real Party system's PartyMemberInfoClientUpdate protocol
+            // (see OnPartyMemberInfoServerUpdate in PartyManager.cs) and
+            // does NOT drop stale members just because a later
+            // PartyInfoClientUpdate snapshot happens to omit them. Without
+            // this, despawned phantoms leave "ghost" members behind that
+            // reappear and accumulate the next time phantoms are spawned —
+            // confirmed by user testing: repeated spawn/clear cycles grew
+            // the visible group past its real 5-member cap into raid-sized
+            // (9-10 member) rosters, with newer spawns silently failing to
+            // join the group once the client-side cap was hit.
+            List<ulong> staleRuntimeIds = null;
+            foreach (var kvp in _syncedPhantomMemberDbIds)
+            {
+                if (_phantomPlayerIds.Contains(kvp.Key)) continue;
+                (staleRuntimeIds ??= new List<ulong>()).Add(kvp.Key);
+            }
+            if (staleRuntimeIds != null)
+            {
+                foreach (ulong runtimeId in staleRuntimeIds)
+                {
+                    ulong staleMemberDbId = _syncedPhantomMemberDbIds[runtimeId];
+                    try
+                    {
+                        SendMessage(PartyMemberInfoClientUpdate.CreateBuilder()
+                            .SetGroupId(groupId)
+                            .SetMemberDbGuid(staleMemberDbId)
+                            .SetMemberEvent(PartyMemberEvent.ePME_Remove)
+                            .Build());
+                    }
+                    catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom:Party] member-remove failed: {ex.Message}"); }
+                    _syncedPhantomMemberDbIds.Remove(runtimeId);
+                }
+            }
+
             // Empty list = teardown. Send a client update with a null
             // PartyInfo to hide the group HUD on the client.
             if (_phantomAvatarIds.Count == 0)
@@ -313,6 +433,7 @@ namespace MHServerEmu.Games.Entities
                         .Build());
                 }
                 catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom:Party] teardown failed: {ex.Message}"); }
+                _phantomPartyGroupType = GroupType.GroupType_Party;
                 return;
             }
 
@@ -328,7 +449,7 @@ namespace MHServerEmu.Games.Entities
 
             var partyInfoBuilder = PartyInfo.CreateBuilder()
                 .SetGroupId(groupId)
-                .SetType(GroupType.GroupType_Party)
+                .SetType(_phantomPartyGroupType)
                 .SetLeaderDbId(DatabaseUniqueId)
                 .SetDifficultyTierProtoId(difficultyTierProtoId);
 
@@ -349,6 +470,12 @@ namespace MHServerEmu.Games.Entities
                     .SetPlayerDbId(phantom.DatabaseUniqueId)
                     .SetPlayerName(phantom.GetName())
                     .Build());
+
+                // Record what the client now knows about, keyed by the
+                // phantom's still-live runtime id, so a future removal can
+                // be reported by DatabaseUniqueId even after the entity
+                // itself is gone by the time SyncPhantomParty runs again.
+                _syncedPhantomMemberDbIds[_phantomPlayerIds[i]] = phantom.DatabaseUniqueId;
             }
 
             try
@@ -359,6 +486,38 @@ namespace MHServerEmu.Games.Entities
                     .Build());
             }
             catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom:Party] sync failed: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// Sends a synthetic "you left the party" success response for the
+        /// human's own phantom party. Confirmed by user testing: the
+        /// client's group-panel leave transition is driven by receiving a
+        /// successful eGOP_LeaveParty operation result, NOT by the
+        /// PartyInfoClientUpdate roster teardown alone — without this,
+        /// `!phantom clear` empties the roster server-side but the client
+        /// keeps showing the last known (now-stale/unidentified) phantom
+        /// icons until the player manually right-clicks "Leave Party"
+        /// themselves. This mirrors what that manual click's server-side
+        /// handler (PartyManager's eGOP_LeaveParty case) sends back, just
+        /// fired proactively instead of waiting for the client to ask.
+        /// </summary>
+        private void SendSyntheticLeavePartyResult()
+        {
+            if (PlayerConnection == null) return;
+
+            PartyOperationPayload request = PartyOperationPayload.CreateBuilder()
+                .SetRequestingPlayerDbId(DatabaseUniqueId)
+                .SetRequestingPlayerName(GetName())
+                .SetOperation(GroupingOperationType.eGOP_LeaveParty)
+                .Build();
+
+            PartyOperationRequestClientResult message = PartyOperationRequestClientResult.CreateBuilder()
+                .SetRequest(request)
+                .SetResult(GroupingOperationResult.eGOPR_Success)
+                .Build();
+
+            try { SendMessage(message); }
+            catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom:Party] synthetic leave result failed: {ex.Message}"); }
         }
 
         /// <summary>
@@ -373,6 +532,21 @@ namespace MHServerEmu.Games.Entities
         /// reflected in the party HUD (e.g. difficulty tier changes).
         /// </summary>
         public void ResyncPhantomParty() => SyncPhantomParty();
+
+        /// <summary>
+        /// Changes the synthetic party's declared GroupType (Party vs Raid)
+        /// and re-pushes it — services eGOP_ConvertToRaid/ConvertToParty for
+        /// a phantom-only party, since there's no real Party object to
+        /// convert. Also raises/lowers the client's own group-size cap, so
+        /// converting to Raid is how a caller gets past the 4-phantom
+        /// (5-member-party) ceiling if they want more active phantoms.
+        /// </summary>
+        internal void SetPhantomPartyGroupType(GroupType type)
+        {
+            if (_phantomPartyGroupType == type) return;
+            _phantomPartyGroupType = type;
+            SyncPhantomParty();
+        }
 
         // ================================================================
         //  Saved squads
@@ -682,6 +856,69 @@ namespace MHServerEmu.Games.Entities
                 sb.Append(costumes[i].ShortName);
             }
             if (costumes.Count > 15) sb.Append(", ...");
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// What's actually equipped in each gear slot on the phantom
+        /// matching the query right now — e.g. "Artifact04=Art286" — so an
+        /// op can spot a bad roll directly instead of hunting for it in a
+        /// couple-hundred-entry candidate list.
+        /// </summary>
+        public string ListPhantomEquippedGear(string phantomQuery)
+        {
+            var matches = FindActivePhantoms(phantomQuery);
+            if (matches.Count == 0) return $"No active phantom matching '{phantomQuery}'.";
+            Avatar phantom = matches[0];
+
+            var equipped = Avatar.GetPhantomEquippedGear(phantom);
+            if (equipped.Count == 0) return "This phantom has no gear equipped.";
+
+            var sb = new System.Text.StringBuilder("Equipped: ");
+            for (int i = 0; i < equipped.Count; i++)
+            {
+                if (i > 0) sb.Append(", ");
+                var (slot, name, stackCount) = equipped[i];
+                sb.Append(stackCount > 1 ? $"{slot}={name} (x{stackCount})" : $"{slot}={name}");
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// List the candidate pool for one gear slot on the phantom matching
+        /// the query, AFTER phantom-specific restrictions (armor/artifact
+        /// pool restriction, PhantomGearItemBlacklist) — i.e. exactly what a
+        /// real roll could produce for this slot — plus the raw pre-filter
+        /// count for context. Lets an op read off item names to add to
+        /// PhantomGearItemBlacklist without guessing. Slot name matches the
+        /// EquipmentInvUISlot enum, e.g. "Gear01", "Artifact01", "Relic".
+        /// </summary>
+        public string ListPhantomGearCandidates(string phantomQuery, string slotName)
+        {
+            var matches = FindActivePhantoms(phantomQuery);
+            if (matches.Count == 0) return $"No active phantom matching '{phantomQuery}'.";
+            Avatar phantom = matches[0];
+
+            if (Enum.TryParse(slotName, true, out MHServerEmu.Games.Loot.EquipmentInvUISlot slot) == false)
+                return $"Unknown slot '{slotName}'. Try Gear01-05, Artifact01-04, Relic, Ring, Medal, Insignia.";
+
+            string blacklist = Game.CustomGameOptions.PhantomGearItemBlacklist;
+            var candidates = Avatar.ListPhantomGearCandidates(phantom.PrototypeDataRef, slot, blacklist, out int rawCount);
+
+            // The in-game chat window truncates long lines and a slot can
+            // have a couple hundred candidates — write the full, untruncated
+            // list to the server log so it's actually usable for curation.
+            PhantomHostLogger.Info($"[PhantomHero:GearCandidates] {phantom.PrototypeDataRef.GetName()} slot={slot}: {candidates.Count}/{rawCount} survive filtering -> {string.Join(", ", candidates)}");
+
+            if (candidates.Count == 0) return $"No candidates for slot {slot} on this hero after filtering ({rawCount} raw candidate(s) before filtering — all excluded).";
+
+            var sb = new System.Text.StringBuilder($"{candidates.Count} of {rawCount} raw candidate(s) survive filtering for {slot} (full list written to server log): ");
+            for (int i = 0; i < candidates.Count && i < 25; i++)
+            {
+                if (i > 0) sb.Append(", ");
+                sb.Append(candidates[i]);
+            }
+            if (candidates.Count > 25) sb.Append(", ...");
             return sb.ToString();
         }
 

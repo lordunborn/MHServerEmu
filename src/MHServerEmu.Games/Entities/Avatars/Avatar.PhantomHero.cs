@@ -707,6 +707,11 @@ namespace MHServerEmu.Games.Entities.Avatars
         private const float PhantomDmgRatingLvl1  = 0f;
         private const float PhantomDmgRatingLvl60 = 1200f;
 
+        // Relics stack for a passive bonus rather than being "equipped"
+        // outright, so a single roll at level 1 is nearly worthless. Scale
+        // the rolled stack size with the phantom's level instead.
+        private const int PhantomRelicStackPerLevel = 5;
+
         // Follow-stop bounds. 50u = "on top of the target" (old behaviour),
         // 1000u = a comfortable ranged-cast distance well inside the widest
         // player-attack ranges (~1400u for artillery-tier abilities). If a
@@ -854,6 +859,13 @@ namespace MHServerEmu.Games.Entities.Avatars
                 // The costume slot is driven by the phantom costume system —
                 // equipping a rolled costume item here would clobber it.
                 if (invProto.ConvenienceLabel == InventoryConvenienceLabel.Costume) continue;
+                // Pet and interactive-visual ("flourish") slots have no
+                // combat value for an AI companion — they're pure cosmetics
+                // that would otherwise burn a roll and clutter the phantom's
+                // inventory for nothing. Legendary and UruForged are also
+                // excluded per server-op direction (2026-07-13).
+                if (assignment.UISlot is EquipmentInvUISlot.Pet or EquipmentInvUISlot.InteractiveVisual
+                    or EquipmentInvUISlot.Legendary or EquipmentInvUISlot.UruForged) continue;
 
                 Inventory equipInventory = phantomAvatar.GetInventoryByRef(assignment.Inventory);
                 if (equipInventory == null) continue;
@@ -867,8 +879,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                 }
                 else
                 {
-                    var picker = new MHServerEmu.Core.Collections.Picker<Prototype>(rng);
-                    LootUtilities.BuildInventoryLootPicker(picker, avatarProto.DataRef, assignment.UISlot);
+                    var picker = BuildFilteredPhantomGearPicker(rng, avatarProto.DataRef, assignment.UISlot, game.CustomGameOptions.PhantomGearItemBlacklist);
                     if (picker.Empty() == false && picker.Pick(out Prototype pickedProto) && pickedProto != null)
                         itemProtoRef = pickedProto.DataRef;
                 }
@@ -881,6 +892,13 @@ namespace MHServerEmu.Games.Entities.Avatars
                     ItemSpec itemSpec = lootManager.CreateItemSpec(itemProtoRef, LootContext.Drop, phantomPlayer, level, rarityRef);
                     if (itemSpec == null) continue;
 
+                    // Relics are a stack-size passive, not a single
+                    // equippable item — roll the stack scaled to level so
+                    // it's actually meaningful (5x level, clamped to the
+                    // relic's own max stack size).
+                    if (assignment.UISlot == EquipmentInvUISlot.Relic)
+                        itemSpec.StackCount = Math.Max(1, level * PhantomRelicStackPerLevel);
+
                     Item item;
                     using (var itemSettings = ObjectPoolManager.Instance.Get<EntitySettings>())
                     {
@@ -889,6 +907,14 @@ namespace MHServerEmu.Games.Entities.Avatars
                         item = game.EntityManager.CreateEntity(itemSettings) as Item;
                     }
                     if (item == null) continue;
+
+                    if (assignment.UISlot == EquipmentInvUISlot.Relic)
+                    {
+                        int desiredStack = itemSpec.StackCount;
+                        int maxStack = item.Properties[PropertyEnum.InventoryStackSizeMax];
+                        if (maxStack > 0) desiredStack = Math.Min(desiredStack, maxStack);
+                        item.Properties[PropertyEnum.InventoryStackCount] = desiredStack;
+                    }
 
                     if (item.ChangeInventoryLocation(equipInventory) != InventoryResult.Success)
                     {
@@ -905,6 +931,197 @@ namespace MHServerEmu.Games.Entities.Avatars
             }
 
             return applied;
+        }
+
+        /// <summary>
+        /// What's actually sitting in each gear slot on a live phantom right
+        /// now — the direct answer to "what did slot X roll" instead of
+        /// making an op comb through a candidate list of a couple hundred
+        /// generically-named artifacts to find the one that needs blacklisting.
+        /// </summary>
+        internal static List<(EquipmentInvUISlot Slot, string ShortName, int StackCount)> GetPhantomEquippedGear(Avatar phantomAvatar)
+        {
+            var results = new List<(EquipmentInvUISlot, string, int)>();
+            AvatarPrototype avatarProto = phantomAvatar.AvatarPrototype;
+            if (avatarProto?.EquipmentInventories == null) return results;
+
+            foreach (AvatarEquipInventoryAssignmentPrototype assignment in avatarProto.EquipmentInventories)
+            {
+                InventoryPrototype invProto = assignment.Inventory.As<InventoryPrototype>();
+                if (invProto == null || invProto.ConvenienceLabel == InventoryConvenienceLabel.Costume) continue;
+
+                Inventory equipInventory = phantomAvatar.GetInventoryByRef(assignment.Inventory);
+                if (equipInventory == null || equipInventory.Count == 0) continue;
+
+                ulong itemId = equipInventory.GetEntityInSlot(0);
+                if (itemId == Entity.InvalidId) continue;
+
+                Item item = phantomAvatar.Game.EntityManager.GetEntity<Item>(itemId);
+                if (item == null) continue;
+
+                results.Add((assignment.UISlot, ExtractPrototypeShortName(item.PrototypeDataRef.GetName()), item.CurrentStackSize));
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Builds the actual candidate pool a phantom gear roll draws from
+        /// for one slot — raw picker + every phantom-specific restriction
+        /// (armor/artifact pool restriction, blacklist). Shared by the real
+        /// roll in <see cref="ApplyPhantomGear"/> and the diagnostic
+        /// "!phantom gear candidates" command so the two can never diverge.
+        /// <paramref name="rng"/> may be null if the caller only enumerates
+        /// (e.g. the candidates listing) and never calls Pick().
+        /// </summary>
+        private static MHServerEmu.Core.Collections.Picker<Prototype> BuildFilteredPhantomGearPicker(
+            MHServerEmu.Core.System.Random.GRandom rng, PrototypeId avatarProtoRef, EquipmentInvUISlot slot, string blacklistConfig)
+        {
+            var picker = new MHServerEmu.Core.Collections.Picker<Prototype>(rng);
+            LootUtilities.BuildInventoryLootPicker(picker, avatarProtoRef, slot);
+
+            // The 5 general gear slots (Gear01-05) pull from the full Armor
+            // item pool by default, which includes generic Armor/Prototypes/
+            // items — many of these are stat-less (deprecated/leftover data
+            // no longer meant to be equippable). Restrict to
+            // Armor/UniquePrototypes/Avatars/, the real itemized hero-armor
+            // pool, instead.
+            if (IsPhantomGearArmorSlot(slot))
+                FilterPhantomGearPickerToUniqueAvatarArmor(picker);
+
+            // Artifact slots pull from the full artifact pool by default,
+            // which includes non-itemized/special/holiday-visual families.
+            // Restrict to Tier1Artifacts — the blacklist below still applies
+            // on top of this to cut the handful of TEST-only entries that
+            // also live under Tier1Artifacts.
+            if (IsPhantomGearArtifactSlot(slot))
+                FilterPhantomGearPickerToTier1Artifacts(picker);
+
+            // Server-op-curated exclusion list (artifacts pulled from the
+            // game, purely cosmetic rewards, items with known broken icons,
+            // etc.) — see PhantomGearItemBlacklist in Config.ini. Applies to
+            // every rolled slot, not just armor/artifacts.
+            FilterPhantomGearPickerExcludingBlacklist(picker, blacklistConfig);
+
+            return picker;
+        }
+
+        private static bool IsPhantomGearArmorSlot(EquipmentInvUISlot slot)
+        {
+            return slot is EquipmentInvUISlot.Gear01 or EquipmentInvUISlot.Gear02 or EquipmentInvUISlot.Gear03
+                or EquipmentInvUISlot.Gear04 or EquipmentInvUISlot.Gear05;
+        }
+
+        private static bool IsPhantomGearArtifactSlot(EquipmentInvUISlot slot)
+        {
+            return slot is EquipmentInvUISlot.Artifact01 or EquipmentInvUISlot.Artifact02
+                or EquipmentInvUISlot.Artifact03 or EquipmentInvUISlot.Artifact04;
+        }
+
+        /// <summary>
+        /// Removes every candidate whose prototype path isn't under
+        /// Entity/Items/Artifacts/Prototypes/Tier1Artifacts/ — the only
+        /// artifact pool phantoms should draw from per server-op direction.
+        /// The handful of TEST-only entries that also live in that folder
+        /// are cut separately via PhantomGearItemBlacklist, not here.
+        /// </summary>
+        private static void FilterPhantomGearPickerToTier1Artifacts(MHServerEmu.Core.Collections.Picker<Prototype> picker)
+        {
+            for (int i = picker.GetNumElements() - 1; i >= 0; i--)
+            {
+                if (picker.GetElementAt(i, out Prototype proto) == false || proto == null)
+                {
+                    picker.RemoveIndex(i);
+                    continue;
+                }
+
+                string path = proto.DataRef.GetName();
+                if (string.IsNullOrEmpty(path) || path.Contains("/Artifacts/Prototypes/Tier1Artifacts/", StringComparison.OrdinalIgnoreCase) == false)
+                    picker.RemoveIndex(i);
+            }
+        }
+
+        /// <summary>
+        /// Removes every candidate whose prototype path isn't under
+        /// Armor/UniquePrototypes/Avatars/ — the real itemized hero-armor
+        /// pool. Leaves the picker empty if the avatar has none for this
+        /// slot rather than falling back to the generic (often stat-less)
+        /// Armor/Prototypes/ pool.
+        /// </summary>
+        private static void FilterPhantomGearPickerToUniqueAvatarArmor(MHServerEmu.Core.Collections.Picker<Prototype> picker)
+        {
+            for (int i = picker.GetNumElements() - 1; i >= 0; i--)
+            {
+                if (picker.GetElementAt(i, out Prototype proto) == false || proto == null)
+                {
+                    picker.RemoveIndex(i);
+                    continue;
+                }
+
+                string path = proto.DataRef.GetName();
+                if (string.IsNullOrEmpty(path) || path.Contains("/UniquePrototypes/Avatars/", StringComparison.OrdinalIgnoreCase) == false)
+                    picker.RemoveIndex(i);
+            }
+        }
+
+        /// <summary>
+        /// Lists the raw candidate pool (short names) for a single equip
+        /// slot on the given avatar, unfiltered by rarity/blacklist — used
+        /// by "!phantom gear candidates" so an op can identify item names
+        /// to add to PhantomGearItemBlacklist (pulled artifacts, cosmetic-
+        /// only rewards, broken icons, etc.) without guessing.
+        /// </summary>
+        internal static List<string> ListPhantomGearCandidates(PrototypeId avatarProtoRef, EquipmentInvUISlot slot, string blacklistConfig, out int rawCount)
+        {
+            var rawPicker = new MHServerEmu.Core.Collections.Picker<Prototype>();
+            LootUtilities.BuildInventoryLootPicker(rawPicker, avatarProtoRef, slot);
+            rawCount = rawPicker.GetNumElements();
+
+            var names = new List<string>();
+            var picker = BuildFilteredPhantomGearPicker(null, avatarProtoRef, slot, blacklistConfig);
+            for (int i = 0; i < picker.GetNumElements(); i++)
+            {
+                if (picker.GetElementAt(i, out Prototype proto) && proto != null)
+                    names.Add(ExtractPrototypeShortName(proto.DataRef.GetName()));
+            }
+
+            return names;
+        }
+
+        /// <summary>
+        /// Removes every candidate whose prototype path contains any
+        /// substring from the (comma-separated) blacklist config value.
+        /// Read fresh each roll so ops can tune the list in Config.ini
+        /// without a rebuild — just a server restart.
+        /// </summary>
+        private static void FilterPhantomGearPickerExcludingBlacklist(MHServerEmu.Core.Collections.Picker<Prototype> picker, string blacklistConfig)
+        {
+            if (string.IsNullOrWhiteSpace(blacklistConfig)) return;
+
+            string[] terms = blacklistConfig.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (terms.Length == 0) return;
+
+            for (int i = picker.GetNumElements() - 1; i >= 0; i--)
+            {
+                if (picker.GetElementAt(i, out Prototype proto) == false || proto == null)
+                {
+                    picker.RemoveIndex(i);
+                    continue;
+                }
+
+                string path = proto.DataRef.GetName();
+                if (string.IsNullOrEmpty(path)) continue;
+
+                foreach (string term in terms)
+                {
+                    if (term.Length == 0) continue;
+                    if (path.Contains(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        picker.RemoveIndex(i);
+                        break;
+                    }
+                }
+            }
         }
 
         private static void ApplyPhantomDamageScaling(Avatar phantom, int level)

@@ -86,6 +86,22 @@ namespace MHServerEmu.Games.Social.Parties
                 case GroupingOperationType.eGOP_ChangeLeader:
                 case GroupingOperationType.eGOP_ConvertToRaid:
                 case GroupingOperationType.eGOP_ConvertToParty:
+                    // Phantom-hero synthetic party: the human is its only
+                    // real member and therefore always its "leader" by
+                    // definition, but IsPartyLeader() requires a real
+                    // server-side Party object (deliberately absent for
+                    // phantom parties — see the comment block above
+                    // Player.PhantomHero.cs's SyncPhantomParty), so it
+                    // always returns false here and every one of these ops
+                    // would incorrectly bounce with eGOPR_NotLeader even
+                    // though there's no one else who could possibly be
+                    // "the leader" instead. Handle each locally.
+                    if (party == null && player.HasPhantomParty)
+                    {
+                        HandlePhantomPartyLeaderOperation(player, request);
+                        return;
+                    }
+
                     // Need to be a party leader for these.
                     if (player.IsPartyLeader() == false)
                     {
@@ -155,6 +171,52 @@ namespace MHServerEmu.Games.Social.Parties
                 default:
                     Logger.Warn($"OnClientPartyOperationRequest(): Unhandled operation {request.Operation} from player {player}");
                     SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_SystemError);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Local handling for the leader-only party operations, for a
+        /// phantom-only synthetic party (no real server-side Party object).
+        /// The human is always the sole real member, so every one of these
+        /// is either a no-op (ChangeLeader — there's no one else to hand
+        /// leadership to) or maps onto the existing phantom-roster/party-
+        /// type primitives on Player.
+        /// </summary>
+        private static void HandlePhantomPartyLeaderOperation(Player player, PartyOperationPayload request)
+        {
+            switch (request.Operation)
+            {
+                case GroupingOperationType.eGOP_DisbandParty:
+                    // Disbanding a solo synthetic party is the same as leaving it.
+                    player.CurrentAvatar?.DespawnAllPhantomHeroes();
+                    player.ResyncPhantomParty();
+                    SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_Success);
+                    break;
+
+                case GroupingOperationType.eGOP_KickPlayer:
+                    // "Kick" a specific phantom by its synthetic DatabaseUniqueId
+                    // (falls back to name-matching if the id doesn't line up).
+                    if (player.DespawnPhantomByDbId(request.TargetPlayerDbId, request.TargetPlayerName))
+                        SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_Success);
+                    else
+                        SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_NotInParty);
+                    break;
+
+                case GroupingOperationType.eGOP_ChangeLeader:
+                    // The human is always the only real member/leader of
+                    // their own synthetic party — nothing to actually change.
+                    SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_Success);
+                    break;
+
+                case GroupingOperationType.eGOP_ConvertToRaid:
+                    player.SetPhantomPartyGroupType(GroupType.GroupType_Raid);
+                    SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_Success);
+                    break;
+
+                case GroupingOperationType.eGOP_ConvertToParty:
+                    player.SetPhantomPartyGroupType(GroupType.GroupType_Party);
+                    SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_Success);
                     break;
             }
         }
