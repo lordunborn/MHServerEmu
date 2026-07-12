@@ -2,6 +2,9 @@
 using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Network;
 using MHServerEmu.Games.Entities;
+using MHServerEmu.Games.Entities.Avatars;
+using MHServerEmu.Games.GameData;
+using MHServerEmu.Games.Properties;
 using MHServerEmu.Games.Social.Communities;
 
 namespace MHServerEmu.Games.Social.Parties
@@ -48,8 +51,33 @@ namespace MHServerEmu.Games.Social.Parties
 
                 case GroupingOperationType.eGOP_AcceptInvite:
                 case GroupingOperationType.eGOP_DeclineInvite:
-                case GroupingOperationType.eGOP_LeaveParty:
                     // No extra validation required here.
+                    SendOperationRequestToPlayerManager(request);
+                    break;
+
+                case GroupingOperationType.eGOP_LeaveParty:
+                    // If there's no real server-side Party, forwarding to the
+                    // PlayerManager always bounces back eGOPR_NotInParty — it
+                    // never heard of any synthetic phantom party in the first
+                    // place. This covers leaving WHILE phantoms are still alive
+                    // AND leaving right after `!phantom clear` already emptied
+                    // the roster (HasPhantomParty is false by then, but the
+                    // client's group HUD can still show stale state from an
+                    // earlier teardown that didn't fully register client-side).
+                    // Always resolve locally and force a fresh teardown
+                    // broadcast when there's no real party to route to — Purge/
+                    // DespawnAllPhantomHeroes no-ops (and skips the broadcast)
+                    // once the roster is already empty, so ResyncPhantomParty
+                    // is called unconditionally to guarantee the client gets a
+                    // clean "you left" signal either way.
+                    if (party == null)
+                    {
+                        player.CurrentAvatar?.DespawnAllPhantomHeroes();
+                        player.ResyncPhantomParty();
+                        SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_Success);
+                        return;
+                    }
+
                     SendOperationRequestToPlayerManager(request);
                     break;
 
@@ -80,6 +108,48 @@ namespace MHServerEmu.Games.Social.Parties
                         .SetOperation(GroupingOperationType.eGOP_LeaveParty)
                         .Build();
                     SendOperationRequestToPlayerManager(leaveRequest);
+                    break;
+
+                case GroupingOperationType.eGOP_ChangeDifficulty:
+                    // Phantom-hero synthetic party: the client believes it's
+                    // in a party (we feed it PartyInfoClientUpdate for the
+                    // phantom HUD), so it routes difficulty changes through
+                    // this party operation instead of NetMessageChangeDifficulty.
+                    // There is no server-side Party object and the PlayerManager
+                    // has never heard of the group — handle it locally exactly
+                    // like PlayerConnection.OnChangeDifficulty would, then
+                    // re-push the synthetic party info so the client's party
+                    // difficulty state matches.
+                    if (party == null && player.HasPhantomParty)
+                    {
+                        PrototypeId difficultyTierProtoRef = (PrototypeId)request.DifficultyTierProtoId;
+                        if (player.CanChangeDifficulty(difficultyTierProtoRef) == false)
+                        {
+                            SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_SystemError);
+                            return;
+                        }
+
+                        Avatar avatar = player.CurrentAvatar;
+                        if (avatar == null)
+                        {
+                            SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_SystemError);
+                            return;
+                        }
+
+                        avatar.Properties[PropertyEnum.DifficultyTierPreference] = difficultyTierProtoRef;
+                        player.SendDifficultyTierPreferenceToPlayerManager();
+                        SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_Success);
+                        player.ResyncPhantomParty();
+                        return;
+                    }
+
+                    // Real party: leader-only, PlayerManager is authoritative.
+                    if (player.IsPartyLeader() == false)
+                    {
+                        SendOperationResultToClient(player, request, GroupingOperationResult.eGOPR_NotLeader);
+                        return;
+                    }
+                    SendOperationRequestToPlayerManager(request);
                     break;
 
                 default:

@@ -45,6 +45,10 @@ namespace MHServerEmu.Games
         public bool StashAffinityEnable { get; private set; } = true;
         public bool StashAffinityLoggingEnable { get; private set; } = false;
 
+        // Phantom Heroes
+        public bool PhantomHeroesEnable { get; private set; } = true;
+        public bool PhantomHeroesDespawnOnDeath { get; private set; } = false;
+
         // Throwable Options
         public bool DisableInteractiveThrowables { get; private set; } = true;
         public bool AutoCancelThrowableOnPowerUse { get; private set; } = true;

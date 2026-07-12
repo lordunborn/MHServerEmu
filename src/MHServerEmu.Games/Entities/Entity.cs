@@ -490,7 +490,13 @@ namespace MHServerEmu.Games.Entities
             {
                 // Update interest policies for all players in the game (slow).
                 foreach (Player player in new PlayerIterator(Game))
-                    player.AOI.ConsiderEntity(this, settings);
+                {
+                    if (player == null) continue;
+                    // Phantom Players have PlayerConnection=null, so AOI is null.
+                    // Skip them cleanly; do NOT crash the interest sweep.
+                    try { player.AOI?.ConsiderEntity(this, settings); }
+                    catch (NullReferenceException) { /* half-initialized phantom */ }
+                }
             }
             else
             {

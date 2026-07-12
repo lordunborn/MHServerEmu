@@ -526,6 +526,22 @@ namespace MHServerEmu.Games.Powers
                     ulong userPartyId = avatarCreator.PartyId;
                     if (userPartyId != 0)
                         canTargetFriendly = userPartyId == target.PartyId;
+
+                    // Phantom heroes never join a real Party (PartyId stays 0)
+                    // to avoid a known crash in UpdatePartyAOI when a real
+                    // Party member is destroyed — see Player.PhantomHero.cs.
+                    // Without this, PartyOnly-gated powers (area heals like
+                    // Medkit, party buffs) would never affect a caller's own
+                    // phantoms even though the synthetic party HUD shows them
+                    // as party members. Recognize them via PhantomCreatorId
+                    // instead of PartyId.
+                    if (canTargetFriendly == false)
+                    {
+                        Player targetOwner = target.GetOwnerOfType<Player>();
+                        Player casterOwner = avatarCreator.GetOwnerOfType<Player>();
+                        if (targetOwner != null && casterOwner != null && targetOwner.PhantomCreatorId == casterOwner.Id)
+                            canTargetFriendly = true;
+                    }
                 }
                 else
                 {

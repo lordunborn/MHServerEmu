@@ -980,9 +980,13 @@ namespace MHServerEmu.Games.Network
                 if (Region != null)
                 {
                     Player worldEntityOwner = entity.GetOwnerOfType<Player>();
-                    if (worldEntityOwner != null && worldEntityOwner.GetRegion() == Region)
+                    // Phantom-hero owners (Avatar.SpawnPhantomHero) have PlayerConnection == null,
+                    // so GetRegion() always reports null even though their Avatar is genuinely in
+                    // this Region — fall back to the avatar's actual Region for them.
+                    Region worldEntityOwnerRegion = worldEntityOwner?.GetRegion() ?? worldEntityOwner?.CurrentAvatar?.Region;
+                    if (worldEntityOwner != null && worldEntityOwnerRegion == Region)
                     {
-                        if (inventoryInterestPolicies.HasFlag(AOINetworkPolicyValues.AOIChannelParty))
+                        if (inventoryInterestPolicies.HasFlag(AOINetworkPolicyValues.AOIChannelParty) || worldEntityOwner.PhantomCreatorId == player.Id)
                             newInterestPolicies |= AOINetworkPolicyValues.AOIChannelParty;
 
                         if (inventoryInterestPolicies.HasFlag(AOINetworkPolicyValues.AOIChannelTrader))
@@ -1002,10 +1006,14 @@ namespace MHServerEmu.Games.Network
                 newInterestPolicies |= AOINetworkPolicyValues.AOIChannelOwner;
 
             // Consider other players in the region currently tracked by this AOI (skip players in other regions in the same game instance)
-            if (Region != null && entity is Player otherPlayer && otherPlayer.GetRegion() == Region)
+            // Phantom-hero owners have PlayerConnection == null, so GetRegion() always reports
+            // null even though their Avatar is genuinely in this Region — fall back to the
+            // avatar's actual Region for them.
+            Region otherPlayerRegion = (entity as Player)?.GetRegion() ?? (entity as Player)?.CurrentAvatar?.Region;
+            if (Region != null && entity is Player otherPlayer && otherPlayerRegion == Region)
             {
                 Party party = player.GetParty();
-                if (party != null && otherPlayer.GetParty() == party)
+                if ((party != null && otherPlayer.GetParty() == party) || otherPlayer.PhantomCreatorId == player.Id)
                     newInterestPolicies |= AOINetworkPolicyValues.AOIChannelParty;
 
                 // Players in the same match region are also considered to be in the same party for AOI visibility purposes.
@@ -1059,7 +1067,7 @@ namespace MHServerEmu.Games.Network
                     if (inventoryPrototype.VisibleToParty)
                     {
                         Party party = player.GetParty();
-                        if (party != null && containerRootPlayer.GetParty() == party)
+                        if ((party != null && containerRootPlayer.GetParty() == party) || containerRootPlayer.PhantomCreatorId == player.Id)
                             interestPolicies |= AOINetworkPolicyValues.AOIChannelParty;
 
                         // Players in the same match region are also considered to be in the same party for AOI visibility purposes.

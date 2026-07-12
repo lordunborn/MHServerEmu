@@ -16,6 +16,14 @@ namespace MHServerEmu.DatabaseAccess.Models
         public byte[] MatchQueueStatus { get; set; }
         public List<CommunityMemberBroadcast> CommunityStatus { get; } = new();
 
+        // Phantom-hero cross-region persistence. Cross-region transfer destroys
+        // the old Game instance (Player + Avatar + phantom entities all go
+        // away). MigrationData is the only object that rides with the human
+        // across the transfer. We snapshot phantoms as (avatarRef, level,
+        // username) here at BeginRegionTransfer; the arriving Avatar reads
+        // this on OnEnteredWorld and re-spawns them fresh in the new region.
+        public List<PhantomIntent> PhantomIntents { get; } = new();
+
         public MigrationData() { }
 
         public List<(ulong, ulong)> GetOrCreatePropertyList(ulong entityDbId)
@@ -47,6 +55,44 @@ namespace MHServerEmu.DatabaseAccess.Models
             WorldView.Clear();
             MatchQueueStatus = null;
             CommunityStatus.Clear();
+            PhantomIntents.Clear();
         }
+    }
+
+    /// <summary>
+    /// One phantom-hero the human wants to bring across a region transfer.
+    /// AvatarRef is the PrototypeId as ulong (kept ulong to stay free of a
+    /// GameData reference from this DatabaseAccess project).
+    /// </summary>
+    public sealed class PhantomIntent
+    {
+        public ulong AvatarRef;
+        public int Level;
+        public string Username;
+
+        /// <summary>
+        /// True when the phantom's level was explicitly locked by the user
+        /// at spawn (e.g. `!phantom spawn 4 45`) — the tick loop's
+        /// auto-level-with-caller sync must skip these phantoms so they
+        /// stay at exactly the level the user asked for. False when the
+        /// spawn used the default (match caller's level), so the auto-
+        /// level tick keeps them chasing the human.
+        /// </summary>
+        public bool LockLevel;
+
+        /// <summary>
+        /// Costume PrototypeId as ulong (0 = roll a random costume at
+        /// spawn). Stores the costume actually applied, so squad saves and
+        /// cross-region transfers reproduce the same look rather than
+        /// re-rolling.
+        /// </summary>
+        public ulong CostumeRef;
+
+        /// <summary>
+        /// Equipped item PrototypeIds as ulongs, in equip-slot iteration
+        /// order (null/empty = roll random gear at spawn). Item affixes
+        /// re-roll on restore; the item identities are preserved.
+        /// </summary>
+        public System.Collections.Generic.List<ulong> GearRefs;
     }
 }

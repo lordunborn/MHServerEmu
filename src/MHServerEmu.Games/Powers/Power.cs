@@ -1022,15 +1022,22 @@ namespace MHServerEmu.Games.Powers
                 
                 if (player != null && powerProto.CanCauseTag)
                 {
+                    // Phantom-hero substitution: tag the human creator
+                    // instead of the phantom's synthetic Player, so
+                    // mission "must be tagged by mission player" gates
+                    // (MissionConditionEntityDeath.EvaluateEntity) treat
+                    // phantom damage as if the human dealt it.
+                    Player tagPlayer = Player.ResolveCreditPlayer(player);
                     if (avatar.IsInWorld && avatar.IsHostileTo(target))
-                        target.SetTaggedBy(player, powerProto);
+                        target.SetTaggedBy(tagPlayer, powerProto);
                 }
 
                 if (player != null && powerProto.CanCauseTag)
                 {
                     // NOTE: We don't need to null-check the avatar here because we get the player from it
+                    Player tagPlayer = Player.ResolveCreditPlayer(player);
                     if (avatar.IsInWorld && avatar.IsHostileTo(target))
-                        target.SetTaggedBy(player, powerProto);
+                        target.SetTaggedBy(tagPlayer, powerProto);
                 }
 
                 targetResultsList.Add(targetResults);
@@ -2084,6 +2091,16 @@ namespace MHServerEmu.Games.Powers
             Sphere sphere = new(position, playerNearbyRange);
             foreach (Avatar avatar in region.IterateAvatarsInVolume(sphere))
             {
+                // Skip phantom heroes — their synthetic Players are fresh
+                // accounts with no difficulty unlocks or rarity bonuses.
+                // Counting them here made AwardKillLoot roll loot FOR the
+                // phantoms (dropping normal-tier white items in cosmic
+                // regions, restricted to a "player" that can never pick
+                // them up) and inflated the nearby-player count used for
+                // mob difficulty scaling.
+                if (avatar.IsPhantomHero)
+                    continue;
+
                 // Skip AFK avatars if needed (e.g. for loot rewards)
                 if (combatActiveOnly && avatar.IsCombatActive() == false)
                     continue;

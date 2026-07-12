@@ -160,7 +160,7 @@ namespace MHServerEmu.Games.Entities
         public bool IsSwitchingAvatar { get; private set; }
 
         public PlayerConnection PlayerConnection { get; private set; }
-        public AreaOfInterest AOI { get => PlayerConnection.AOI; }
+        public AreaOfInterest AOI { get => PlayerConnection?.AOI; }
 
         public Avatar CurrentAvatar { get; private set; }
         public HUDTutorialPrototype CurrentHUDTutorial { get; private set; }
@@ -529,8 +529,13 @@ namespace MHServerEmu.Games.Entities
 
             CancelPlayerTrade();
 
+            // Cleanup any phantom-hero bots this player spawned. Without this
+            // they leak into the game world on logout — server restart is the
+            // only recovery (see Avatar.PhantomHero.cs orphaning bug).
+            try { PurgePhantomsOnExitGame(); } catch { /* best effort — don't block ExitGame */ }
+
             SendMessage(NetMessageBeginExitGame.DefaultInstance);
-            AOI.SetRegion(0, true);
+            AOI?.SetRegion(0, true);
 
             base.ExitGame();
         }
@@ -622,8 +627,9 @@ namespace MHServerEmu.Games.Entities
 
         public Region GetRegion()
         {
-            // This shouldn't need any null checks, at least for now
-            return AOI.Region;
+            // Phantom Players (Avatar.SpawnPhantomHero) have no PlayerConnection.
+            // AOI is null in that case — return null and let PlayerIterator skip us.
+            return PlayerConnection?.AOI?.Region;
         }
 
         public bool CanEnterRegion(PrototypeId regionProtoRef, PrototypeId difficultyTierProtoRef, bool isPartyTeleport)
@@ -3090,6 +3096,19 @@ namespace MHServerEmu.Games.Entities
                 return;
             }
 
+            // Phantom-hero synthetic Players show up in GetPlayerByName
+            // because their username is registered in the entity manager,
+            // but they have no PlayerConnection and no AOI. If we let a
+            // trade start with them, DoCancelPlayerTrade / ExecutePlayerTrade
+            // will NRE on target.AOI.ConsiderEntity(...) the moment the
+            // human closes the trade window. Refuse the trade upstream
+            // instead so the whole session never opens.
+            if (tradePartner.PlayerConnection == null)
+            {
+                SetPlayerTradeStatusCode(PlayerTradeStatusCode.ePTSC_InvalidPartner);
+                return;
+            }
+
             if (IsIgnoredPlayer(tradePartner.DatabaseUniqueId))
             {
                 SetPlayerTradeStatusCode(PlayerTradeStatusCode.ePTSC_PartnerIsIgnored);
@@ -3597,6 +3616,18 @@ namespace MHServerEmu.Games.Entities
         {
             var avatar = CurrentAvatar;
             if (avatar == null) return;
+
+            // Phantom-hero synthetic Players have PlayerConnection == null.
+            // Skip the whole kismet flow for them — there's no client to show
+            // the movie AND no client to send NetMessagePlayKismetSeqDone
+            // back to clear FullScreenMoviePlaying. Without this early-out,
+            // the mission that plays a boss dramatic-entrance kismet flips
+            // FullScreenMoviePlaying=true on every phantom's owner Player,
+            // and it never clears — so every subsequent phantom.ActivatePower
+            // call is rejected with PowerUseResult.FullscreenMovie (see
+            // Agent.cs:499) and the phantoms stand there doing nothing for
+            // the rest of the encounter.
+            if (PlayerConnection == null) return;
 
             var kismetProto = GameDatabase.GetPrototype<KismetSequencePrototype>(kismetSeq);
             if (kismetProto == null) return;

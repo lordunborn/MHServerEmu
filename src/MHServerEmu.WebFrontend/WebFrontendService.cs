@@ -128,6 +128,12 @@ namespace MHServerEmu.WebFrontend
             _webService.RegisterHandler("/AccountManagement/ClearFlag",     new AccountClearFlagWebHandler());
 
             _webService.RegisterHandler("/ServerStatus", new ServerStatusWebHandler());
+
+            // PhantomHeroes runtime endpoints.
+            _webService.RegisterHandler("/webapi/phantom/spawn",  new PhantomHeroSpawnWebHandler());
+            _webService.RegisterHandler("/webapi/phantom/clear",  new PhantomHeroClearWebHandler());
+            _webService.RegisterHandler("/webapi/phantom/status", new PhantomHeroStatusWebHandler());
+
             _webService.RegisterHandler("/RegionReport", new RegionReportWebHandler());
             _webService.RegisterHandler("/Metrics/Performance", new MetricsPerformanceWebHandler());
         }
