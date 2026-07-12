@@ -40,7 +40,7 @@ Some of the custom features in this fork are based on ideas and implementations 
 
 - [mtzimas92](https://github.com/mtzimas92/MHServerEmu) — the `!stash` command and the `DayOfWeekRotation` change.
 
-- [Doodswh](https://github.com/Doodswh/MHServerEmu) — the original creation of the Live-Tuning-driven leaderboard automation.
+- [Omega](MHServerEmu Discord) — the original creation of the Live-Tuning-driven leaderboard automation.
 
 ## Special Thanks
 

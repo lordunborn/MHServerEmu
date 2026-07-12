@@ -24,7 +24,7 @@ This is a fork of [Crypto137/MHServerEmu](https://github.com/Crypto137/MHServerE
 
 - **`!stash` command overhaul** — collapsed from a command group with subcommands into a single, more flexible command with a sensible default action. Based on [mtzimas92's fork](https://github.com/mtzimas92/MHServerEmu).
 
-- **Automated Live-Tuning-driven leaderboards** — leaderboards tied to a scheduled Live Tuning event now automatically activate and deactivate in sync with that event's active window, instead of requiring manual leaderboard-schedule edits. Based on [Doodswh's fork](https://github.com/Doodswh/MHServerEmu).
+- **Automated Live-Tuning-driven leaderboards** — leaderboards tied to a scheduled Live Tuning event now automatically activate and deactivate in sync with that event's active window, instead of requiring manual leaderboard-schedule edits. Based on work done by @Omega in the MHServerEmu Discord.
 
 - **Changed `DayOfWeekRotation`** — changed LiveTuning event rotation to actually cycle weekly on the configured weekday, instead of firing all rotation events simultaneously on the month's 5th occurrence. Based on [mtzimas92's fork](https://github.com/mtzimas92/MHServerEmu).
 
