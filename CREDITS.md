@@ -30,6 +30,14 @@ Our Discord server MVPs are not directly involved with the development of MHServ
 
 - SinisterSpatula
 
+## Feature Sources
+
+Some of the custom features in this fork are based on ideas and implementations from other MHServerEmu forks. Credit to their original creators:
+
+- [CorvaeOboro](https://corvaeoboro.github.io/MHServerEmu/) — Loot Filter, Stash Affinity, Item Auto Pickup, Throwable Toggle, and Item Chest Auto Open.
+
+- [TruSkillzzRuns](https://github.com/TruSkillzzRuns/MHServerEmu) — Phantom Heroes.
+
 ## Special Thanks
 
 - Denys Smirnov for his [protod](https://github.com/dennwc/protod) tool that has been invaluable for reverse engineering the network protocol.
