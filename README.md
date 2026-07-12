@@ -6,6 +6,30 @@ The only currently supported version of the game client is **1.52.0.1700** (also
 
 We post development progress reports on our [blog](https://crypto137.github.io/MHServerEmu/). You can find additional information on various topics in the [documentation](./docs/Index.md). If you would like to discuss this project and/or help with its development, feel free to join our [Discord](https://discord.gg/hjR8Bj52t3).
 
+## What's Different in This Fork
+
+This is a fork of [Crypto137/MHServerEmu](https://github.com/Crypto137/MHServerEmu) with the following custom, non-upstream additions:
+
+- **Phantom Heroes** — spawn server-side AI-controlled hero companions (`!phantom spawn`) that fight alongside a solo player as a synthetic party, up to 9 active phantoms per player (configurable). Includes idle-follow formation locomotion, level-scaled damage and gear (armor/artifact pool restrictions, a configurable bad-item blacklist, level-scaled relic stacks), ultimates and charge-release power support, death/despawn handling, and full party-HUD integration (health bars, leave/kick/disband/convert-to-raid). Based on and adapted from [TruSkillzzRuns's fork](https://github.com/TruSkillzzRuns/MHServerEmu).
+
+- **Server-Side Player Loot Filter** — players can configure filters for loot they don't want, and the server simply won't spawn those items for them. Based on [CorvaeOboro's fork](https://corvaeoboro.github.io/MHServerEmu/).
+
+- **Item Auto-Pickup** — configurable server-side auto-pickup for currency, crafting ingredients, Runeword Glyphs, and Relics within a radius, with per-category stash-vs-inventory routing. Players can opt out of individual categories or override routing for themselves via `!autopickup`, independent of the server-wide defaults. Based on CorvaeOboro's fork.
+
+- **Stash Affinity** — manually moving an item into a stash redirects it to the best-matching tab automatically (a character-specific stash for bound items, or a tab whose name matches the item's type) if one exists with space. Based on CorvaeOboro's fork.
+
+- **Throwable Options** — server toggles to disable interactive throwable pickups, auto-cancel a held throwable when another power is used, and auto-throw a held object before a movement power activates. Based on CorvaeOboro's fork.
+
+- **Item Chest Auto-Open** — automatically opens chest-type items in inventory on a cooldown, with a configurable name whitelist. Based on CorvaeOboro's fork.
+
+- **`!stash` command overhaul** — collapsed from a command group with subcommands into a single, more flexible command with a sensible default action.
+
+- **Automated Live-Tuning-driven leaderboards** — leaderboards tied to a scheduled Live Tuning event now automatically activate and deactivate in sync with that event's active window, instead of requiring manual leaderboard-schedule edits.
+
+- **Changed `DayOfWeekRotation`** — changed LiveTuning event rotation to actually cycle weekly on the configured weekday, instead of firing all rotation events simultaneously on the month's 5th occurrence.
+
+See [CREDITS.md](./CREDITS.md) for full attribution.
+
 ## Download
 
 We provide two kinds of builds: stable and nightly.
