@@ -22,11 +22,11 @@ This is a fork of [Crypto137/MHServerEmu](https://github.com/Crypto137/MHServerE
 
 - **Item Chest Auto-Open** — automatically opens chest-type items in inventory on a cooldown, with a configurable name whitelist. Based on CorvaeOboro's fork.
 
-- **`!stash` command overhaul** — collapsed from a command group with subcommands into a single, more flexible command with a sensible default action.
+- **`!stash` command overhaul** — collapsed from a command group with subcommands into a single, more flexible command with a sensible default action. Based on [mtzimas92's fork](https://github.com/mtzimas92/MHServerEmu).
 
-- **Automated Live-Tuning-driven leaderboards** — leaderboards tied to a scheduled Live Tuning event now automatically activate and deactivate in sync with that event's active window, instead of requiring manual leaderboard-schedule edits.
+- **Automated Live-Tuning-driven leaderboards** — leaderboards tied to a scheduled Live Tuning event now automatically activate and deactivate in sync with that event's active window, instead of requiring manual leaderboard-schedule edits. Based on [Doodswh's fork](https://github.com/Doodswh/MHServerEmu).
 
-- **Changed `DayOfWeekRotation`** — changed LiveTuning event rotation to actually cycle weekly on the configured weekday, instead of firing all rotation events simultaneously on the month's 5th occurrence.
+- **Changed `DayOfWeekRotation`** — changed LiveTuning event rotation to actually cycle weekly on the configured weekday, instead of firing all rotation events simultaneously on the month's 5th occurrence. Based on [mtzimas92's fork](https://github.com/mtzimas92/MHServerEmu).
 
 See [CREDITS.md](./CREDITS.md) for full attribution.
 
