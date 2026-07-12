@@ -38,6 +38,8 @@ Some of the custom features in this fork are based on ideas and implementations 
 
 - [TruSkillzzRuns](https://github.com/TruSkillzzRuns/MHServerEmu) — Phantom Heroes.
 
+- [mtzimas92](https://github.com/mtzimas92/MHServerEmu) — the `!stash` command and the `DayOfWeekRotation` change.
+
 ## Special Thanks
 
 - Denys Smirnov for his [protod](https://github.com/dennwc/protod) tool that has been invaluable for reverse engineering the network protocol.
