@@ -1580,6 +1580,9 @@ namespace MHServerEmu.Games.Entities.Avatars
             Region region = Region;
             if (region == null) { error = "no region"; return 0; }
 
+            int maxActive = Game.CustomGameOptions.PhantomHeroesMaxActive;
+            if (PhantomHeroCount >= maxActive) { error = $"phantom cap reached ({PhantomHeroCount}/{maxActive})"; return 0; }
+
             PrototypeId avatarRef = avatarRefOverride != PrototypeId.Invalid ? avatarRefOverride : NextPhantomHeroRef();
             if (avatarRef == PrototypeId.Invalid) { error = "hero ref resolve failed"; return 0; }
 

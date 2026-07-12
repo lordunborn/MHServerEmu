@@ -72,7 +72,16 @@ namespace MHServerEmu.Commands.Implementations
             {
                 ulong id = avatar.SpawnPhantomHero(level, null, out string error);
                 if (id != 0) spawned++;
-                else { failed++; if (firstError.Length == 0 && error != null) firstError = error; }
+                else
+                {
+                    failed++;
+                    if (firstError.Length == 0 && error != null) firstError = error;
+                    // Once the active-phantom cap is hit, every further
+                    // attempt this loop will fail identically — stop
+                    // instead of spamming pointless failed spawns.
+                    if (error != null && error.StartsWith("phantom cap reached", System.StringComparison.Ordinal))
+                        break;
+                }
             }
             return firstError.Length > 0
                 ? $"Phantoms: spawned={spawned} failed={failed}. First err: {firstError}"
