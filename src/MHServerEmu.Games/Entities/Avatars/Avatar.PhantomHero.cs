@@ -775,15 +775,13 @@ namespace MHServerEmu.Games.Entities.Avatars
         // ================================================================
 
         // ----------------------------------------------------------------
-        //  Gear rarity bands. RarityPrototype.Tier is derived from the
-        //  DowngradeTo chain in client data (tier 1 = most common, counting
-        //  up), so bands are expressed as tier ranges — no rarity names in
-        //  source. Band table:
-        //    levels  1-10  → tier 1        (base)
-        //    levels 11-19  → tiers 2-3
-        //    levels 20-30  → tier 4
-        //    levels 31-50  → tiers 4-5
-        //    levels 51-60  → tiers 5-6     (top of the ladder)
+        //  Gear rarity bands (see GetPhantomGearAllowedRarities for the
+        //  data-reality notes on the top tiers):
+        //    levels  1-10  → tier 1                       (white)
+        //    levels 11-19  → tiers 2-3                    (green/blue)
+        //    levels 20-30  → tier 4                       (purple)
+        //    levels 31-50  → tier 4 + RarityCosmic         (purple/yellow)
+        //    levels 51-60  → RarityCosmic + RarityUnique   (yellow/orange)
         // ----------------------------------------------------------------
         private static readonly object s_rarityTierLock = new();
         private static Dictionary<int, PrototypeId> s_rarityByTier;
@@ -808,25 +806,49 @@ namespace MHServerEmu.Games.Entities.Avatars
             }
         }
 
-        private static (int MinTier, int MaxTier) GetPhantomGearRarityBand(int level)
-        {
-            if (level <= 10) return (1, 1);
-            if (level <= 19) return (2, 3);
-            if (level <= 30) return (4, 4);
-            if (level <= 50) return (4, 5);
-            return (5, 6);
-        }
-
-        private static PrototypeId PickPhantomGearRarity(int level, MHServerEmu.Core.System.Random.GRandom rng)
+        /// <summary>
+        /// The rarities a phantom's CORE ARMOR (Gear01-05) is allowed to end
+        /// up at for a given level. This is both the roll pool and the
+        /// acceptance filter: some item prototypes carry their own rarity
+        /// restriction (red "Ultimate" items, Runeword items), and the spec
+        /// builder silently overrides whatever rarity we request to satisfy
+        /// it — so forcing the rarity up front is not enough, the FINAL
+        /// spec rarity must be validated against this list and off-band
+        /// items re-picked (see ApplyPhantomGear's TryBuildInBandSpec).
+        ///
+        /// Data reality: the DowngradeTo tier chain covers Common(1) →
+        /// Uncommon(2) → Rare(3) → Epic(4), but yellow Cosmic and orange
+        /// Unique are not on that chain — they're anchored directly by the
+        /// engine's LootGlobalsPrototype refs. The chain above Epic holds
+        /// the red special rarities (e.g. Ultimate) that must never roll.
+        /// </summary>
+        private static List<PrototypeId> GetPhantomGearAllowedRarities(int level)
         {
             EnsureRarityTiers();
-            (int minTier, int maxTier) = GetPhantomGearRarityBand(level);
-            int tier = rng.Next(minTier, maxTier + 1);
-            if (s_rarityByTier.TryGetValue(tier, out PrototypeId rarityRef)) return rarityRef;
-            // Data doesn't have this tier — fall back to the other end of
-            // the band, then to the default level-based roll (Invalid).
-            if (s_rarityByTier.TryGetValue(minTier, out rarityRef)) return rarityRef;
-            return PrototypeId.Invalid;
+            var lootGlobals = GameDatabase.LootGlobalsPrototype;
+            var allowed = new List<PrototypeId>(2);
+
+            void AddTier(int tier)
+            {
+                if (s_rarityByTier.TryGetValue(tier, out PrototypeId r) && r != PrototypeId.Invalid)
+                    allowed.Add(r);
+            }
+
+            if (level <= 10) AddTier(1);
+            else if (level <= 19) { AddTier(2); AddTier(3); }
+            else if (level <= 30) AddTier(4);
+            else if (level <= 50)
+            {
+                AddTier(4);
+                if (lootGlobals.RarityCosmic != PrototypeId.Invalid) allowed.Add(lootGlobals.RarityCosmic);
+            }
+            else
+            {
+                if (lootGlobals.RarityCosmic != PrototypeId.Invalid) allowed.Add(lootGlobals.RarityCosmic);
+                if (lootGlobals.RarityUnique != PrototypeId.Invalid) allowed.Add(lootGlobals.RarityUnique);
+            }
+
+            return allowed;
         }
 
         /// <summary>
@@ -850,6 +872,12 @@ namespace MHServerEmu.Games.Entities.Avatars
             bool useOverride = gearOverride != null && gearOverride.Count > 0;
             int overrideIdx = 0;
 
+            List<PrototypeId> allowedRarities = GetPhantomGearAllowedRarities(level);
+
+            // Red "Ultimate" tier — banned from every slot, core or special.
+            EnsureRarityTiers();
+            s_rarityByTier.TryGetValue(5, out PrototypeId bannedUltimateRef);
+
             foreach (AvatarEquipInventoryAssignmentPrototype assignment in avatarProto.EquipmentInventories)
             {
                 if (assignment.UnlocksAtCharacterLevel > level) continue;
@@ -870,63 +898,175 @@ namespace MHServerEmu.Games.Entities.Avatars
                 Inventory equipInventory = phantomAvatar.GetInventoryByRef(assignment.Inventory);
                 if (equipInventory == null) continue;
 
-                // Resolve the item proto: stored ref on restore, random roll otherwise.
-                PrototypeId itemProtoRef = PrototypeId.Invalid;
-                if (useOverride)
-                {
-                    if (overrideIdx < gearOverride.Count)
-                        itemProtoRef = (PrototypeId)gearOverride[overrideIdx++];
-                }
-                else
-                {
-                    var picker = BuildFilteredPhantomGearPicker(rng, avatarProto.DataRef, assignment.UISlot, game.CustomGameOptions.PhantomGearItemBlacklist);
-                    if (picker.Empty() == false && picker.Pick(out Prototype pickedProto) && pickedProto != null)
-                        itemProtoRef = pickedProto.DataRef;
-                }
+                EquipmentInvUISlot uiSlot = assignment.UISlot;
+                bool isCoreGear = IsPhantomGearArmorSlot(uiSlot);
 
-                if (itemProtoRef == PrototypeId.Invalid) continue;
+                // Stored ref on restore (consumed even if it fails, to keep
+                // slot alignment); random picks otherwise.
+                PrototypeId overrideItemRef = PrototypeId.Invalid;
+                if (useOverride && overrideIdx < gearOverride.Count)
+                    overrideItemRef = (PrototypeId)gearOverride[overrideIdx++];
+
+                var picker = BuildFilteredPhantomGearPicker(rng, avatarProto.DataRef, uiSlot, game.CustomGameOptions.PhantomGearItemBlacklist);
 
                 try
                 {
-                    PrototypeId rarityRef = PickPhantomGearRarity(level, rng);
-                    ItemSpec itemSpec = lootManager.CreateItemSpec(itemProtoRef, LootContext.Drop, phantomPlayer, level, rarityRef);
-                    if (itemSpec == null) continue;
+                    // Two independent things can reject a candidate: (1) its
+                    // FINAL built rarity is out of band — an item prototype
+                    // can carry its own rarity restriction (red "Ultimate" /
+                    // Runeword items live in the same slot pools as normal
+                    // gear) that silently overrides whatever we request; (2)
+                    // it fails Agent.CanEquip's Requirement property check
+                    // (Entity.cs ChangeInventoryLocation → InvalidProperty-
+                    // Restriction) — items can carry a baked-in level/stat
+                    // requirement independent of the rarity/level we rolled
+                    // them at, especially from the unrestricted general Armor
+                    // pool below, which has no per-level filtering at all.
+                    // Both cases must fall through to the NEXT candidate, not
+                    // just abandon the slot — so item creation and the actual
+                    // equip attempt live inside the same drained retry loop
+                    // as the rarity check. The pool is DRAINED via PickRemove
+                    // rather than sampled: every rejected item is removed and
+                    // never retried, so if any item in the pool is both
+                    // in-band AND actually equippable, it will be found.
+                    Item acceptedItem = null;
+                    PrototypeId acceptedItemRef = PrototypeId.Invalid;
 
-                    // Relics are a stack-size passive, not a single
-                    // equippable item — roll the stack scaled to level so
-                    // it's actually meaningful (5x level, clamped to the
-                    // relic's own max stack size).
-                    if (assignment.UISlot == EquipmentInvUISlot.Relic)
-                        itemSpec.StackCount = Math.Max(1, level * PhantomRelicStackPerLevel);
-
-                    Item item;
-                    using (var itemSettings = ObjectPoolManager.Instance.Get<EntitySettings>())
+                    bool TryEquipCandidate(PrototypeId itemProtoRef)
                     {
-                        itemSettings.EntityRef = itemProtoRef;
-                        itemSettings.ItemSpec = itemSpec;
-                        item = game.EntityManager.CreateEntity(itemSettings) as Item;
+                        if (itemProtoRef == PrototypeId.Invalid) return false;
+
+                        ItemSpec spec = null;
+                        if (isCoreGear)
+                        {
+                            // Core armor: try every banded rarity, random
+                            // start for variety. A Unique-class item may
+                            // only build at Unique while a normal piece
+                            // only reaches Cosmic — one random rarity per
+                            // item would wrongly discard valid items.
+                            int rarityCount = Math.Max(1, allowedRarities.Count);
+                            int start = rng.Next(0, rarityCount);
+                            for (int i = 0; i < rarityCount; i++)
+                            {
+                                PrototypeId rarityRef = allowedRarities.Count > 0
+                                    ? allowedRarities[(start + i) % allowedRarities.Count]
+                                    : PrototypeId.Invalid;
+
+                                ItemSpec candidate = lootManager.CreateItemSpec(itemProtoRef, LootContext.Drop, phantomPlayer, level, rarityRef);
+                                if (candidate == null) continue;
+                                if (allowedRarities.Count > 0 && allowedRarities.Contains(candidate.RarityProtoRef) == false) continue;
+
+                                spec = candidate;
+                                break;
+                            }
+                            if (spec == null) return false;
+                        }
+                        else
+                        {
+                            // Special slots (artifacts, medal, relic,
+                            // insignia, ring): these item families own their
+                            // own rarity ranges — forcing the core armor
+                            // band on them excludes their entire pool. Roll
+                            // the natural (level-based) rarity instead; only
+                            // red Ultimate stays banned.
+                            spec = lootManager.CreateItemSpec(itemProtoRef, LootContext.Drop, phantomPlayer, level);
+                            if (spec == null) return false;
+                            if (bannedUltimateRef != PrototypeId.Invalid && spec.RarityProtoRef == bannedUltimateRef) return false;
+                        }
+
+                        // Relics are a stack-size passive, not a single
+                        // equippable item — roll the stack scaled to level
+                        // so it's actually meaningful (5x level, clamped to
+                        // the relic's own max stack size).
+                        if (uiSlot == EquipmentInvUISlot.Relic)
+                            spec.StackCount = Math.Max(1, level * PhantomRelicStackPerLevel);
+
+                        Item item;
+                        using (var itemSettings = ObjectPoolManager.Instance.Get<EntitySettings>())
+                        {
+                            itemSettings.EntityRef = itemProtoRef;
+                            itemSettings.ItemSpec = spec;
+                            item = game.EntityManager.CreateEntity(itemSettings) as Item;
+                        }
+                        if (item == null) return false;
+
+                        if (uiSlot == EquipmentInvUISlot.Relic)
+                        {
+                            int desiredStack = spec.StackCount;
+                            int maxStack = item.Properties[PropertyEnum.InventoryStackSizeMax];
+                            if (maxStack > 0) desiredStack = Math.Min(desiredStack, maxStack);
+                            item.Properties[PropertyEnum.InventoryStackCount] = desiredStack;
+                        }
+
+                        // A rejected candidate here is the EXPECTED common
+                        // case, not an error (e.g. an artifact whose real
+                        // level requirement is higher than the phantom's
+                        // level — a large fraction of Tier1Artifacts falls
+                        // into this bucket) — check silently via
+                        // CanChangeInventoryLocation first so a routine
+                        // rejection doesn't spam a WARN through Verify.
+                        // ChangeInventoryLocation itself only runs once
+                        // we already know it will succeed.
+                        if (item.CanChangeInventoryLocation(equipInventory) != InventoryResult.Success)
+                        {
+                            item.Destroy();
+                            return false;
+                        }
+
+                        if (item.ChangeInventoryLocation(equipInventory) != InventoryResult.Success)
+                        {
+                            item.Destroy();
+                            return false;
+                        }
+
+                        acceptedItem = item;
+                        acceptedItemRef = itemProtoRef;
+                        return true;
                     }
-                    if (item == null) continue;
 
-                    if (assignment.UISlot == EquipmentInvUISlot.Relic)
+                    // Stored override item first (squad/migration restore)...
+                    if (overrideItemRef != PrototypeId.Invalid)
+                        TryEquipCandidate(overrideItemRef);
+
+                    // ...then drain the slot pool until something equips.
+                    while (acceptedItem == null && picker.Empty() == false)
                     {
-                        int desiredStack = itemSpec.StackCount;
-                        int maxStack = item.Properties[PropertyEnum.InventoryStackSizeMax];
-                        if (maxStack > 0) desiredStack = Math.Min(desiredStack, maxStack);
-                        item.Properties[PropertyEnum.InventoryStackCount] = desiredStack;
+                        if (picker.PickRemove(out Prototype pickedProto) == false || pickedProto == null) break;
+                        TryEquipCandidate(pickedProto.DataRef);
                     }
 
-                    if (item.ChangeInventoryLocation(equipInventory) != InventoryResult.Success)
+                    // The UniqueAvatarArmor pool is fixed-rarity (RarityUnique
+                    // only, confirmed 2026-07-12 via a level-50 phantom coming
+                    // up with all 5 armor slots empty while level-51+ filled
+                    // fine) — below the level where Unique unlocks, that pool
+                    // has nothing that can ever validate. Fall back to the
+                    // general Armor pool (still blacklist-filtered) rather
+                    // than leave the slot empty for the entire 1-50 range.
+                    if (acceptedItem == null && isCoreGear)
                     {
-                        item.Destroy();
+                        var fallbackPicker = BuildFilteredPhantomGearPicker(
+                            rng, avatarProto.DataRef, uiSlot, game.CustomGameOptions.PhantomGearItemBlacklist,
+                            restrictArmorToUnique: false);
+                        while (acceptedItem == null && fallbackPicker.Empty() == false)
+                        {
+                            if (fallbackPicker.PickRemove(out Prototype pickedProto) == false || pickedProto == null) break;
+                            TryEquipCandidate(pickedProto.DataRef);
+                        }
+                        if (acceptedItem != null)
+                            PhantomLogger.Info($"[PhantomHero:Gear] slot {uiSlot} on {avatarProto.DataRef.GetName()} — UniqueAvatarArmor pool had nothing usable at level {level}, filled from general Armor pool instead");
+                    }
+
+                    if (acceptedItem == null)
+                    {
+                        PhantomLogger.Warn($"[PhantomHero:Gear] slot pool for {uiSlot} on {avatarProto.DataRef.GetName()} has NO item usable/equippable at level {level} — slot left empty");
                         continue;
                     }
 
-                    applied.Add((ulong)itemProtoRef);
+                    applied.Add((ulong)acceptedItemRef);
                 }
                 catch (Exception ex)
                 {
-                    PhantomLogger.Warn($"[PhantomHero:Gear] equip {itemProtoRef.GetName()} on {phantomAvatar.Id:X} failed: {ex.Message}");
+                    PhantomLogger.Warn($"[PhantomHero:Gear] equip roll for slot {uiSlot} on {phantomAvatar.Id:X} failed: {ex.Message}");
                 }
             }
 
@@ -975,7 +1115,8 @@ namespace MHServerEmu.Games.Entities.Avatars
         /// (e.g. the candidates listing) and never calls Pick().
         /// </summary>
         private static MHServerEmu.Core.Collections.Picker<Prototype> BuildFilteredPhantomGearPicker(
-            MHServerEmu.Core.System.Random.GRandom rng, PrototypeId avatarProtoRef, EquipmentInvUISlot slot, string blacklistConfig)
+            MHServerEmu.Core.System.Random.GRandom rng, PrototypeId avatarProtoRef, EquipmentInvUISlot slot, string blacklistConfig,
+            bool restrictArmorToUnique = true)
         {
             var picker = new MHServerEmu.Core.Collections.Picker<Prototype>(rng);
             LootUtilities.BuildInventoryLootPicker(picker, avatarProtoRef, slot);
@@ -985,8 +1126,13 @@ namespace MHServerEmu.Games.Entities.Avatars
             // items — many of these are stat-less (deprecated/leftover data
             // no longer meant to be equippable). Restrict to
             // Armor/UniquePrototypes/Avatars/, the real itemized hero-armor
-            // pool, instead.
-            if (IsPhantomGearArmorSlot(slot))
+            // pool, instead. That pool turned out to be fixed-rarity
+            // (RarityUnique only, confirmed 2026-07-12 — a level-50 phantom
+            // came up with all 5 armor slots empty while level-51+ filled
+            // fine), so callers that need a rarity band below Unique pass
+            // restrictArmorToUnique=false to fall back to the general pool
+            // once the restricted one has proven to have nothing usable.
+            if (restrictArmorToUnique && IsPhantomGearArmorSlot(slot))
                 FilterPhantomGearPickerToUniqueAvatarArmor(picker);
 
             // Artifact slots pull from the full artifact pool by default,

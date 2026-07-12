@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Gazillion;
 using MHServerEmu.Commands.Attributes;
+using MHServerEmu.Core.Extensions;
 using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Network;
@@ -407,6 +408,80 @@ namespace MHServerEmu.Commands.Implementations
                 string json = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(outPath, json);
                 return $"Dumped {entries.Count} item prototypes to {outPath}.";
+            }
+            catch (Exception ex)
+            {
+                return $"Failed to write dump: {ex.Message}";
+            }
+        }
+
+        [Command("dumppower")]
+        [CommandDescription("Dumps power prototype targeting/trigger data matching a pattern to a JSON file on disk.")]
+        [CommandUsage("debug dumppower [pattern]")]
+        [CommandUserLevel(AccountUserLevel.Admin)]
+        public string DumpPower(string[] @params, NetClient client)
+        {
+            string pattern = @params.Length > 0 ? @params[0] : "*";
+            bool matchAll = pattern == "*";
+
+            var entries = new List<object>();
+
+            foreach (PrototypeId protoId in GameDatabase.DataDirectory.IteratePrototypesInHierarchy<PowerPrototype>(PrototypeIterateFlags.NoAbstractApprovedOnly))
+            {
+                string protoName = GameDatabase.GetPrototypeName(protoId);
+                if (matchAll == false && protoName.Contains(pattern, StringComparison.OrdinalIgnoreCase) == false)
+                    continue;
+
+                PowerPrototype powerProto = GameDatabase.GetPrototype<PowerPrototype>(protoId);
+                if (powerProto == null) continue;
+
+                var targetingStyle = powerProto.GetTargetingStyle();
+                var targetingReach = powerProto.GetTargetingReach();
+
+                var triggeredActions = new List<object>();
+                if (powerProto.ActionsTriggeredOnPowerEvent.HasValue())
+                {
+                    foreach (var action in powerProto.ActionsTriggeredOnPowerEvent)
+                    {
+                        PowerPrototype triggeredPowerProto = action.Power.As<PowerPrototype>();
+                        var triggeredStyle = triggeredPowerProto?.GetTargetingStyle();
+                        var triggeredReach = triggeredPowerProto?.GetTargetingReach();
+
+                        triggeredActions.Add(new
+                        {
+                            PowerEvent = action.PowerEvent.ToString(),
+                            EventAction = action.EventAction.ToString(),
+                            TriggeredPower = action.Power.GetName(),
+                            TriggeredPowerTargetingShape = triggeredStyle?.TargetingShape.ToString(),
+                            TriggeredPowerTargetsFriendly = triggeredReach?.TargetsFriendly,
+                            TriggeredPowerPartyOnly = triggeredReach?.PartyOnly,
+                            TriggeredPowerWillTargetCaster = triggeredReach?.WillTargetCaster,
+                        });
+                    }
+                }
+
+                entries.Add(new
+                {
+                    Name = protoName,
+                    Class = powerProto.GetType().Name,
+                    TargetingShape = targetingStyle?.TargetingShape.ToString(),
+                    NeedsTarget = targetingStyle?.NeedsTarget,
+                    TargetsFriendly = targetingReach?.TargetsFriendly,
+                    TargetsEnemy = targetingReach?.TargetsEnemy,
+                    PartyOnly = targetingReach?.PartyOnly,
+                    WillTargetCaster = targetingReach?.WillTargetCaster,
+                    TriggeredActions = triggeredActions,
+                });
+            }
+
+            try
+            {
+                string outDir = Path.Combine(Directory.GetCurrentDirectory(), "Data");
+                Directory.CreateDirectory(outDir);
+                string outPath = Path.Combine(outDir, $"PowerDatabaseDump_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json");
+                string json = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(outPath, json);
+                return $"Dumped {entries.Count} power prototypes to {outPath}.";
             }
             catch (Exception ex)
             {

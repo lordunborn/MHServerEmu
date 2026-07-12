@@ -47,7 +47,7 @@ namespace MHServerEmu.Games
 
         // Phantom Heroes
         public bool PhantomHeroesEnable { get; private set; } = true;
-        public bool PhantomHeroesDespawnOnDeath { get; private set; } = false;
+        public bool PhantomHeroesDespawnOnDeath { get; private set; } = true;
         public int PhantomHeroesMaxActive { get; private set; } = 9;
         public string PhantomGearItemBlacklist { get; private set; } = "";
 
