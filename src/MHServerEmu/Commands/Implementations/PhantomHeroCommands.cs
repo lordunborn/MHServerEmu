@@ -2,6 +2,7 @@ using MHServerEmu.Commands.Attributes;
 using MHServerEmu.Core.Network;
 using MHServerEmu.Games.Entities.Avatars;
 using MHServerEmu.Games.Network;
+using MHServerEmu.Games.Properties;
 
 namespace MHServerEmu.Commands.Implementations
 {
@@ -16,6 +17,16 @@ namespace MHServerEmu.Commands.Implementations
     [CommandGroupDescription("Spawn / clear phantom-hero server-side NPC bots.")]
     public class PhantomHeroCommands : CommandGroup
     {
+        /// <summary>
+        /// Blocks phantom commands while the CALLER is in combat. Checks only the
+        /// caller's own Avatar.IsInCombat flag - a phantom hero still holding aggro
+        /// from something the player has since walked away from does not count.
+        /// </summary>
+        private static bool IsCallerInCombat(Avatar avatar)
+        {
+            return avatar.Properties[PropertyEnum.IsInCombat];
+        }
+
         [Command("spawn")]
         [CommandDescription("Spawn phantom-hero NPCs near you. Args: [count=4] [level=your level], or [heroname] [level] to spawn a specific hero. Phantoms auto-level with you unless an explicit level is given.")]
         [CommandInvokerType(CommandInvokerType.Client)]
@@ -27,6 +38,9 @@ namespace MHServerEmu.Commands.Implementations
 
             if (pc.Player.Game.CustomGameOptions.PhantomHeroesEnable == false)
                 return "Phantom Heroes is disabled on this server.";
+
+            if (IsCallerInCombat(avatar))
+                return "Cannot use !phantom commands while in combat.";
 
             // 0 = "match caller's CharacterLevel" (handled inside
             // SpawnPhantomHeroCore). The tick loop then keeps them in sync
@@ -101,6 +115,9 @@ namespace MHServerEmu.Commands.Implementations
             if (player.Game.CustomGameOptions.PhantomHeroesEnable == false)
                 return "Phantom Heroes is disabled on this server.";
 
+            if (IsCallerInCombat(avatar))
+                return "Cannot use !phantom commands while in combat.";
+
             if (@params.Length == 0)
                 return "Usage: phantom squad save [name] | spawn [name] | list | delete [name]";
 
@@ -142,6 +159,9 @@ namespace MHServerEmu.Commands.Implementations
             if (player.Game.CustomGameOptions.PhantomHeroesEnable == false)
                 return "Phantom Heroes is disabled on this server.";
 
+            if (IsCallerInCombat(player.CurrentAvatar))
+                return "Cannot use !phantom commands while in combat.";
+
             if (@params.Length == 0)
                 return "Usage: phantom costume random | costume [hero] random | costume [hero] [costumename] | costume list [hero]";
 
@@ -174,6 +194,9 @@ namespace MHServerEmu.Commands.Implementations
             if (player.Game.CustomGameOptions.PhantomHeroesEnable == false)
                 return "Phantom Heroes is disabled on this server.";
 
+            if (IsCallerInCombat(player.CurrentAvatar))
+                return "Cannot use !phantom commands while in combat.";
+
             if (@params.Length >= 1 && @params[0].Equals("candidates", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (@params.Length < 3) return "Usage: phantom gear candidates [hero] [slot]";
@@ -197,6 +220,9 @@ namespace MHServerEmu.Commands.Implementations
             var pc = (client as PlayerConnection) ?? throw new System.InvalidOperationException("Only clients can run !phantom clear.");
             var avatar = pc.Player?.CurrentAvatar;
             if (avatar == null) return "No avatar in world.";
+
+            if (IsCallerInCombat(avatar))
+                return "Cannot use !phantom commands while in combat.";
 
             int removed = avatar.DespawnAllPhantomHeroes();
             return $"Phantoms despawned: {removed}.";
