@@ -1154,12 +1154,15 @@ namespace MHServerEmu.Games.Entities
             if (!Verify.IsTrue(itemOwner == this || containerOwner == this, $"Player [{this}] is attempting to move item [{item}] to container [{container}], and neither of them is owned by this player"))
                 return false;
 
-            // Stash affinity interception: redirect the item to the best-matching stash tab
-            PrototypeId affinityStashRef = ResolveStashAffinity(item, inventoryProtoRef);
-            if (affinityStashRef != inventoryProtoRef)
+            // Stash affinity interception: redirect the item to the best-matching stash tab.
+            // Only applies when the client didn't request a specific destination slot (the
+            // right-click "send to stash" quick action) - an explicit slot means the player
+            // manually dragged the item to a chosen tab/slot, which must be respected as-is.
+            if (slot == Inventory.InvalidSlot)
             {
-                inventoryProtoRef = affinityStashRef;
-                slot = Inventory.InvalidSlot; // Find a free slot in the redirected stash
+                PrototypeId affinityStashRef = ResolveStashAffinity(item, inventoryProtoRef);
+                if (affinityStashRef != inventoryProtoRef)
+                    inventoryProtoRef = affinityStashRef;
             }
 
             // Validate inventory
@@ -4405,30 +4408,56 @@ namespace MHServerEmu.Games.Entities
         }
 
         /// <summary>
-        /// Attempts to move an item into the first unlocked stash tab that accepts it,
-        /// falling back to the general inventory if no stash tab works.
+        /// Attempts to move an auto-picked-up item into a stash tab: first via Stash Affinity
+        /// (character-specific, then type-keyword match) if enabled, then a tab explicitly
+        /// labeled "Catch All" as a required fallback, finally the general inventory if
+        /// neither applies or has room. Server ops are expected to tell players that a
+        /// "Catch All" tab is required for auto-pickup-to-stash to actually land in the stash.
         /// </summary>
         private InventoryResult TryAutoPickupToStash(Item item)
         {
-            using var stashRefsHandle = ListPool<PrototypeId>.Instance.Get(out List<PrototypeId> stashRefs);
-            if (GetStashInventoryProtoRefs(stashRefs, getLocked: false, getUnlocked: true))
+            var customOptions = Game?.CustomGameOptions;
+
+            if (customOptions != null && customOptions.StashAffinityEnable)
             {
-                foreach (PrototypeId stashRef in stashRefs)
+                using var stashRefsHandle = ListPool<PrototypeId>.Instance.Get(out List<PrototypeId> stashRefs);
+                if (GetStashInventoryProtoRefs(stashRefs, getLocked: false, getUnlocked: true) && stashRefs.Count > 0)
                 {
-                    Inventory stashInv = GetInventoryByRef(stashRef);
-                    if (stashInv == null) continue;
+                    // ResolveStashAffinity needs a real stash ref to treat as "the requested
+                    // destination" - it only ever returns something DIFFERENT when a better
+                    // (character or type) match is found and has room, so a non-match/full-match
+                    // is already indistinguishable from "no affinity" here.
+                    PrototypeId affinityStashRef = ResolveStashAffinity(item, stashRefs[0]);
+                    if (affinityStashRef != stashRefs[0])
+                    {
+                        Inventory affinityInv = GetInventoryByRef(affinityStashRef);
+                        if (affinityInv != null && affinityInv.Prototype.AllowEntity(item.Prototype))
+                        {
+                            ulong? stackEntityId = InvalidId;
+                            InventoryResult result = item.ChangeInventoryLocation(affinityInv, Inventory.InvalidSlot, ref stackEntityId, true);
+                            if (result == InventoryResult.Success)
+                                return result;
+                        }
+                    }
+                }
+            }
 
-                    if (stashInv.Prototype.AllowEntity(item.Prototype) == false)
-                        continue;
-
+            // No affinity match (or affinity disabled/full) - require an explicitly labeled
+            // "Catch All" tab rather than silently landing in whichever tab happens to accept it.
+            PrototypeId catchAllRef = FindCatchAllStashTab(item);
+            if (catchAllRef != PrototypeId.Invalid)
+            {
+                Inventory catchAllInv = GetInventoryByRef(catchAllRef);
+                if (catchAllInv != null)
+                {
                     ulong? stackEntityId = InvalidId;
-                    InventoryResult result = item.ChangeInventoryLocation(stashInv, Inventory.InvalidSlot, ref stackEntityId, true);
+                    InventoryResult result = item.ChangeInventoryLocation(catchAllInv, Inventory.InvalidSlot, ref stackEntityId, true);
                     if (result == InventoryResult.Success)
                         return result;
                 }
             }
 
-            // Fall back to general inventory
+            // No usable "Catch All" tab - fall back to general inventory.
             return TryAutoPickupToInventory(item);
         }
 

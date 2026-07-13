@@ -42,10 +42,13 @@ namespace MHServerEmu.Games.Entities
                 return requestedStashRef;
             }
 
+            // A null source means the item has no current inventory (e.g. a ground item being
+            // auto-picked-up straight from the world) - that's a real candidate for redirection,
+            // not "unknown, skip it". Only skip when the source is CONFIRMED to already be a stash.
             InventoryPrototype sourceInvProto = item.InventoryLocation.InventoryPrototype;
-            if (sourceInvProto == null || sourceInvProto.IsPlayerStashInventory)
+            if (sourceInvProto != null && sourceInvProto.IsPlayerStashInventory)
             {
-                AppendDecision(report, requestedStashRef, "source is already a stash or unknown");
+                AppendDecision(report, requestedStashRef, "source is already a stash");
                 FlushReport(report);
                 return requestedStashRef;
             }
@@ -268,7 +271,7 @@ namespace MHServerEmu.Games.Entities
                 if (_stashTabOptionsDict.TryGetValue(stashRef, out StashTabOptions options) == false)
                     continue;
 
-                string tabName = options.DisplayName ?? string.Empty;
+                string tabName = DecodeStashTabDisplayName(options.DisplayName);
                 string matchedKey = null;
                 foreach (string key in itemKeys)
                 {
@@ -382,6 +385,44 @@ namespace MHServerEmu.Games.Entities
             return Array.Empty<string>();
         }
 
+        /// <summary>
+        /// Finds an unlocked stash tab whose custom display name is (case-insensitively) "Catch All"
+        /// and has room for this item. Used by auto-pickup as the fallback destination when no
+        /// affinity match applies. Returns <see cref="PrototypeId.Invalid"/> if no such tab exists,
+        /// it doesn't allow this item type, or it's full.
+        /// </summary>
+        private PrototypeId FindCatchAllStashTab(Item item)
+        {
+            using var stashRefsHandle = ListPool<PrototypeId>.Instance.Get(out List<PrototypeId> stashRefs);
+            if (GetStashInventoryProtoRefs(stashRefs, getLocked: false, getUnlocked: true) == false)
+                return PrototypeId.Invalid;
+
+            foreach (PrototypeId stashRef in stashRefs)
+            {
+                if (_stashTabOptionsDict.TryGetValue(stashRef, out StashTabOptions options) == false)
+                    continue;
+
+                // Display names containing spaces come back from the client percent-encoded
+                // (e.g. "Catch All" is stored as literally "Catch%20All") and must be decoded
+                // before comparison.
+                string tabName = DecodeStashTabDisplayName(options.DisplayName);
+                if (tabName.Equals("Catch All", StringComparison.OrdinalIgnoreCase) == false)
+                    continue;
+
+                Inventory stashInv = GetInventoryByRef(stashRef);
+                if (stashInv == null || stashInv.Prototype.AllowEntity(item.Prototype) == false)
+                    continue;
+
+                uint freeSlot = stashInv.GetFreeSlot(item, true, true);
+                if (freeSlot == Inventory.InvalidSlot)
+                    continue;
+
+                return stashRef;
+            }
+
+            return PrototypeId.Invalid;
+        }
+
         private string GetStashDisplayName(PrototypeId stashRef)
         {
             if (_stashTabOptionsDict.TryGetValue(stashRef, out StashTabOptions options) &&
@@ -389,6 +430,30 @@ namespace MHServerEmu.Games.Entities
                 return options.DisplayName;
 
             return GameDatabase.GetPrototypeName(stashRef);
+        }
+
+        /// <summary>
+        /// Stash tab display names containing spaces (or other reserved URL
+        /// characters) come back from the client percent-encoded - e.g. a
+        /// tab renamed to "Catch All" is stored as the literal string
+        /// "Catch%20All", never decoded server-side. Any name comparison
+        /// against a raw <see cref="StashTabOptions.DisplayName"/> must
+        /// decode it first or an exact/substring match against a
+        /// multi-word name can never succeed.
+        /// </summary>
+        private static string DecodeStashTabDisplayName(string rawName)
+        {
+            if (string.IsNullOrEmpty(rawName))
+                return string.Empty;
+
+            try
+            {
+                return Uri.UnescapeDataString(rawName);
+            }
+            catch (Exception)
+            {
+                return rawName;
+            }
         }
 
         private void AppendHeader(StringBuilder report, Item item, PrototypeId requestedStashRef)
