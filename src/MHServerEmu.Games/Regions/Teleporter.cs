@@ -457,7 +457,13 @@ namespace MHServerEmu.Games.Regions
         {
             if (Player == null) return Logger.WarnReturn(false, "CanTeleport(): Player == null");
 
-            if (Player.PlayerConnection.HasPendingRegionTransfer)
+            // PlayerConnection can be momentarily null for a teleport fired from a mission action
+            // while the player is mid-region-transfer or mid-disconnect (e.g. the CH0906 Loki boss
+            // region) - treat that as "can't teleport right now" instead of crashing the whole game.
+            PlayerConnection connection = Player.PlayerConnection;
+            if (connection == null) return Logger.WarnReturn(false, "CanTeleport(): PlayerConnection == null");
+
+            if (connection.HasPendingRegionTransfer)
                 return false;
 
             if (TransitionEntity != null)
