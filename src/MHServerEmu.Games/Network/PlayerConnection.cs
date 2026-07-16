@@ -1426,7 +1426,9 @@ namespace MHServerEmu.Games.Network
             Avatar targetAvatar = Game.EntityManager.GetEntity<Avatar>(requestResurrectAvatar.TargetId);
             if (!Verify.IsNotNull(targetAvatar)) return;
 
-            resurrectorAvatar.ResurrectOtherAvatar(targetAvatar);
+            var reviveResult = resurrectorAvatar.ResurrectOtherAvatar(targetAvatar);
+            if (targetAvatar.IsPhantomHero)
+                Logger.Info($"[PhantomHero:Revive] human {resurrectorAvatar} -> phantom {targetAvatar} result={reviveResult}");
         }
 
         private void OnReturnToHub(in MailboxMessage message)

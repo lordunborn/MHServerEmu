@@ -110,8 +110,9 @@ namespace MHServerEmu.Games.Entities.Avatars
         // How close a phantom needs to be to its assigned formation slot
         // before it stops walking. Smaller than PhantomIdleFollowStopDist —
         // this is a "close enough, stop fidgeting" tolerance around the slot
-        // itself, not the distance from the caller.
-        private const float PhantomFormationArriveDist = 60f;
+        // itself, not the distance from the caller. Widened from 60u so
+        // phantoms settle and hold instead of micro-correcting every tick.
+        private const float PhantomFormationArriveDist = 120f;
         // Stuck detection: if the phantom's position barely changes across
         // this many ticks (500ms each) they're either wall-clipped or
         // pathed into an out-of-bounds corner — force a teleport back to
@@ -133,6 +134,23 @@ namespace MHServerEmu.Games.Entities.Avatars
         // live-session log analysis — bumped from our original 3s guess.
         private const int PhantomPowerStuckTickThreshold = 10; // 5 seconds
         private static readonly Dictionary<ulong, (PrototypeId powerRef, int stuckTicks)> s_phantomPowerStuckTrack = new();
+
+        // Tracks phantoms currently sitting in the downed grace period (see
+        // HandlePhantomDeath). Presence in this dict marks "was down as of
+        // the last tick I noticed"; OnPhantomTick's alive-path uses removing
+        // an entry (IsDead flipped back to false) to detect a fresh revive
+        // and run the stuck-power-clear/pose-refresh one-time cleanup below.
+        private static readonly Dictionary<ulong, long> s_phantomDownedSinceMs = new();
+
+        // Per-HUMAN-PLAYER cooldown gate for phantom-driven revives of that
+        // human specifically (PhantomHeroesReviveCooldownMs) - deliberately
+        // keyed by the human's Player id, NOT per-phantom, so a squad of
+        // several phantoms can't just round-robin revives with no effective
+        // downtime (each phantom's own resurrect-power cooldown is
+        // independent, so bypassing THAT alone isn't a real guardrail).
+        // Phantom-to-phantom revives never touch this.
+        private static readonly Dictionary<ulong, long> s_phantomHumanReviveCooldown = new();
+
         private const float PhantomAttackRange = 1200f;
         private const float PhantomAttackRangeSq = PhantomAttackRange * PhantomAttackRange;
         // Wider search — phantom will walk to any hostile in this radius.
@@ -202,6 +220,83 @@ namespace MHServerEmu.Games.Entities.Avatars
                 else if (s_phantomPowerStuckTrack.ContainsKey(phantom.Id))
                 {
                     s_phantomPowerStuckTrack.Remove(phantom.Id);
+                }
+
+                // Downed handling. A killable phantom that hit 0 HP stays
+                // IsInWorld true but IsDead - same "downed" state a real
+                // player enters - for PhantomHeroesDownedGracePeriodMs (see
+                // HandlePhantomDeath), so the human or a teammate phantom can
+                // revive via ResurrectOtherAvatar (UpdatePhantomHunt's
+                // Priority-1 triage). While downed, skip movement/hunt
+                // entirely - a corpse doesn't walk or fight, and the revive
+                // priority on OTHER phantoms is what finds and raises it.
+                long nowMsDowned = Game.CurrentTime.Ticks / TimeSpan.TicksPerMillisecond;
+                if (phantom.IsDead)
+                {
+                    if (s_phantomDownedSinceMs.ContainsKey(phantom.Id) == false)
+                        s_phantomDownedSinceMs[phantom.Id] = nowMsDowned;
+
+                    // A corpse doesn't walk, but it also can't be left behind
+                    // forever - the leash below (for ALIVE phantoms) never
+                    // runs for a downed one since we continue past it, so
+                    // nothing normally stops the gap between "where this
+                    // phantom died" and "where the squad currently is" from
+                    // growing without bound as the human moves on (chasing
+                    // enemies, a region reconnect landing at a different
+                    // spot, etc.) - confirmed live: a downed phantom left
+                    // behind 6500+ units from the caller, with another
+                    // phantom stuck trying to walk the whole way to revive
+                    // it. Reuse the same leash threshold/position picker the
+                    // alive path uses so a downed corpse gets teleported back
+                    // within reach instead of drifting arbitrarily far.
+                    float callerDistSqDowned = Vector3.DistanceSquared2D(phantom.RegionLocation.Position, callerPos);
+                    if (callerDistSqDowned > PhantomFollowMaxDistSq)
+                    {
+                        Region downedRegion = phantom.Region;
+                        if (downedRegion != null)
+                        {
+                            try
+                            {
+                                Vector3 downedLeashPos = ChoosePhantomLeashPos(downedRegion, callerPos, rng, phantom.Bounds.Radius);
+                                phantom.ChangeRegionPosition(downedLeashPos, null);
+                                PhantomLogger.Info($"[PhantomHero:Down] {phantom} downed corpse was {MathF.Sqrt(callerDistSqDowned):F0} from caller, leashed to {downedLeashPos.ToStringNames()}");
+                            }
+                            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Down] corpse leash failed: {ex.Message}"); }
+                        }
+                    }
+
+                    continue;
+                }
+
+                // Alive path: if we were tracking this phantom as downed,
+                // they just got revived (by the human or a teammate phantom
+                // via ResurrectOtherAvatar). Force-clear any power that was
+                // still active the moment they went down - OnKilled/
+                // OnRemoveFromWorld never end active powers for Avatar-type
+                // entities (that's what keeps a downed phantom revivable in
+                // place instead of being destroyed), so without this,
+                // IsExecutingPower stays true after revival and every check
+                // above silently no-ops forever - the phantom just stands
+                // there instead of resuming hunt/revive logic. Also forces a
+                // locomotor/position refresh so the client stops rendering
+                // the downed pose (same primitives the leash below uses).
+                if (s_phantomDownedSinceMs.Remove(phantom.Id))
+                {
+                    try
+                    {
+                        if (phantom.ActivePowerRef != PrototypeId.Invalid)
+                        {
+                            Power stuckPower = phantom.PowerCollection?.GetPower(phantom.ActivePowerRef);
+                            stuckPower?.EndPower(EndPowerFlags.ExplicitCancel | EndPowerFlags.Force);
+                        }
+                        s_phantomPowerStuckTrack.Remove(phantom.Id);
+
+                        Vector3 herePos = phantom.RegionLocation.Position;
+                        phantom.Locomotor?.Stop();
+                        phantom.ChangeRegionPosition(herePos, null);
+                        PhantomLogger.Info($"[PhantomHero:Down] {phantom} revived - pose refreshed");
+                    }
+                    catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Down] revive refresh failed: {ex.Message}"); }
                 }
 
                 // Level sync: if the human has levelled since the last tick,
@@ -289,8 +384,33 @@ namespace MHServerEmu.Games.Entities.Avatars
         // phantoms notice downed players from across a room.
         private const float PhantomReviveSearchRange = 4000f;
         private const float PhantomReviveSearchRangeSq = PhantomReviveSearchRange * PhantomReviveSearchRange;
-        private const float PhantomReviveCastRange = 500f;
-        private const float PhantomReviveCastRangeSq = PhantomReviveCastRange * PhantomReviveCastRange;
+
+        // Fallback melee reach for the revive cast-range check, when the
+        // resurrect power reports no positive range at all.
+        private const float PhantomReviveMeleeFallbackRangeSq = 400f * 400f;
+
+        /// <summary>
+        /// Real usable range (squared) for a phantom's resurrect-other power.
+        /// A hardcoded "cast range" guess let phantoms stop and attempt the
+        /// cast well outside the power's actual range, so ActivatePower
+        /// rejected almost every attempt with OutOfPosition - ask the power
+        /// itself instead of guessing. Falls back to melee reach if the
+        /// power reports no positive range at all.
+        /// </summary>
+        private static float GetReviveCastRangeSq(Avatar phantom, PrototypeId resurrectPowerRef)
+        {
+            if (resurrectPowerRef != PrototypeId.Invalid)
+            {
+                Power resurrectPower = phantom.GetPower(resurrectPowerRef);
+                float r = resurrectPower?.GetRange() ?? 0f;
+                if (r > 0f)
+                {
+                    float withMargin = r + 50f;
+                    return withMargin * withMargin;
+                }
+            }
+            return PhantomReviveMeleeFallbackRangeSq;
+        }
 
         private void UpdatePhantomHunt(Avatar phantom, MHServerEmu.Core.System.Random.GRandom rng)
         {
@@ -314,53 +434,139 @@ namespace MHServerEmu.Games.Entities.Avatars
 
             Vector3 phantomPos = phantom.RegionLocation.Position;
 
-            // Priority 1: revive any downed real Avatar within revive range. Real
-            // avatars are still IsInWorld while downed (dead-but-revivable); we
-            // filter to Avatar entities that are IsDead AND have a live
-            // PlayerConnection (skips other phantoms). Nearest wins.
+            // Priority 1: revive any downed real player OR friendly teammate
+            // phantom within revive range. Both are still IsInWorld while
+            // downed (dead-but-revivable); nearest wins, with the human's own
+            // revive-cooldown (see below) skipping them as a candidate while
+            // still on cooldown so the search falls through to a downed
+            // teammate phantom instead, if any.
             Avatar downed = null;
-            float downedDistSq = PhantomReviveSearchRangeSq;
+            float downedDistSq = float.MaxValue;
             var reviveSphere = new Sphere(phantomPos, PhantomReviveSearchRange);
             var reviveCtx = new MHServerEmu.Games.Entities.EntityRegionSPContext(MHServerEmu.Games.Entities.EntityRegionSPContextFlags.PrimaryPartition);
+
+            long nowMsRevive = Game.CurrentTime.Ticks / TimeSpan.TicksPerMillisecond;
+            bool humanReviveOnCooldown = false;
+            Player humanPlayer = this.GetOwnerOfType<Player>();
+            if (humanPlayer != null && s_phantomHumanReviveCooldown.TryGetValue(humanPlayer.Id, out long lastHumanReviveMs))
+            {
+                int reviveCooldownMs = Math.Max(0, Game?.CustomGameOptions?.PhantomHeroesReviveCooldownMs ?? 60000);
+                if (nowMsRevive - lastHumanReviveMs < reviveCooldownMs)
+                    humanReviveOnCooldown = true;
+            }
 
             // Direct check on the caller first — this covers the case where the
             // human died far from the phantom (out of the 4000u sphere) or
             // during a scripted death animation where the AOI doesn't return
             // them from IterateEntitiesInVolume. The caller is the phantom's
             // owner, so we always know exactly who to look for.
-            if (this.IsDead && this.IsInWorld && this.Region == region)
+            if (humanReviveOnCooldown == false && this.IsDead && this.IsInWorld && this.Region == region)
             {
                 downed = this;
-                downedDistSq = Vector3.DistanceSquared2D(this.RegionLocation.Position, phantomPos);
+                downedDistSq = Vector3.DistanceSquared(this.RegionLocation.Position, phantomPos);
             }
-            else foreach (WorldEntity we in region.IterateEntitiesInVolume(reviveSphere, reviveCtx))
+            else
             {
-                if (we is not Avatar candidate) continue;
-                if (candidate.Id == phantom.Id) continue;
-                if (candidate.IsDead == false) continue;
-                // Real Avatar = has a live PlayerConnection. Phantoms don't
-                // revive each other because their owner Player has PlayerConnection=null.
-                Player candOwner = candidate.GetOwnerOfType<Player>();
-                if (candOwner == null || candOwner.PlayerConnection == null) continue;
-                float d = Vector3.DistanceSquared2D(candidate.RegionLocation.Position, phantomPos);
-                if (d < downedDistSq) { downedDistSq = d; downed = candidate; }
+                // Direct roster scan — this phantom's own squad, checked by
+                // ID with NO distance ceiling. A squad spread out fighting
+                // separate targets can end up farther apart than the
+                // PhantomReviveSearchRange sweep, which would otherwise make
+                // the last downed teammate invisible to everyone else.
+                Player rosterHost = this.PhantomHost;
+                if (rosterHost != null)
+                {
+                    var rosterIds = rosterHost.PhantomAvatarIds;
+                    for (int ri = 0; ri < rosterIds.Count; ri++)
+                    {
+                        ulong avId = rosterIds[ri];
+                        if (avId == phantom.Id) continue;
+                        Avatar candidate = Game.EntityManager.GetEntity<Avatar>(avId);
+                        if (candidate == null || candidate.IsDead == false || candidate.IsInWorld == false || candidate.Region != region) continue;
+
+                        float d = Vector3.DistanceSquared(candidate.RegionLocation.Position, phantomPos);
+                        if (d < downedDistSq) { downedDistSq = d; downed = candidate; }
+                    }
+                }
+
+                // Spatial sweep for OTHER real players (not this phantom's own
+                // roster, e.g. a party member) — kept bounded to
+                // PhantomReviveSearchRange since these are strangers to the
+                // squad, not something tracked directly by ID.
+                foreach (WorldEntity we in region.IterateEntitiesInVolume(reviveSphere, reviveCtx))
+                {
+                    if (we is not Avatar candidate) continue;
+                    if (candidate.Id == phantom.Id) continue;
+                    if (candidate.IsDead == false) continue;
+
+                    Player candOwner = candidate.GetOwnerOfType<Player>();
+                    if (candOwner == null || candOwner.PlayerConnection == null) continue;
+                    if (candOwner == humanPlayer && humanReviveOnCooldown) continue;
+
+                    float d = Vector3.DistanceSquared(candidate.RegionLocation.Position, phantomPos);
+                    if (d > PhantomReviveSearchRangeSq) continue;
+                    if (d < downedDistSq) { downedDistSq = d; downed = candidate; }
+                }
             }
             if (downed != null)
             {
+                PrototypeId reviveCastPowerRef = phantom.AvatarPrototype?.ResurrectOtherEntityPower ?? PrototypeId.Invalid;
+                float castRangeSq = GetReviveCastRangeSq(phantom, reviveCastPowerRef);
+                Player downedOwnerDiag = downed.GetOwnerOfType<Player>();
+                bool revivingHumanDiag = downedOwnerDiag != null && downedOwnerDiag.PlayerConnection != null;
+                string downedKindDiag = revivingHumanDiag ? "human" : "phantom";
+
                 // Walk to them if we're not in cast range yet.
-                if (downedDistSq > PhantomReviveCastRangeSq)
+                if (downedDistSq > castRangeSq)
                 {
                     var reviveLoco = phantom.Locomotor;
+                    bool followOk = false;
                     if (reviveLoco != null)
                     {
                         var reviveOpts = new LocomotionOptions { RepathDelay = TimeSpan.FromMilliseconds(250) };
-                        reviveLoco.FollowEntity(downed.Id, 50f, 50f, ref reviveOpts, false);
+                        followOk = reviveLoco.FollowEntity(downed.Id, 50f, 50f, ref reviveOpts, false);
+
+                        // If the navmesh genuinely can't path there (not just
+                        // "still walking"), force-leash next to the downed
+                        // target instead of silently retrying forever every
+                        // tick - same rescue the caller-leash logic already
+                        // uses for a stuck phantom.
+                        if (followOk == false
+                            && (reviveLoco.LastGeneratedPathResult == MHServerEmu.Games.Navi.NaviPathResult.Failed
+                             || reviveLoco.LastGeneratedPathResult == MHServerEmu.Games.Navi.NaviPathResult.FailedNaviMesh
+                             || reviveLoco.LastGeneratedPathResult == MHServerEmu.Games.Navi.NaviPathResult.FailedNoPathFound))
+                        {
+                            Vector3 targetPos = downed.RegionLocation.Position;
+                            Vector3 rescuePos = ChoosePhantomLeashPos(region, targetPos, rng, phantom.Bounds.Radius);
+                            try
+                            {
+                                reviveLoco.Stop();
+                                phantom.ChangeRegionPosition(rescuePos, null);
+                                s_phantomStuckTrack[phantom.Id] = (rescuePos, 0);
+                                PhantomLogger.Info($"[PhantomHero:Revive] {phantom} path to downed {downedKindDiag} {downed} failed (pathResult={reviveLoco.LastGeneratedPathResult}), force-leashed to {rescuePos.ToStringNames()}");
+                            }
+                            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Revive] rescue leash threw: {ex.Message}"); }
+                        }
                     }
+                    PhantomLogger.Info($"[PhantomHero:Revive] {phantom} approaching downed {downedKindDiag} {downed} dist={MathF.Sqrt(downedDistSq):F0} castRange={MathF.Sqrt(castRangeSq):F0} followOk={followOk}");
                 }
                 else
                 {
                     // In cast range — fire the built-in resurrect-other power.
-                    try { phantom.ResurrectOtherAvatar(downed); } catch { /* keep ticking */ }
+                    // bypassCooldown: true so this phantom can keep chain-
+                    // reviving the rest of a wiped squad instead of sitting on
+                    // its own resurrect power's cooldown after the first cast.
+                    // The human-specific cooldown enforced above (skipping
+                    // them as a candidate) is the real guardrail against
+                    // reviving the HUMAN too often - this bypass only affects
+                    // how fast a phantom can help OTHER downed teammates.
+                    try
+                    {
+                        var reviveResult = phantom.ResurrectOtherAvatar(downed, bypassCooldown: true);
+                        PhantomLogger.Info($"[PhantomHero:Revive] {phantom} -> {downedKindDiag} {downed} dist={MathF.Sqrt(downedDistSq):F0} castRange={MathF.Sqrt(castRangeSq):F0} result={reviveResult}");
+                        if (revivingHumanDiag && reviveResult == PowerUseResult.Success && downedOwnerDiag != null)
+                            s_phantomHumanReviveCooldown[downedOwnerDiag.Id] = nowMsRevive;
+                    }
+                    catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Revive] {phantom.Id:X} -> {downed.Id:X} failed: {ex.Message}"); }
                 }
                 return; // don't hunt while triaging a downed teammate
             }
@@ -632,29 +838,29 @@ namespace MHServerEmu.Games.Entities.Avatars
         }
 
         /// <summary>
-        /// Evenly-spaced idle position for this phantom in a ring around the
-        /// caller (radius PhantomIdleFollowStopDist), so a group of idle
+        /// Per-phantom idle position around the caller, so a group of idle
         /// phantoms spreads into a small formation instead of every phantom
-        /// converging on the same point. The slot is derived from this
-        /// phantom's current index within PhantomIds (list order) — stable
-        /// between ticks, only reshuffles on spawn/despawn.
+        /// converging on the same point. The slot is derived from a hash of
+        /// this phantom's own runtime id, not its index/order in the phantom
+        /// list, so it's stable across ticks and doesn't reshuffle the whole
+        /// formation whenever another phantom spawns or despawns.
         /// </summary>
         private Vector3 ComputePhantomFormationSlot(Avatar phantom, Region region)
         {
             Vector3 callerPos = RegionLocation.Position;
 
-            IReadOnlyList<ulong> ids = PhantomIds;
-            int count = ids.Count;
-            if (count == 0) return callerPos;
+            // Personal (angle, distance) derived from a hash of the phantom's
+            // runtime id, instead of an evenly-divided ring position — an
+            // even ring reads as a drill formation marching in lockstep.
+            // Because the angle is unique per phantom they never converge on
+            // the same slot (no stacking), and distance varies too so a
+            // squad spreads at natural depths rather than a perfect circle.
+            ulong id = phantom.Id;
+            ulong h = id * 2654435761UL ^ (id >> 16);
+            float angle = ((h & 0xFFFF) / 65535f) * MathF.PI * 2f;
+            float dist = PhantomIdleFollowStopDist + (((h >> 16) & 0xFF) / 255f - 0.5f) * 140f; // 130 .. 270
 
-            int index = 0;
-            for (int i = 0; i < count; i++)
-            {
-                if (ids[i] == phantom.Id) { index = i; break; }
-            }
-
-            float angle = MathF.PI * 2f * index / count;
-            Vector3 slot = callerPos + new Vector3(MathF.Cos(angle) * PhantomIdleFollowStopDist, MathF.Sin(angle) * PhantomIdleFollowStopDist, 0f);
+            Vector3 slot = callerPos + new Vector3(MathF.Cos(angle) * dist, MathF.Sin(angle) * dist, 0f);
             return region != null ? RegionLocation.ProjectToFloor(region, slot) : slot;
         }
 
@@ -2053,7 +2259,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             // clears its own list, so we need the ids before it runs.
             var ids = new List<ulong>(host.PhantomAvatarIds);
             int removed = host.PurgePhantoms();
-            foreach (ulong id in ids) { s_phantomAttackLogged.Remove(id); s_phantomLocoLogged.Remove(id); s_phantomNextAttackMs.Remove(id); s_phantomStuckTrack.Remove(id); s_phantomPowerStuckTrack.Remove(id); s_phantomNextDiagMs.Remove(id); s_phantomNextUltimateMs.Remove(id); PruneBlacklistFor(id); PrunePowerBlacklistFor(id); }
+            foreach (ulong id in ids) { s_phantomAttackLogged.Remove(id); s_phantomLocoLogged.Remove(id); s_phantomNextAttackMs.Remove(id); s_phantomStuckTrack.Remove(id); s_phantomPowerStuckTrack.Remove(id); s_phantomNextDiagMs.Remove(id); s_phantomNextUltimateMs.Remove(id); s_phantomDownedSinceMs.Remove(id); PruneBlacklistFor(id); PrunePowerBlacklistFor(id); }
             return removed;
         }
 
@@ -2123,6 +2329,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     s_phantomPowerStuckTrack.Remove(id);
                     s_phantomNextDiagMs.Remove(id);
                     s_phantomNextUltimateMs.Remove(id);
+                    s_phantomDownedSinceMs.Remove(id);
                     PruneBlacklistFor(id);
                     PrunePowerBlacklistFor(id);
                 }
@@ -2143,16 +2350,22 @@ namespace MHServerEmu.Games.Entities.Avatars
         //  Death handling (PhantomHeroesDespawnOnDeath)
         //
         //  Called from Avatar.OnKilled when IsPhantomHero is true and this
-        //  phantom's health reached 0. Phantoms have no client to drive a
-        //  revive flow, so instead of the normal downed-state / death-dialog
-        //  flow, they're despawned outright.
+        //  phantom's health reached 0. The base OnKilled call above already
+        //  ran normally (loot/mission/kill-message), so from here the
+        //  phantom sits in a genuine downed state (IsDead=true, IsInWorld
+        //  still true) for PhantomHeroesDownedGracePeriodMs - exactly like a
+        //  real player's own downed state - so the human or a teammate
+        //  phantom has a real window to revive them via ResurrectOtherAvatar
+        //  (see UpdatePhantomHunt's Priority-1 triage). If nobody revives
+        //  them before the grace period elapses, they're despawned.
         // ================================================================
 
         private readonly EventPointer<PhantomDeathEvent> _phantomDeathEvent = new();
 
         /// <summary>
-        /// Schedules despawn of this phantom on death. Deferred to a zero-
-        /// delay scheduled event rather than destroying synchronously here —
+        /// Schedules despawn of this phantom after the downed grace period,
+        /// giving a revive a real chance to land first. Deferred to a
+        /// scheduled event rather than destroying synchronously here —
         /// OnKilled runs mid-way through the engine's own Kill()/damage-
         /// application call chain (potentially inside an entity enumeration
         /// for AOE damage), and destroying `this` out from under that chain
@@ -2164,12 +2377,18 @@ namespace MHServerEmu.Games.Entities.Avatars
             var scheduler = Game?.GameEventScheduler;
             if (scheduler == null) return;
             if (_phantomDeathEvent.IsValid) return;
-            scheduler.ScheduleEvent(_phantomDeathEvent, TimeSpan.Zero, _phantomPendingEvents);
+            int graceMs = Math.Max(0, Game?.CustomGameOptions?.PhantomHeroesDownedGracePeriodMs ?? 30000);
+            scheduler.ScheduleEvent(_phantomDeathEvent, TimeSpan.FromMilliseconds(graceMs), _phantomPendingEvents);
             _phantomDeathEvent.Get().Initialize(this);
         }
 
         private void OnPhantomDeathDespawn()
         {
+            // Revived during the grace period - nothing to despawn. The
+            // downed-tracking cleanup (s_phantomDownedSinceMs etc.) already
+            // happened in OnPhantomTick's revive-detection branch.
+            if (IsDead == false) return;
+
             Player phantomPlayerEntity = GetOwnerOfType<Player>();
             ulong myId = Id;
 
@@ -2188,6 +2407,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             s_phantomPowerStuckTrack.Remove(myId);
             s_phantomNextDiagMs.Remove(myId);
             s_phantomNextUltimateMs.Remove(myId);
+            s_phantomDownedSinceMs.Remove(myId);
             PruneBlacklistFor(myId);
             PrunePowerBlacklistFor(myId);
 

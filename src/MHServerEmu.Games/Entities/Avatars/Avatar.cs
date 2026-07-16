@@ -480,26 +480,42 @@ namespace MHServerEmu.Games.Entities.Avatars
             return success;
         }
 
-        public void ResurrectOtherAvatar(Avatar targetAvatar)
+        /// <summary>
+        /// Resurrects a downed avatar. bypassCooldown lets AI-driven revives (Phantom Heroes)
+        /// skip the resurrect power's own cooldown so one reviver isn't stuck waiting it out
+        /// between downed teammates - a real player's own revive click never sets this. Returns
+        /// the actual PowerUseResult (or null for the early-exit guards above, which aren't
+        /// activation attempts at all) so callers can log why an attempt didn't land instead of
+        /// it silently no-oping.
+        /// </summary>
+        public PowerUseResult? ResurrectOtherAvatar(Avatar targetAvatar, bool bypassCooldown = false)
         {
             if (targetAvatar == null || targetAvatar.IsDead == false)
-                return;
+                return null;
 
             if (IsInWorld == false)
-                return;
+                return null;
 
             if (targetAvatar.Id == Properties[PropertyEnum.PendingResurrectEntityId])
-                return;
+                return null;
 
             PrototypeId resurrectOtherEntityPower = AvatarPrototype.ResurrectOtherEntityPower;
-            if (!Verify.IsTrue(resurrectOtherEntityPower != PrototypeId.Invalid)) return;
+            if (!Verify.IsTrue(resurrectOtherEntityPower != PrototypeId.Invalid)) return null;
+
+            if (bypassCooldown)
+            {
+                Properties.RemoveProperty(new(PropertyEnum.PowerCooldownStartTime, resurrectOtherEntityPower));
+                Properties.RemoveProperty(new(PropertyEnum.PowerCooldownDuration, resurrectOtherEntityPower));
+            }
 
             PowerActivationSettings settings = new(targetAvatar.Id, targetAvatar.RegionLocation.Position, RegionLocation.Position);
             settings.Flags |= PowerActivationSettingsFlags.NotifyOwner;
 
-            if (ActivatePower(resurrectOtherEntityPower, ref settings) == PowerUseResult.Success)
+            PowerUseResult result = ActivatePower(resurrectOtherEntityPower, ref settings);
+            if (result == PowerUseResult.Success)
                 Properties[PropertyEnum.PendingResurrectEntityId] = targetAvatar.Id;
-;        }
+            return result;
+        }
 
         public bool DoDeathRelease(DeathReleaseRequestType requestType)
         {
@@ -608,8 +624,30 @@ namespace MHServerEmu.Games.Entities.Avatars
 
             if (ultimateOwner is Avatar && ultimateOwner.Properties[PropertyEnum.PendingResurrectEntityId] == Id)
             {
-                // Ask this player for confirmation if this is a resurrect from another player.
                 ultimateOwner.Properties.RemoveProperty(PropertyEnum.PendingResurrectEntityId);
+
+                // Phantoms have no client to drive the normal accept/decline
+                // round-trip (ResurrectRequest below sends
+                // NetMessageOnResurrectRequest and waits for the target's
+                // client to answer with NetMessageRequestDeathRelease, which
+                // is what actually calls DoDeathRelease -> Resurrect() and
+                // clears IsDead). Without this branch, ActivatePower on the
+                // reviver's resurrect-other power reports Success every time
+                // (the cast itself is genuinely valid) but the phantom's
+                // health/IsDead never actually changes, since real
+                // resurrection only happens inside that client-triggered
+                // DoDeathRelease call - the reviver just keeps re-casting on
+                // a target that can never actually come back up. Apply
+                // immediately instead, simulating an instant accept - same
+                // DoDeathRelease(Corpse) path a real player's "accept" would
+                // trigger (Resurrect() + no relocation, revive in place).
+                if (IsPhantomHero)
+                {
+                    DoDeathRelease(DeathReleaseRequestType.Corpse);
+                    return;
+                }
+
+                // Ask this player for confirmation if this is a resurrect from another player.
                 ResurrectRequest(ultimateOwner.Id);
             }
             else

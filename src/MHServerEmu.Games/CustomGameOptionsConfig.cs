@@ -50,6 +50,8 @@ namespace MHServerEmu.Games
         public bool PhantomHeroesDespawnOnDeath { get; private set; } = true;
         public int PhantomHeroesMaxActive { get; private set; } = 9;
         public string PhantomGearItemBlacklist { get; private set; } = "";
+        public int PhantomHeroesDownedGracePeriodMs { get; private set; } = 30000;
+        public int PhantomHeroesReviveCooldownMs { get; private set; } = 60000;
 
         // Throwable Options
         public bool DisableInteractiveThrowables { get; private set; } = true;
