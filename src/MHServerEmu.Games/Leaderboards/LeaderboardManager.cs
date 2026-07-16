@@ -59,6 +59,22 @@ namespace MHServerEmu.Games.Leaderboards
         {
             if (LeaderboardsEnabled == false) return;
 
+            // Phantom Heroes are synthetic Players minted at runtime with no
+            // persistent account (see Player.PhantomCreatorId) - without
+            // this, a phantom's own kills/actions get recorded under its own
+            // throwaway DbGuid, leaving permanent zombie participant rows in
+            // the leaderboard DB that can never resolve a real player name
+            // (GetPlayerNameById warns on every one, every server startup).
+            // Redirect to the human creator's own LeaderboardManager instead,
+            // same credit-substitution pattern already used for loot/
+            // mission/kill credit (Player.ResolveCreditPlayer).
+            Player creditPlayer = Player.ResolveCreditPlayer(Owner);
+            if (creditPlayer != Owner)
+            {
+                creditPlayer?.LeaderboardManager.OnScoringEvent(scoringEvent, entityId);
+                return;
+            }
+
             if (_cachedActives == false)
                 RebuildActivesCache();
 
