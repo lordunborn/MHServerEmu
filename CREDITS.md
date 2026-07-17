@@ -38,7 +38,9 @@ Some of the custom features in this fork are based on ideas and implementations 
 
 - [TruSkillzzRuns](https://github.com/TruSkillzzRuns/MHServerEmu) — Phantom Heroes.
 
-- [mtzimas92](https://github.com/mtzimas92/MHServerEmu) — the `!stash` command and the `DayOfWeekRotation` change.
+- [mtzimas92](https://github.com/mtzimas92/MHServerEmu) — this repository's direct parent fork. The `!stash` command and the `DayOfWeekRotation` change, plus the features inherited from his fork: the gift service, the `!commendations` and `!ultron` commands, the `!player bring`/`!player goto` admin commands, and the admin-only mission reset.
+
+- Doods (MHServerEmu Discord) — the Patch Manager array/prototype extensions, integrated via mtzimas92's fork.
 
 - [Omega](MHServerEmu Discord) — the original creation of the Live-Tuning-driven leaderboard automation.
 

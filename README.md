@@ -8,7 +8,9 @@ We post development progress reports on our [blog](https://crypto137.github.io/M
 
 ## What's Different in This Fork
 
-This is a fork of [Crypto137/MHServerEmu](https://github.com/Crypto137/MHServerEmu) with the following custom, non-upstream additions:
+This repository's lineage is [Crypto137/MHServerEmu](https://github.com/Crypto137/MHServerEmu) → [mtzimas92/MHServerEmu](https://github.com/mtzimas92/MHServerEmu) → this fork. It stays synced with the original upstream project and carries custom, non-upstream additions from both this fork and mtzimas92's.
+
+### Added in this fork
 
 - **Phantom Heroes** — spawn server-side AI-controlled hero companions (`!phantom spawn`) that fight alongside a solo player as a synthetic party, up to 9 active phantoms per player (configurable). Includes idle-follow formation locomotion, level-scaled damage and gear (armor/artifact pool restrictions, a configurable bad-item blacklist, level-scaled relic stacks), ultimates and charge-release power support, death/despawn handling, and full party-HUD integration (health bars, leave/kick/disband/convert-to-raid). Based on and adapted from [TruSkillzzRuns's fork](https://github.com/TruSkillzzRuns/MHServerEmu).
 
@@ -29,6 +31,22 @@ This is a fork of [Crypto137/MHServerEmu](https://github.com/Crypto137/MHServerE
 - **Changed `DayOfWeekRotation`** — changed LiveTuning event rotation to actually cycle weekly on the configured weekday, instead of firing all rotation events simultaneously on the month's 5th occurrence. Based on [mtzimas92's fork](https://github.com/mtzimas92/MHServerEmu).
 
 - **Stackable loot boxes and Fortune Cards** — chests and cards like Midtown Madness Chests, Odin's Bounty, Worldstone Caches/Giftboxes, Reliquaries, and Fortune Cards can now stack in inventory instead of taking a separate slot each, with the level requirement removed so stacks aren't locked to the level they first dropped at. Each individual item opened from a stack still rolls its own independent, level-appropriate reward rather than repeating whatever the first one in the stack rolled. Based on a fix contributed by @sillyotter in the MHServerEmu Discord.
+
+- **Stability fixes and admin tooling** — fixed a null-reference crash in `Teleporter.CanTeleport()` that could take down a whole game instance on the CH0906 Loki boss region, added admin debug commands that dump item, power, and orb prototype data to JSON (`!debug dumpitems` / `dumppower` / `listorbs`), and tuned several server config defaults (Eternity Splinter cooldown/stacking, credit chest conversion, account binding off).
+
+### Inherited from mtzimas92's fork
+
+- **Gift service** — delivers configured gifts to players when they log in, driven by simple JSON files in the server's `Data` folder: `PendingItems.json` for global gifts every player receives, and `PlayerSpecificItems.json` for gifts targeted to a specific account by email. Gifts can be one-time or daily-claimable, with optional availability windows, and claims are tracked per player so nothing is delivered twice.
+
+- **`!commendations` command** — shows the player's Demonfire commendation drop progress (Hero and Protector commendation channels, current count and drops remaining).
+
+- **`!ultron` command** — teleports the player directly into the Ultron Raid at Cosmic difficulty.
+
+- **`!player bring` / `!player goto`** — admin commands to teleport another player to your location, or yourself to theirs.
+
+- **Admin-only mission reset** — the mission reset command is restricted to admin accounts.
+
+- **Patch Manager extensions** — support for array-valued and prototype-valued entries in JSON prototype patches (originally created by Doods). This powers several of this fork's own data patches, including the stackable-boxes patch.
 
 See [CREDITS.md](./CREDITS.md) for full attribution.
 
