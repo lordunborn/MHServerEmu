@@ -2178,7 +2178,14 @@ namespace MHServerEmu.Games.Entities
                     foreach (ulong phantomAvatarId in humanCaster.PhantomAvatarIds)
                     {
                         Avatar phantomAvatar = entityManager.GetEntity<Avatar>(phantomAvatarId);
-                        if (phantomAvatar != null && phantomAvatar.IsInWorld)
+
+                        // A downed phantom must only come back via a real revive
+                        // (Avatar.ResurrectOtherAvatar) - that path activates an actual
+                        // resurrect power, which is what drives the client-side downed
+                        // pose/icon cleanup correctly. Healing Health back up directly
+                        // here bypasses that entirely, leaving stale downed visuals
+                        // (stuck animation, death's-head icon) that only clear on zone.
+                        if (phantomAvatar != null && phantomAvatar.IsInWorld && phantomAvatar.IsDead == false)
                             phantomAvatar.Properties[PropertyEnum.Health] = phantomAvatar.Properties[PropertyEnum.HealthMax];
                     }
                 }
