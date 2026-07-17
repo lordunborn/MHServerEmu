@@ -923,7 +923,16 @@ namespace MHServerEmu.Games.Powers
                 recipientPlayers.Add(player);
             }
 
-            int level = lootTableContext.UseItemLevelForLootRoll ? Properties[PropertyEnum.ItemLevel] : Owner.CharacterLevel;
+            // For consumable containers, always use Owner.CharacterLevel (current active avatar)
+            // regardless of UseItemLevelForLootRoll, so stacks don't roll at a stale drop level.
+            bool useItemLevel = lootTableContext.UseItemLevelForLootRoll;
+            if (useItemLevel && settings.ItemSourceId != Entity.InvalidId)
+            {
+                Item sourceItem = Game.EntityManager.GetEntity<Item>(settings.ItemSourceId);
+                if (sourceItem?.ItemPrototype?.IsConsumableContainer() == true)
+                    useItemLevel = false;
+            }
+            int level = useItemLevel ? Properties[PropertyEnum.ItemLevel] : Owner.CharacterLevel;
 
             tables.Add((lootTableContext.LootTable, lootTableContext.PlaceLootInGeneralInventory ? LootActionType.Give : LootActionType.Spawn));
 

@@ -42,6 +42,8 @@ Some of the custom features in this fork are based on ideas and implementations 
 
 - [Omega](MHServerEmu Discord) — the original creation of the Live-Tuning-driven leaderboard automation.
 
+- [sillyotter](MHServerEmu Discord) — the fix that lets loot boxes and Fortune Cards stack, with each item in a stack still rolling its own independent, level-appropriate reward.
+
 ## Special Thanks
 
 - Denys Smirnov for his [protod](https://github.com/dennwc/protod) tool that has been invaluable for reverse engineering the network protocol.

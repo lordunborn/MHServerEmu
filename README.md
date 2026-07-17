@@ -28,6 +28,8 @@ This is a fork of [Crypto137/MHServerEmu](https://github.com/Crypto137/MHServerE
 
 - **Changed `DayOfWeekRotation`** — changed LiveTuning event rotation to actually cycle weekly on the configured weekday, instead of firing all rotation events simultaneously on the month's 5th occurrence. Based on [mtzimas92's fork](https://github.com/mtzimas92/MHServerEmu).
 
+- **Stackable loot boxes and Fortune Cards** — chests and cards like Midtown Madness Chests, Odin's Bounty, Worldstone Caches/Giftboxes, Reliquaries, and Fortune Cards can now stack in inventory instead of taking a separate slot each, with the level requirement removed so stacks aren't locked to the level they first dropped at. Each individual item opened from a stack still rolls its own independent, level-appropriate reward rather than repeating whatever the first one in the stack rolled. Based on a fix contributed by @sillyotter in the MHServerEmu Discord.
+
 See [CREDITS.md](./CREDITS.md) for full attribution.
 
 ## Download

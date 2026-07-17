@@ -10,6 +10,7 @@ using MHServerEmu.Games.Events;
 using MHServerEmu.Games.GameData.Calligraphy;
 using MHServerEmu.Games.GameData.Tables;
 using MHServerEmu.Games.Loot;
+using MHServerEmu.Games.Powers;
 using MHServerEmu.Games.Properties;
 using MHServerEmu.Games.Properties.Evals;
 
@@ -112,6 +113,40 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         [DoNotCopy]
         public bool IsGem { get => IsChildBlueprintOf(GameDatabase.LootGlobalsPrototype.GemBlueprint); }
+
+        /// <summary>
+        /// Returns true if this item is a consumable container that opens into loot (i.e. has a
+        /// ReplaceSelfLootTable on-use action, or a UsePower on-use action whose granted power fires
+        /// SpawnLootTable) - Reliquaries, Fortune Cards, and chests like Midtown Madness/Odin's Bounty.
+        /// Used to force level-agnostic, re-rolled-per-open behavior so stacked copies of these items
+        /// don't all resolve to the same baked-in reward tier or a stale drop level.
+        /// </summary>
+        public bool IsConsumableContainer()
+        {
+            if (ActionsTriggeredOnItemEvent == null || ActionsTriggeredOnItemEvent.Choices.IsNullOrEmpty())
+                return false;
+
+            foreach (ItemActionBasePrototype actionProto in ActionsTriggeredOnItemEvent.Choices)
+            {
+                if (actionProto is ItemActionReplaceSelfLootTablePrototype)
+                    return true;
+
+                if (actionProto is ItemActionUsePowerPrototype usePowerProto && usePowerProto.Power != PrototypeId.Invalid)
+                {
+                    PowerPrototype powerProto = usePowerProto.Power.As<PowerPrototype>();
+                    if (powerProto?.ActionsTriggeredOnPowerEvent == null)
+                        continue;
+
+                    foreach (PowerEventActionPrototype powerEventActionProto in powerProto.ActionsTriggeredOnPowerEvent)
+                    {
+                        if (powerEventActionProto.EventAction == PowerEventActionType.SpawnLootTable)
+                            return true;
+                    }
+                }
+            }
+
+            return false;
+        }
 
         public override PrototypeId GetPortalTarget()
         {

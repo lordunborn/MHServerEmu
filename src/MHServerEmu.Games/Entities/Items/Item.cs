@@ -52,6 +52,11 @@ namespace MHServerEmu.Games.Entities.Items
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
 
+        // Seed source for re-rolling a consumable container's weighted on-use action fresh on every
+        // open (see InteractWithAvatar()) - shared/global rather than per-item so stacked copies (which
+        // share one entity and one ItemEventActionIndex) don't all resolve to the same baked-in action.
+        private static int _containerOpenCounter = System.Environment.TickCount;
+
         private ItemSpec _itemSpec = new();
         private List<AffixPropertiesCopyEntry> _affixProperties = new();
 
@@ -1108,10 +1113,29 @@ namespace MHServerEmu.Games.Entities.Items
             {
                 if (itemProto.ActionsTriggeredOnItemEvent.PickMethod == PickMethod.PickWeight)
                 {
-                    // Do just the action that was picked when this item was rolled
                     ItemActionBasePrototype[] choices = itemProto.ActionsTriggeredOnItemEvent.Choices;
 
-                    int actionIndex = Properties[PropertyEnum.ItemEventActionIndex];
+                    int actionIndex;
+                    if (itemProto.IsConsumableContainer())
+                    {
+                        // Re-roll the weighted action index fresh on every individual open instead of
+                        // reusing the entity's baked-in ItemEventActionIndex - otherwise every unit
+                        // consumed from a stack (which shares one entity) would resolve to whichever
+                        // reward tier happened to get picked when the stack's representative item
+                        // was originally rolled.
+                        int seed = System.Threading.Interlocked.Increment(ref _containerOpenCounter);
+                        Picker<int> actionPicker = new(new GRandom(seed));
+                        for (int i = 0; i < choices.Length; i++)
+                            if (choices[i].Weight > 0)
+                                actionPicker.Add(i, choices[i].Weight);
+                        actionPicker.Pick(out actionIndex);
+                    }
+                    else
+                    {
+                        // Do just the action that was picked when this item was rolled
+                        actionIndex = Properties[PropertyEnum.ItemEventActionIndex];
+                    }
+
                     if (!Verify.IsTrue(actionIndex >= 0 && actionIndex < choices.Length)) return false;
 
                     Prototype choiceProto = choices[actionIndex];
