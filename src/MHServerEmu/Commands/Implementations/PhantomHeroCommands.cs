@@ -78,7 +78,11 @@ namespace MHServerEmu.Commands.Implementations
 
             // Numeric path: spawn N random heroes. Default 4 — a party is 5
             // total INCLUDING the human caller, not 5 phantoms plus the caller.
-            count = @params.Length >= 1 ? System.Math.Clamp(count, 1, 50) : 4;
+            // Clamp against the real active-phantom cap (PhantomHeroesMaxActive) rather than an
+            // arbitrary ceiling, so the command can't accept a count that's guaranteed to partially
+            // fail with "phantom cap reached" errors.
+            int maxActive = pc.Player.Game.CustomGameOptions.PhantomHeroesMaxActive;
+            count = @params.Length >= 1 ? System.Math.Clamp(count, 1, maxActive) : 4;
 
             int spawned = 0, failed = 0;
             var firstError = string.Empty;

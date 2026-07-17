@@ -21,6 +21,7 @@ namespace MHServerEmu.WebFrontend
 
         private readonly WebService _webService;
         private List<string> _dashboardEndpoints;
+        private List<string> _newsEndpoints;
 
         public GameServiceState State { get; private set; } = GameServiceState.Created;
 
@@ -56,7 +57,10 @@ namespace MHServerEmu.WebFrontend
                 WebApiKeyManager.Instance.LoadKeys();
 
                 if (config.EnableDashboard)
-                    InitializeWebDashboard(config.DashboardFileDirectory, config.DashboardUrlPath);
+                    _dashboardEndpoints = InitializeStaticSite("web dashboard", config.DashboardFileDirectory, config.DashboardUrlPath);
+
+                if (config.EnableNewsPage)
+                    _newsEndpoints = InitializeStaticSite("news page", config.NewsFileDirectory, config.NewsUrlPath);
             }
         }
 
@@ -102,20 +106,18 @@ namespace MHServerEmu.WebFrontend
 
         public void ReloadDashboard()
         {
-            if (_dashboardEndpoints == null)
-                return;
-
-            foreach (string localPath in _dashboardEndpoints)
-            {
-                StaticFileWebHandler fileHandler = _webService.GetHandler(localPath) as StaticFileWebHandler;
-                fileHandler?.Load();
-            }
+            ReloadStaticSite(_dashboardEndpoints);
         }
 
         public void ReloadAddGPage()
         {
             AddGWebHandler addGHandler = _webService.GetHandler("/MTXStore/AddG") as AddGWebHandler;
             addGHandler?.Load();
+        }
+
+        public void ReloadNews()
+        {
+            ReloadStaticSite(_newsEndpoints);
         }
 
         private void InitializeWebBackend()
@@ -138,23 +140,39 @@ namespace MHServerEmu.WebFrontend
             _webService.RegisterHandler("/Metrics/Performance", new MetricsPerformanceWebHandler());
         }
 
-        private void InitializeWebDashboard(string dashboardDirectoryName, string localPath)
+        private void ReloadStaticSite(List<string> endpoints)
         {
-            string dashboardDirectory = Path.Combine(FileHelper.DataDirectory, "Web", dashboardDirectoryName);
-            if (Directory.Exists(dashboardDirectory) == false)
-            {
-                Logger.Warn($"InitializeWebDashboard(): Dashboard directory '{dashboardDirectoryName}' does not exist");
+            if (endpoints == null)
                 return;
+
+            foreach (string localPath in endpoints)
+            {
+                StaticFileWebHandler fileHandler = _webService.GetHandler(localPath) as StaticFileWebHandler;
+                fileHandler?.Load();
+            }
+        }
+
+        /// <summary>
+        /// Registers a directory of static files (an index.html plus any other assets) under the
+        /// given URL path. Used for both the admin web dashboard and the in-game news page.
+        /// </summary>
+        private List<string> InitializeStaticSite(string siteLabel, string directoryName, string localPath)
+        {
+            string siteDirectory = Path.Combine(FileHelper.DataDirectory, "Web", directoryName);
+            if (Directory.Exists(siteDirectory) == false)
+            {
+                Logger.Warn($"InitializeStaticSite(): Directory '{directoryName}' does not exist for {siteLabel}");
+                return null;
             }
 
-            string indexFilePath = Path.Combine(dashboardDirectory, "index.html");
+            string indexFilePath = Path.Combine(siteDirectory, "index.html");
             if (File.Exists(indexFilePath) == false)
             {
-                Logger.Warn($"InitializeWebDashboard(): Index file not found at '{indexFilePath}'");
-                return;
+                Logger.Warn($"InitializeStaticSite(): Index file not found at '{indexFilePath}' for {siteLabel}");
+                return null;
             }
 
-            _dashboardEndpoints = new();
+            List<string> endpoints = new();
 
             // Make sure local path starts and ends with slashes.
             if (localPath.StartsWith('/') == false)
@@ -164,20 +182,20 @@ namespace MHServerEmu.WebFrontend
                 localPath = $"{localPath}/";
 
             _webService.RegisterHandler(localPath, new StaticFileWebHandler(indexFilePath));
-            _dashboardEndpoints.Add(localPath);
+            endpoints.Add(localPath);
 
-            // Add redirect for requests to our dashboard "directory" that don't have trailing slashes.
+            // Add redirect for requests to our site "directory" that don't have trailing slashes.
             if (localPath.Length > 1)
             {
                 string localPathRedirect = localPath[..^1];
                 _webService.RegisterHandler(localPathRedirect, new TrailingSlashRedirectWebHandler());
-                _dashboardEndpoints.Add(localPathRedirect);
+                endpoints.Add(localPathRedirect);
             }
 
             // Register other files.
-            foreach (string filePath in Directory.GetFiles(dashboardDirectory, "*", SearchOption.AllDirectories))
+            foreach (string filePath in Directory.GetFiles(siteDirectory, "*", SearchOption.AllDirectories))
             {
-                string relativeFilePath = Path.GetRelativePath(dashboardDirectory, filePath);
+                string relativeFilePath = Path.GetRelativePath(siteDirectory, filePath);
 
                 if (string.Equals(relativeFilePath, "index.html", StringComparison.InvariantCultureIgnoreCase))
                     continue;
@@ -185,10 +203,11 @@ namespace MHServerEmu.WebFrontend
                 string subFilePath = $"{localPath}{relativeFilePath.Replace('\\', '/')}";
 
                 _webService.RegisterHandler(subFilePath, new StaticFileWebHandler(filePath));
-                _dashboardEndpoints.Add(subFilePath);
+                endpoints.Add(subFilePath);
             }
 
-            Logger.Info($"Initialized web dashboard at {localPath}");
+            Logger.Info($"Initialized {siteLabel} at {localPath}");
+            return endpoints;
         }
     }
 }

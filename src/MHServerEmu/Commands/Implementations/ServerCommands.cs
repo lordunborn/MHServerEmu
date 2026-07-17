@@ -85,6 +85,17 @@ namespace MHServerEmu.Commands.Implementations
             return string.Empty;
         }
 
+        [Command("reloadnews")]
+        [CommandDescription("Reloads the in-game news page.")]
+        [CommandUserLevel(AccountUserLevel.Admin)]
+        [CommandInvokerType(CommandInvokerType.ServerConsole)]
+        public string ReloadNews(string[] @params, NetClient client)
+        {
+            WebFrontendService webFrontend = ServerManager.Instance.GetGameService(GameServiceType.WebFrontend) as WebFrontendService;
+            webFrontend?.ReloadNews();
+            return string.Empty;
+        }
+
         [Command("reloadaddg")]
         [CommandDescription("Reloads the Add G page.")]
         [CommandUserLevel(AccountUserLevel.Admin)]

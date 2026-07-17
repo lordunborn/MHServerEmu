@@ -13,5 +13,8 @@ namespace MHServerEmu.WebFrontend
         public bool EnableDashboard { get; private set; } = true;
         public string DashboardFileDirectory { get; private set; } = "Dashboard";
         public string DashboardUrlPath { get; private set; } = "/";
+        public bool EnableNewsPage { get; private set; } = false;
+        public string NewsFileDirectory { get; private set; } = "News";
+        public string NewsUrlPath { get; private set; } = "/News/";
     }
 }
