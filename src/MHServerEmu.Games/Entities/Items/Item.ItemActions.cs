@@ -189,6 +189,11 @@ namespace MHServerEmu.Games.Entities.Items
 
         private bool DoItemActionReplaceSelfLootTable(LootTablePrototype lootTableProto, bool useAvatarLevel, Player player, Avatar avatar)
         {
+            // For consumable containers, always use avatar level so stacks don't roll at a stale
+            // baked-in drop level (e.g. a box picked up at level 20 opened later at level 60).
+            if (ItemPrototype?.IsConsumableContainer() == true)
+                useAvatarLevel = true;
+
             using LootInputSettings inputSettings = ObjectPoolManager.Instance.Get<LootInputSettings>();
             inputSettings.Initialize(LootContext.MysteryChest, player, null, useAvatarLevel ? avatar.CharacterLevel : Properties[PropertyEnum.ItemLevel]);
 

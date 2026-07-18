@@ -16,6 +16,7 @@ using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.Loot;
 using MHServerEmu.Games.Network;
+using MHServerEmu.Games.Populations;
 using MHServerEmu.Games.Powers.Conditions;
 using MHServerEmu.Games.Properties;
 using MHServerEmu.Games.Regions;
@@ -923,7 +924,16 @@ namespace MHServerEmu.Games.Powers
                 recipientPlayers.Add(player);
             }
 
-            int level = lootTableContext.UseItemLevelForLootRoll ? Properties[PropertyEnum.ItemLevel] : Owner.CharacterLevel;
+            // For consumable containers, always use Owner.CharacterLevel (current active avatar)
+            // regardless of UseItemLevelForLootRoll, so stacks don't roll at a stale drop level.
+            bool useItemLevel = lootTableContext.UseItemLevelForLootRoll;
+            if (useItemLevel && settings.ItemSourceId != Entity.InvalidId)
+            {
+                Item sourceItem = Game.EntityManager.GetEntity<Item>(settings.ItemSourceId);
+                if (sourceItem?.ItemPrototype?.IsConsumableContainer() == true)
+                    useItemLevel = false;
+            }
+            int level = useItemLevel ? Properties[PropertyEnum.ItemLevel] : Owner.CharacterLevel;
 
             tables.Add((lootTableContext.LootTable, lootTableContext.PlaceLootInGeneralInventory ? LootActionType.Give : LootActionType.Spawn));
 
@@ -1268,8 +1278,21 @@ namespace MHServerEmu.Games.Powers
             AgentPrototype agentProto = target.AgentPrototype;
             if (!Verify.IsNotNull(agentProto)) return;
 
-            // Check if there is a power to steal
-            StealablePowerInfoPrototype stealablePowerInfoProto = agentProto.StealablePower.As<StealablePowerInfoPrototype>();
+            // Incursion Mod: Steal Powers from their spoofed Avatars, not their "combat body" base
+            StealablePowerInfoPrototype stealablePowerInfoProto;
+            if (Game.IncursionManager != null && Game.IncursionManager.TryGetStealablePowerInfo(targetId, out PrototypeId incursionStealRef))
+            {
+                if (incursionStealRef == PrototypeId.Invalid)
+                    return;
+
+                stealablePowerInfoProto = incursionStealRef.As<StealablePowerInfoPrototype>();
+            }
+            else
+            {
+                // Check if there is a power to steal
+                stealablePowerInfoProto = agentProto.StealablePower.As<StealablePowerInfoPrototype>();
+            }
+
             if (stealablePowerInfoProto == null)
                 return;
 

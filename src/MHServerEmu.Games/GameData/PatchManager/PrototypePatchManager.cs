@@ -235,7 +235,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
             if (elementType == null || IsTypeCompatible(elementType, entryType, value.ValueType) == false)
                 throw new InvalidOperationException($"Type {value.ValueType} is not assignable to {elementType?.Name}.");
 
-            object converted = ConvertValue(valueEntry, elementType);
+            object converted = GetElementValue(valueEntry, elementType);
             array.SetValue(converted, index);
         }
 

@@ -1,0 +1,68 @@
+{
+  "_comment": "Rogue Encounter / Nemesis system spawn pools. Every name below is an incursion enemy SHORTHAND (e.g. 'Loki', 'GreenGoblin') - the same identifiers used by IncursionExcludeEnemies and !incursion commands, drawn from the existing 63-hero incursion roster, not raw prototype paths. Invalid names are skipped with a startup warning, not a crash - safe to hand-edit and reload with '!incursion roguegallery reload'. heroRogues/villainHunters are both optional per-name overrides: a hero without a heroRogues entry falls back to fallbackVillainPool, and a villain-flavored avatar without a villainHunters entry falls back to the general 'everyone not villain-flavored' pool.",
+
+  "fallbackVillainPool": [
+    "Loki",
+    "Magneto",
+    "DrDoom",
+    "GreenGoblin",
+    "Carnage",
+    "Ultron",
+    "Taskmaster",
+    "Venom",
+    "Elektra",
+    "BlackCat",
+    "Juggernaut"
+  ],
+
+  "heroRogues": {
+    "Spiderman": ["GreenGoblin", "Venom", "Carnage", "BlackCat"],
+    "Thor": ["Loki"],
+    "IronMan": ["Ultron"],
+    "CaptainAmerica": ["Taskmaster"],
+    "Daredevil": ["Elektra"],
+    "Cyclops": ["Magneto", "Juggernaut"],
+    "Wolverine": ["Magneto", "Juggernaut"],
+    "Storm": ["Magneto", "Juggernaut"],
+    "Iceman": ["Magneto", "Juggernaut"],
+    "Beast": ["Magneto", "Juggernaut"],
+    "Rogue": ["Magneto", "Juggernaut"],
+    "KittyPryde": ["Magneto", "Juggernaut"],
+    "Nightcrawler": ["Magneto", "Juggernaut"],
+    "Colossus": ["Magneto", "Juggernaut"],
+    "EmmaFrost": ["Magneto", "Juggernaut"],
+    "Psylocke": ["Magneto", "Juggernaut"],
+    "Gambit": ["Magneto", "Juggernaut"],
+    "Magik": ["Magneto", "Juggernaut"],
+    "JeanGrey": ["Magneto", "Juggernaut"],
+    "MrFantastic": ["DrDoom"],
+    "InvisibleWoman": ["DrDoom"],
+    "HumanTorch": ["DrDoom"],
+    "Thing": ["DrDoom"]
+  },
+
+  "villainFlavoredAvatars": [
+    "Loki",
+    "Magneto",
+    "DrDoom",
+    "GreenGoblin",
+    "Carnage",
+    "Ultron",
+    "Taskmaster",
+    "Venom",
+    "Elektra",
+    "BlackCat",
+    "Juggernaut"
+  ],
+
+  "villainHunters": {
+    "GreenGoblin": ["Spiderman"],
+    "Venom": ["Spiderman"],
+    "Carnage": ["Spiderman", "Venom"],
+    "Loki": ["Thor"],
+    "DrDoom": ["MrFantastic", "InvisibleWoman", "HumanTorch", "Thing"],
+    "Magneto": ["Cyclops", "Wolverine", "Storm", "Beast", "JeanGrey"],
+    "Juggernaut": ["Cyclops", "Wolverine", "Colossus"],
+    "Elektra": ["Daredevil"]
+  }
+}
