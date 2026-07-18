@@ -5,6 +5,7 @@ using MHServerEmu.Core.System.Random;
 using MHServerEmu.Core.VectorMath;
 using MHServerEmu.Games.Entities;
 using MHServerEmu.Games.Entities.Avatars;
+using MHServerEmu.Games.Entities.IncursionEntity;
 using MHServerEmu.Games.Entities.Inventories;
 using MHServerEmu.Games.Entities.Items;
 using MHServerEmu.Games.GameData;
@@ -54,6 +55,8 @@ namespace MHServerEmu.Games.Loot
 
             if (lootResultSummary.HasAnyResult == false) return;
 
+            LogIncursionLootIfApplicable(inputSettings, lootResultSummary);
+
             SpawnLootFromSummary(lootResultSummary, inputSettings, recipientId);
         }
 
@@ -64,7 +67,28 @@ namespace MHServerEmu.Games.Loot
 
             if (lootResultSummary.HasAnyResult == false) return;
 
+            LogIncursionLootIfApplicable(inputSettings, lootResultSummary);
+
             GiveLootFromSummary(lootResultSummary, inputSettings.Player);
+        }
+
+        /// <summary>
+        /// Logs the full rolled contents (items with rarity, agents, credits, currencies, etc.) of a
+        /// loot table roll whose source is a live Incursion/RogueNemesis invader - lets server ops see
+        /// exactly what a boss dropped without digging through client packets. No-op for every other
+        /// kill/drop in the game (regular mobs, players, etc.), so this doesn't add log spam globally.
+        /// </summary>
+        private void LogIncursionLootIfApplicable(LootInputSettings inputSettings, LootResultSummary lootResultSummary)
+        {
+            WorldEntity sourceEntity = inputSettings.SourceEntity;
+            if (sourceEntity == null) return;
+
+            IncursionEnemyController controller = Game.IncursionManager?.GetController(sourceEntity.Id);
+            if (controller == null) return;
+
+            string message = $"[IncursionLoot] {controller.GetLabel()} ({controller.SpawnReason}) rolled:\n{lootResultSummary.ToStringVerbose()}";
+            Logger.Info(message);
+            IncursionLogCollator.WriteLine(sourceEntity.Id, message);
         }
 
         public void AwardLootFromTables(List<(PrototypeId, LootActionType)> tables, LootInputSettings inputSettings, int recipientId)

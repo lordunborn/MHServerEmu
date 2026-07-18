@@ -10,6 +10,8 @@ using MHServerEmu.Games.Behavior;
 using MHServerEmu.Games.Common;
 using MHServerEmu.Games.Entities;
 using MHServerEmu.Games.Entities.Avatars;
+using MHServerEmu.Games.Entities.IncursionEntity;
+using MHServerEmu.Games.Entities.Inventories;
 using MHServerEmu.Games.Entities.Items;
 using MHServerEmu.Games.Events;
 using MHServerEmu.Games.GameData;
@@ -34,6 +36,8 @@ namespace MHServerEmu.Games.Powers
     /// </summary>
     public class PowerPayload : PowerEffectsPacket
     {
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
         [ThreadStatic]
         public static PowerPayload ReusableTickerPayload;
 
@@ -991,6 +995,9 @@ namespace MHServerEmu.Games.Powers
                 results.Properties[PropertyEnum.Damage, damageType] = damageValues[(int)damageType];
             }
 
+            // Apply per-ability damage scaling for incursion enemies before crit and mitigation.
+            CalculateResultDamageIncursionScale(results);
+
             // Apply crit
             CalculateResultDamageCriticalModifier(results, target);
 
@@ -1055,6 +1062,10 @@ namespace MHServerEmu.Games.Powers
 
             CalculateResultDamageTransfer(results, target);
 
+            // Hard safety ceiling on incursion invader damage - applied before the NoDamage flag
+            // check and before logging so both reflect the true final delivered damage.
+            ApplyIncursionMaxSingleHitClamp(results, target);
+
             // Flag as NoDamage if we don't have damage and this isn't a DoT (this will make the client display 0)
             if (results.TestFlag(PowerResultFlags.OverTime) == false)
             {
@@ -1064,6 +1075,198 @@ namespace MHServerEmu.Games.Powers
 
                 results.SetFlag(PowerResultFlags.NoDamage, hasResultDamage == false);
             }
+
+            // Log incursion enemy damage for tuning.
+            LogIncursionEnemyDamage(results, target);
+
+            // Track incoming damage on a live invader for RogueNemesis win-attribution.
+            RecordIncomingInvaderDamage(results, target);
+        }
+
+        /// <summary>
+        /// Resolves the per-ability damage scale for an incursion enemy. Returns 1.0 when the payload
+        /// does not originate from an incursion enemy.
+        /// </summary>
+        private float GetIncursionEnemyDamageScale(out WorldEntity ultimateOwner, out PrototypeId rootPowerRef, out bool indirect)
+        {
+            rootPowerRef = PrototypeId.Invalid;
+            indirect = false;
+            ultimateOwner = null;
+
+            WorldEntity immediateOwner = Game.EntityManager.GetEntity<WorldEntity>(UltimateOwnerId);
+            WorldEntity invader = ResolveIncursionInvader(immediateOwner);
+            if (invader == null)
+                return 1f;
+
+            ultimateOwner = invader;
+
+            // Determine the root (activated) power: missiles/summons stamp CreatorPowerPrototype.
+            WorldEntity propertySource = Game.EntityManager.GetEntity<WorldEntity>(_propertySourceEntityId);
+            if (propertySource != null)
+            {
+                rootPowerRef = propertySource.Properties[PropertyEnum.CreatorPowerPrototype];
+                indirect = propertySource != invader;
+            }
+
+            if (rootPowerRef == PrototypeId.Invalid)
+                rootPowerRef = PowerProtoRef;
+
+            // Resolve the scale through the IncursionManager registry.
+            float scale = Game.IncursionManager != null
+                ? Game.IncursionManager.GetOutgoingDamageScale(invader.Id, rootPowerRef)
+                : 1f;
+
+            return scale > 0f ? scale : 0f;
+        }
+
+        /// <summary>
+        /// Walks the ownership chain to find the incursion invader ultimately responsible for this damage.
+        /// </summary>
+        private WorldEntity ResolveIncursionInvader(WorldEntity entity)
+        {
+            EntityManager entityManager = Game.EntityManager;
+
+            // Bounded walk guards against any unexpected cycle in the ownership links.
+            for (int hop = 0; entity != null && hop < 16; hop++)
+            {
+                if (entity.IsClientRenderedAsAvatar)
+                    return entity;
+
+                ulong nextId = entity.PowerUserOverrideId;
+
+                if (nextId == Entity.InvalidId || nextId == entity.Id)
+                {
+                    // Summoned pets/gadgets are tracked in their summoner's Summoned inventory even
+                    // when PowerUserOverrideID is unset; use that container as the owner link.
+                    ref InventoryLocation invLoc = ref entity.InventoryLocation;
+                    if (invLoc.IsValid && invLoc.InventoryConvenienceLabel == InventoryConvenienceLabel.Summoned)
+                        nextId = invLoc.ContainerId;
+                }
+
+                if (nextId == Entity.InvalidId || nextId == entity.Id)
+                    break;
+
+                entity = entityManager.GetEntity<WorldEntity>(nextId);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Scales an incursion enemy's outgoing damage by the per-ability scale.
+        /// </summary>
+        private void CalculateResultDamageIncursionScale(PowerResults results)
+        {
+            float scale = GetIncursionEnemyDamageScale(out _, out _, out _);
+            if (scale >= 1f)
+                return;
+
+            ApplyDamageMultiplier(results.Properties, scale);
+        }
+
+        /// <summary>
+        /// Hard safety ceiling: no single hit FROM a live incursion invader may exceed
+        /// IncursionMaxSingleHitPctOfTargetHealth of the target's max health, applied after every
+        /// other multiplier (per-ability scale, crit, PvP, defense, etc.). Every hero's kit has at
+        /// least one outlier "ultimate"/execute power balanced for a level-60 player to use against
+        /// mob-tier health pools - re-tuning that one power by hand for every possible rogue isn't
+        /// sustainable, so this catches the outlier universally instead. No-op for damage that
+        /// doesn't originate from a live incursion invader, or when the config value is &lt;= 0.
+        /// </summary>
+        private void ApplyIncursionMaxSingleHitClamp(PowerResults results, WorldEntity target)
+        {
+            float maxPct = Game?.CustomGameOptions?.IncursionMaxSingleHitPctOfTargetHealth ?? 0f;
+            if (maxPct <= 0f || target == null) return;
+
+            GetIncursionEnemyDamageScale(out WorldEntity invader, out _, out _);
+            if (invader == null) return;
+
+            long targetMaxHealth = target.Properties[PropertyEnum.HealthMax];
+            if (targetMaxHealth <= 0) return;
+
+            float cap = targetMaxHealth * maxPct;
+
+            float total = 0f;
+            foreach (var kvp in results.Properties.IteratePropertyRange(PropertyEnum.Damage))
+                total += kvp.Value;
+
+            if (total <= cap) return;
+
+            ApplyDamageMultiplier(results.Properties, cap / total);
+        }
+
+        /// <summary>
+        /// Tracks damage dealt TO a live invader by source (player vs. Phantom Hero teammate), for
+        /// RogueNemesis win-attribution (see IncursionEnemyController.RecordIncomingDamage), and
+        /// writes it to the invader's per-encounter collated log file - the reverse direction of
+        /// LogIncursionEnemyDamage, which only ever covers the invader's OWN outgoing attacks (it
+        /// walks the cosmetic-rendered-as-avatar ownership chain, which a real player's Avatar
+        /// never satisfies, so player-on-invader hits silently fell through before this existed).
+        /// </summary>
+        private void RecordIncomingInvaderDamage(PowerResults results, WorldEntity target)
+        {
+            if (Game?.IncursionManager == null || target == null) return;
+            if (Game.IncursionManager.IsIncursionEntity(target.Id) == false) return;
+
+            float totalAfter = 0f;
+            foreach (var kvp in results.Properties.IteratePropertyRange(PropertyEnum.Damage))
+                totalAfter += kvp.Value;
+
+            if (totalAfter <= 0f) return;
+
+            Game.IncursionManager.RecordIncomingDamage(target.Id, results.UltimateOwnerId, totalAfter);
+
+            WorldEntity source = Game.EntityManager.GetEntity<WorldEntity>(results.UltimateOwnerId);
+            string damageMsg = $"[IncursionEnemy] DAMAGE: '{source?.PrototypeName ?? "(unknown)"}' (id {results.UltimateOwnerId}) " +
+                               $"ability '{GameDatabase.GetPrototypeName(PowerProtoRef)}' -> {MathHelper.RoundToInt(totalAfter)} " +
+                               $"to '{target.PrototypeName}' (id {target.Id}).";
+
+            if (Game?.CustomGameOptions?.IncursionLoggingEnable == true)
+                Logger.Info(damageMsg);
+            IncursionLogCollator.WriteLine(target.Id, damageMsg);
+        }
+
+        /// <summary>
+        /// Logs incursion enemy damage for tuning.
+        /// </summary>
+        private void LogIncursionEnemyDamage(PowerResults results, WorldEntity target)
+        {
+            float scale = GetIncursionEnemyDamageScale(out WorldEntity ultimateOwner, out PrototypeId rootPowerRef, out bool indirect);
+            if (ultimateOwner == null)
+                return;
+
+            float totalAfter = 0f;
+            foreach (var kvp in results.Properties.IteratePropertyRange(PropertyEnum.Damage))
+                totalAfter += kvp.Value;
+
+            if (totalAfter <= 0f)
+                return;
+
+            // Only log damage to player avatars by default.
+            if (target is not Avatar && Game?.CustomGameOptions?.IncursionLogAllDamageTargetsEnable == false)
+                return;
+
+            float totalBefore = scale > 0f ? totalAfter / scale : totalAfter;
+
+            // Resolve the "table power" for logging — when a combo child has no CreatorPowerPrototype,
+            // map it back to the parent so the log parser groups hits correctly.
+            PrototypeId logAbilityRef = rootPowerRef;
+            if (Game?.IncursionManager != null)
+            {
+                PrototypeId parentRef = Game.IncursionManager.GetParentPowerForEffect(ultimateOwner.Id, rootPowerRef);
+                if (parentRef != PrototypeId.Invalid)
+                    logAbilityRef = parentRef;
+            }
+
+            string damageMsg = $"[IncursionEnemy] DAMAGE: '{ultimateOwner.PrototypeName}' (id {ultimateOwner.Id}) " +
+                               $"{(indirect ? "indirect" : "direct")} ability '{GameDatabase.GetPrototypeName(logAbilityRef)}' " +
+                               $"(deliver '{GameDatabase.GetPrototypeName(PowerProtoRef)}') -> after={MathHelper.RoundToInt(totalAfter)} " +
+                               $"(unscaled~{MathHelper.RoundToInt(totalBefore)}, scale x{scale:0.###}) " +
+                               $"to '{target?.PrototypeName}' (id {target?.Id}).";
+            if (Game?.CustomGameOptions?.IncursionLoggingEnable == true)
+                Logger.Info(damageMsg);
+            IncursionLogCollator.WriteLine(ultimateOwner.Id, damageMsg);
+            if (target != null) IncursionLogCollator.WriteLine(target.Id, damageMsg);
         }
 
         private void CalculateResultDamageCriticalModifier(PowerResults results, WorldEntity target)
@@ -1437,7 +1640,47 @@ namespace MHServerEmu.Games.Powers
             if (!Verify.IsNotNull(rankProto)) return;
 
             difficultyMult = tuningTable.GetDamageMultiplier(IsPlayerPayload, rankProto.Rank, target.RegionLocation.Position);
-            
+
+            // Normalize difficulty multiplier to Red (Hard) tier for IncursionEnemies.
+            // IncursionEnemies are balanced for Hard mode; Cosmic tier's extra damage scaling
+            // makes them vastly too strong. We counteract only the tier-specific portion
+            // (DamageMobToPlayerPct / DamagePlayerToMobPct) by ratioing back to Red tier values.
+            if (Game.IncursionManager != null)
+            {
+                bool isIncursionSource = false;
+                bool isIncursionTarget = false;
+
+                // Outgoing: IncursionEnemy -> player
+                GetIncursionEnemyDamageScale(out WorldEntity invader, out _, out _);
+                if (invader != null && Game.IncursionManager.IsIncursionEntity(invader.Id))
+                    isIncursionSource = true;
+
+                // Incoming: player -> IncursionEnemy
+                if (Game.IncursionManager.IsIncursionEntity(target.Id))
+                    isIncursionTarget = true;
+
+                if (isIncursionSource || isIncursionTarget)
+                {
+                    Region region = target.Region;
+                    if (region != null)
+                    {
+                        DifficultyTierPrototype currentTier = region.DifficultyTierRef.As<DifficultyTierPrototype>();
+                        DifficultyTierPrototype redTier = GameDatabase.GlobalsPrototype?.GetDifficultyTierByEnum(DifficultyTier.Red);
+
+                        if (currentTier != null && redTier != null && currentTier != redTier)
+                        {
+                            float ratio;
+                            if (IsPlayerPayload)
+                                ratio = redTier.DamagePlayerToMobPct / currentTier.DamagePlayerToMobPct;
+                            else
+                                ratio = redTier.DamageMobToPlayerPct / currentTier.DamageMobToPlayerPct;
+
+                            difficultyMult *= ratio;
+                        }
+                    }
+                }
+            }
+
             ApplyDamageMultiplier(results.Properties, difficultyMult);
         }
 

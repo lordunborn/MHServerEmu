@@ -104,6 +104,7 @@ namespace MHServerEmu.Games.Entities
 
         public Loot.PlayerLootFilter LootFilter { get; private set; }
         public PlayerAutoPickupSettings AutoPickupSettings { get; private set; } = new();
+        public RogueNemesisPlayerData RogueNemesisData { get; private set; } = new();
 
         private ReplicatedPropertyCollection _avatarProperties = new();
         private ulong _shardId;     // This was probably used for database sharding, we don't need this
@@ -517,6 +518,7 @@ namespace MHServerEmu.Games.Entities
             ScheduleChestAutoOpenEvent();
             LootFilter = PlayerLootFilterStorage.Load(DatabaseUniqueId);
             AutoPickupSettings = PlayerAutoPickupSettingsStorage.Load(DatabaseUniqueId);
+            RogueNemesisData = RogueNemesisPlayerDataStorage.Load(DatabaseUniqueId);
             UpdateUISystemLocks();
 
             Game.GuildManager.OnPlayerEnteringGame(this);
@@ -2362,6 +2364,16 @@ namespace MHServerEmu.Games.Entities
 
                 if (transformModeProto.GetDuration(avatar) != TimeSpan.Zero)
                     return CanSwitchAvatarResult.NotAllowedInTransformMode;
+            }
+
+            // Rogue Encounter / Nemesis: switching is locked out while an encounter is active, so
+            // a losing fight can't be dodged by rerolling avatars, and the spawned villain/hero's
+            // identity stays consistent with whichever avatar it was chosen to hunt. The generic
+            // failure result gives the client no explanatory text of its own, so send one directly.
+            if (Game?.RogueNemesisManager != null && Game.RogueNemesisManager.HasActiveEncounter(DatabaseUniqueId))
+            {
+                Game.ChatManager?.SendChatFromCustomSystem(this, "You cannot switch avatars while a Rogue Encounter is active.", showSender: false);
+                return CanSwitchAvatarResult.NotAllowedGeneric;
             }
 
             // Property restriction

@@ -1,0 +1,10 @@
+{
+  "tiers": [
+    { "rank": 0, "healthMult": 1.0, "damageMult": 1.0, "lootPools": [] },
+    { "rank": 1, "healthMult": 1.3, "damageMult": 1.05, "lootPools": [] },
+    { "rank": 2, "healthMult": 1.8, "damageMult": 1.15, "lootPools": [] },
+    { "rank": 3, "healthMult": 2.5, "damageMult": 1.3, "lootPools": [] },
+    { "rank": 4, "healthMult": 3.5, "damageMult": 1.5, "lootPools": ["Brooklyn Bosses (Cosmic)", "Hightown Bosses (Cosmic)"] },
+    { "rank": 5, "healthMult": 5.0, "damageMult": 1.75, "lootPools": ["Brooklyn Bosses (Cosmic)", "Hightown Bosses (Cosmic)", "Brooklyn Bosses (All)"] }
+  ]
+}

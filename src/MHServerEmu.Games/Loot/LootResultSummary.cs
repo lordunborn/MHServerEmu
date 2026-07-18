@@ -238,8 +238,11 @@ namespace MHServerEmu.Games.Loot
                     sb.AppendLine($"\t{agentSpec}");
             }
 
-            if (Types.HasFlag(LootType.Credits))
+            if (Types.HasFlag(LootType.Credits) && Credits.Count > 0)
             {
+                // NOTE: the Credits flag is also set when a roll is entirely vaporized (see Add()),
+                // in which case Credits itself stays empty and the amount lives in VaporizedCredits
+                // instead - guard against that or Credits[0] below throws.
                 sb.AppendLine("Credits:");
 
                 sb.Append($"\t{Credits[0]}");

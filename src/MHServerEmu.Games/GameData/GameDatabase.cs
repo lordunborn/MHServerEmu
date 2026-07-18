@@ -10,6 +10,7 @@ using MHServerEmu.Games.GameData.Tables;
 using MHServerEmu.Games.Leaderboards;
 using MHServerEmu.Games.Locales;
 using MHServerEmu.Games.Properties;
+using MHServerEmu.Games.RoguesGallery;
 
 namespace MHServerEmu.Games.GameData
 {
@@ -147,6 +148,9 @@ namespace MHServerEmu.Games.GameData
 
             AchievementDatabase.Instance.Initialize();
             LeaderboardInfoCache.Instance.Initialize();
+            RoguesGalleryDatabase.Instance.Initialize();
+            RogueNemesisTierDatabase.Instance.Initialize();
+            IncursionPowerOverrideDatabase.Instance.Initialize();
 
             // Initialize game data tables
             Stopwatch tablesWatch = Stopwatch.StartNew();

@@ -4079,9 +4079,40 @@ namespace MHServerEmu.Games.Powers
 
             Vector3 ownerPosition = Owner.RegionLocation.Position;
 
-            if (Prototype is MovementPowerPrototype movementPowerProto)
+            MovementPowerPrototype movementPowerProto = Prototype as MovementPowerPrototype;
+
+            // Gamepad target-lock compensation: a controller has no mouse-precision aim, so
+            // without an explicit locked target its raw aim point can land well past any real
+            // target, whiffing a ground-targeted AOE. Re-aim at the player's currently assigned
+            // Incursion/RogueNemesis hunter instead of trusting the client's raw position.
+            //
+            // Deliberately scoped to non-movement AOE-shaped powers only (TargetsAOE()). An
+            // earlier version extended this to movement/leap powers (MoveToExactTargetLocation
+            // /NeedsTarget) to cover Ghost Rider's Death From Above, but testing across three
+            // separate sessions showed the opposite of the intended effect: every compensated
+            // Death From Above cast (correct position, correct settings.TargetEntityId, well
+            // within range) still whiffed, while casts we left alone - including ones explicitly
+            // logged as "out of range" for our compensation - connected on their own. Movement
+            // powers apparently already have a working landing/hit-detection path that our
+            // override was interfering with rather than fixing, so they're excluded here.
+            bool wantsGamepadCompensation = TargetsAOE();
+
+            WorldEntity gamepadCompensationTarget = null;
+            if (targetId == Entity.InvalidId && style.AOESelfCentered == false && wantsGamepadCompensation
+                && Owner is Avatar gamepadAvatar && gamepadAvatar.IsUsingGamepadInput)
             {
-                WorldEntity target = Game.EntityManager.GetEntity<WorldEntity>(targetId);
+                gamepadCompensationTarget = FindGamepadAoeCompensationTarget(gamepadAvatar, ownerPosition);
+                if (gamepadCompensationTarget != null)
+                {
+                    originalTargetPosition = gamepadCompensationTarget.RegionLocation.Position;
+                    actualTargetPosition = originalTargetPosition;
+                    settings.TargetEntityId = gamepadCompensationTarget.Id;
+                }
+            }
+
+            if (movementPowerProto != null)
+            {
+                WorldEntity target = Game.EntityManager.GetEntity<WorldEntity>(targetId) ?? gamepadCompensationTarget;
 
                 if (movementPowerProto.CustomBehavior != null)
                 {
@@ -4637,6 +4668,40 @@ namespace MHServerEmu.Games.Powers
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Resolves the player's currently assigned Incursion/RogueNemesis invader as the gamepad
+        /// aim-compensation target - not simply the nearest hostile. Scoping this to the specific
+        /// hunter (rather than "nearest anything") is deliberate on two counts: it keeps the
+        /// compensation from firing at all outside of an active Incursion/RogueNemesis encounter
+        /// (vanilla content is untouched), and it stops an unrelated trash mob that happens to be
+        /// a hair closer from stealing the cast away from the hunter the player is actually
+        /// fighting. Returns null (no compensation) if there's no active hunter, or it's out of
+        /// this power's range, or it fails the power's own friend/foe/line-of-sight validation.
+        /// See <see cref="GenerateActualTargetPosition"/>.
+        /// </summary>
+        private WorldEntity FindGamepadAoeCompensationTarget(Avatar avatar, Vector3 ownerPosition)
+        {
+            Player player = avatar.GetOwnerOfType<Player>();
+            if (player == null) return null;
+
+            WorldEntity invader = Game.IncursionManager?.GetActiveInvaderForPlayer(player.Id);
+            if (invader == null) return null;
+
+            PowerPrototype powerProto = Prototype;
+            if (powerProto == null) return null;
+
+            float range = GetApplicationRange();
+            if (range <= 0f) return null;
+
+            float distance = Vector3.Distance(ownerPosition, invader.RegionLocation.Position);
+            if (distance > range) return null;
+
+            if (ValidateAOETarget(invader, powerProto, Owner, ownerPosition, Owner.Alliance, requiresLineOfSight: true) == false)
+                return null;
+
+            return invader;
         }
 
         private void ComputePowerMovementSettings(MovementPowerPrototype movementPowerProto, ref PowerActivationSettings settings)
