@@ -82,6 +82,20 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--resolveguid")
+            {
+                if (args.Length > 1 && ulong.TryParse(args[1], out ulong guidVal))
+                {
+                    PrototypeGuid guid = (PrototypeGuid)guidVal;
+                    PrototypeId resolvedRef = GameDatabase.GetDataRefByPrototypeGuid(guid);
+                    if (resolvedRef == PrototypeId.Invalid)
+                        Console.WriteLine($"Guid={guidVal} does NOT resolve to any current prototype.");
+                    else
+                        Console.WriteLine($"Guid={guidVal} -> {SafeGetName(resolvedRef)} (Ref={(ulong)resolvedRef})");
+                }
+                return;
+            }
+
             string[] tablePaths = args.Length > 0 ? args : new[]
             {
                 "Loot/Tables/Mob/Bosses/PatrolHightown/CrossbonesHightownTable.prototype",
@@ -129,26 +143,11 @@ namespace LootTableDumper
             {
                 cellCount++;
                 CellPrototype cell = GameDatabase.GetPrototype<CellPrototype>(cellRef);
-                if (cell?.MarkerSet?.Markers == null) continue;
+                if (cell == null) continue;
 
                 List<string> hits = new();
-                for (int i = 0; i < cell.MarkerSet.Markers.Length; i++)
-                {
-                    if (cell.MarkerSet.Markers[i] is not EntityMarkerPrototype entityMarker) continue;
-
-                    string entityName = null;
-                    if (entityMarker.EntityGuid != PrototypeGuid.Invalid)
-                    {
-                        PrototypeId entityRef = GameDatabase.GetDataRefByPrototypeGuid(entityMarker.EntityGuid);
-                        if (entityRef != PrototypeId.Invalid)
-                            entityName = SafeGetName(entityRef);
-                    }
-                    entityName ??= entityMarker.LastKnownEntityName;
-                    if (string.IsNullOrEmpty(entityName)) continue;
-
-                    if (entityName.Contains(pattern, StringComparison.OrdinalIgnoreCase))
-                        hits.Add($"Markers[{i}] {entityName} @ {entityMarker.Position} (Guid={(ulong)entityMarker.EntityGuid})");
-                }
+                CollectMarkerHits(cell.MarkerSet, "MarkerSet", pattern, hits);
+                CollectMarkerHits(cell.InitializeSet, "InitializeSet", pattern, hits);
 
                 if (hits.Count > 0)
                 {
@@ -161,6 +160,30 @@ namespace LootTableDumper
 
             Console.WriteLine();
             Console.WriteLine($"-- Searched {cellCount} cells, {matchCount} contained a match --");
+        }
+
+        private static void CollectMarkerHits(MarkerSetPrototype markerSet, string setName, string pattern, List<string> hits)
+        {
+            if (markerSet?.Markers == null) return;
+
+            for (int i = 0; i < markerSet.Markers.Length; i++)
+            {
+                if (markerSet.Markers[i] is not EntityMarkerPrototype entityMarker) continue;
+
+                string entityName = null;
+                if (entityMarker.EntityGuid != PrototypeGuid.Invalid)
+                {
+                    PrototypeId entityRef = GameDatabase.GetDataRefByPrototypeGuid(entityMarker.EntityGuid);
+                    if (entityRef != PrototypeId.Invalid)
+                        entityName = SafeGetName(entityRef);
+                }
+                bool stale = entityName == null;
+                entityName ??= entityMarker.LastKnownEntityName;
+                if (string.IsNullOrEmpty(entityName)) continue;
+
+                if (entityName.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                    hits.Add($"{setName}.Markers[{i}] {entityName}{(stale ? " (STALE LastKnownEntityName, GUID unresolved)" : "")} @ {entityMarker.Position} (Guid={(ulong)entityMarker.EntityGuid})");
+            }
         }
 
         /// <summary>
@@ -346,8 +369,13 @@ namespace LootTableDumper
                     Console.WriteLine($"{indent}{prop.Name}[{arr.Length}]:");
                     if (depth < maxDepth)
                     {
+                        int arrIndex = 0;
                         foreach (var item in arr)
+                        {
+                            Console.WriteLine($"{indent}  [{arrIndex}]");
                             DumpReflect(item, depth + 1, maxDepth);
+                            arrIndex++;
+                        }
                     }
                 }
                 else if (value is Array simpleArr)
