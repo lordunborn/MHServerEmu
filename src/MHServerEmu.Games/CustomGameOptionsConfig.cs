@@ -100,6 +100,7 @@ namespace MHServerEmu.Games
         public int RogueNemesisFollowDelayMs { get; private set; } = 30000; // 30 seconds
         public int RogueNemesisTargetUnreachableTimeoutMs { get; private set; } = 60000; // 1 minute
         public float RogueNemesisRankWeightMultiplier { get; private set; } = 2.0f;
+        public float RogueNemesisCuratedRogueWeightShare { get; private set; } = 0.7f;
         public bool RogueNemesisTier5DefeatCooldownEnable { get; private set; } = true;
         public int RogueNemesisTier5DefeatCooldownResetHour { get; private set; } = 6;
         public bool RogueNemesisCommandsRequireAdmin { get; private set; } = true;

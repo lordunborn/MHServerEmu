@@ -116,37 +116,63 @@ namespace MHServerEmu.Games.RoguesGallery
             _villainFlavoredAvatars.Clear();
         }
 
+        private static readonly HashSet<string> s_emptyCuratedSet = new(StringComparer.OrdinalIgnoreCase);
+
         public bool IsVillainFlavored(string avatarShorthand) => _villainFlavoredAvatars.Contains(avatarShorthand);
 
         /// <summary>
-        /// Returns the rogue spawn pool for the given avatar shorthand - its own curated entry
-        /// if one exists, otherwise the global fallback pool. Does not invert for villain-flavored
-        /// avatars; callers should check <see cref="IsVillainFlavored"/> first and use
-        /// <see cref="GetHeroHunterPool"/> instead when the avatar is tagged.
+        /// Returns the rogue spawn pool for the given avatar shorthand: its own curated entry (if
+        /// one exists) unioned with the global fallback pool, plus which of those names came from
+        /// the curated entry so the caller can weight picks toward it (see
+        /// RogueNemesisManager.PickWeightedDistinct / RogueNemesisCuratedRogueWeightShare) rather
+        /// than restrict the pool to ONLY the curated names. Curated is an empty set when the
+        /// avatar has no curated entry, in which case Pool is just the fallback pool unchanged.
+        /// Does not invert for villain-flavored avatars; callers should check
+        /// <see cref="IsVillainFlavored"/> first and use <see cref="GetHeroHunterPool"/> instead
+        /// when the avatar is tagged.
         /// </summary>
-        public IReadOnlyList<string> GetRoguePoolForAvatar(string avatarShorthand)
+        public (IReadOnlyList<string> Pool, IReadOnlySet<string> Curated) GetRoguePoolForAvatar(string avatarShorthand)
         {
             if (_heroRogues.TryGetValue(avatarShorthand, out List<string> curated) && curated.Count > 0)
-                return curated;
+                return UnionWithCurated(curated, _fallbackVillainPool);
 
-            return _fallbackVillainPool;
+            return (_fallbackVillainPool, s_emptyCuratedSet);
         }
 
         /// <summary>
-        /// The "heroes hunt you" pool for the given villain-flavored avatar shorthand - its own
-        /// curated entry if one exists, otherwise the general pool of every known incursion enemy
-        /// that ISN'T tagged villain-flavored. The general pool is computed on demand from the live
-        /// roster rather than stored, so it never goes stale relative to the data file.
+        /// The "heroes hunt you" pool for the given villain-flavored avatar shorthand: its own
+        /// curated entry (if one exists) unioned with the general pool of every known incursion
+        /// enemy that ISN'T tagged villain-flavored, plus which names came from the curated entry
+        /// (see <see cref="GetRoguePoolForAvatar"/> for why this isn't a restriction). The general
+        /// pool is computed on demand from the live roster rather than stored, so it never goes
+        /// stale relative to the data file.
         /// </summary>
-        public IReadOnlyList<string> GetHeroHunterPool(string villainShorthand)
+        public (IReadOnlyList<string> Pool, IReadOnlySet<string> Curated) GetHeroHunterPool(string villainShorthand)
         {
-            if (_villainHunters.TryGetValue(villainShorthand, out List<string> curated) && curated.Count > 0)
-                return curated;
-
-            return IncursionManager.GetKnownEnemyShorthands()
+            List<string> generalPool = IncursionManager.GetKnownEnemyShorthands()
                 .Where(shorthand => _villainFlavoredAvatars.Contains(shorthand) == false
                     && IncursionManager.IsExcludedFromRandomSpawns(shorthand) == false)
                 .ToList();
+
+            if (_villainHunters.TryGetValue(villainShorthand, out List<string> curated) && curated.Count > 0)
+                return UnionWithCurated(curated, generalPool);
+
+            return (generalPool, s_emptyCuratedSet);
+        }
+
+        /// <summary>Unions a curated list with a fallback pool (dedup, curated names first) and returns the curated set alongside it.</summary>
+        private static (IReadOnlyList<string> Pool, IReadOnlySet<string> Curated) UnionWithCurated(List<string> curated, IReadOnlyList<string> fallback)
+        {
+            HashSet<string> curatedSet = new(curated, StringComparer.OrdinalIgnoreCase);
+
+            List<string> union = new(curated);
+            foreach (string name in fallback)
+            {
+                if (curatedSet.Contains(name) == false)
+                    union.Add(name);
+            }
+
+            return (union, curatedSet);
         }
     }
 }

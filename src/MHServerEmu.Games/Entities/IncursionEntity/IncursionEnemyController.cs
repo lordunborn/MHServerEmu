@@ -178,14 +178,21 @@ namespace MHServerEmu.Games.Entities.IncursionEntity
         // Last power used so we can enforce variety instead of spamming the same ability.
         private PrototypeId _lastUsedPowerRef = PrototypeId.Invalid;
 
-        // RogueNemesis win-attribution ONLY: running totals of damage dealt to THIS invader by
-        // the hunted player's own avatar vs. any Phantom Hero teammate, kept in memory for this
-        // controller's lifetime only - never persisted or written to a log file (per-hit logging
-        // here would balloon the log folder for no benefit). Reset per spawn in Start(). Lets a
-        // win only credit the Nemesis rank-up when the player actually did the work, rather than
-        // standing back while their phantom squad carries the kill.
+        // Running totals of damage dealt to THIS invader by the hunted player's own avatar vs.
+        // any Phantom Hero teammate, kept in memory for this controller's lifetime only - never
+        // persisted or written to a log file (per-hit logging here would balloon the log folder
+        // for no benefit). Reset per spawn in Start(). Used for two things: gating the Nemesis
+        // rank-up (DidHunterEarnNemesisCredit) and gating rank 4/5 jackpot loot (see
+        // ResolveEffectiveLootPools/UpdateLootPoolForDamageShift) - both so standing back while a
+        // phantom squad carries the fight doesn't earn free rank or free loot.
         private float _hunterOwnDamage;
         private float _hunterPhantomDamage;
+
+        // True once UpdateLootPoolForDamageShift has downgraded this invader's rank 4/5 loot
+        // pool to the default (junk, rank 0-3 equivalent) selection because phantoms pulled
+        // ahead on damage. Tracked so re-applying the loot pool on every hit only actually
+        // happens when this crosses, not on every single point of damage.
+        private bool _lootPoolDowngraded;
 
         // RogueNemesis tier scaling: the hunted player's Nemesis rank (0-5) against THIS
         // villain shorthand, resolved once at spawn (Start()) and cached - rank can't change
@@ -579,6 +586,7 @@ namespace MHServerEmu.Games.Entities.IncursionEntity
             _channelMaxMs = 0;
             _hunterOwnDamage = 0f;
             _hunterPhantomDamage = 0f;
+            _lootPoolDowngraded = false;
         }
 
         /// <summary>Stops the think loop and releases scheduled events.</summary>
@@ -670,12 +678,18 @@ namespace MHServerEmu.Games.Entities.IncursionEntity
         /// (RogueNemesisTiers.json's LootPools list, e.g. pointing rank 5 at the normally-disabled
         /// Cosmic/All pools), only those named pools are used, force-enabled regardless of their
         /// own default Enabled flag - this is the JSON-controlled "tier-5 jackpot" mechanism.
+        /// That override is skipped entirely - falling back to the same default pool ranks 0-3
+        /// use - if Phantom Heroes currently out-damaged the hunted player (see
+        /// <see cref="_hunterOwnDamage"/>): no jackpot loot for a fight the player didn't carry.
         /// </summary>
         private IReadOnlyList<IncursionLootPool> ResolveEffectiveLootPools()
         {
             IReadOnlyList<IncursionLootPool> basePools = LootPools;
 
             if (SpawnReason != IncursionSpawnReason.RogueNemesis)
+                return basePools;
+
+            if (_nemesisRank >= 4 && _hunterPhantomDamage > _hunterOwnDamage)
                 return basePools;
 
             IReadOnlyList<string> allowedNames = RogueNemesisTierDatabase.Instance.GetLootPoolNames(_nemesisRank);
@@ -1005,12 +1019,15 @@ namespace MHServerEmu.Games.Entities.IncursionEntity
             if (sourceAvatar.IsPhantomHero)
             {
                 _hunterPhantomDamage += amount;
-                return;
+            }
+            else
+            {
+                Player sourcePlayer = sourceAvatar.GetOwnerOfType<Player>();
+                if (sourcePlayer != null && sourcePlayer.Id == TargetPlayerId)
+                    _hunterOwnDamage += amount;
             }
 
-            Player sourcePlayer = sourceAvatar.GetOwnerOfType<Player>();
-            if (sourcePlayer != null && sourcePlayer.Id == TargetPlayerId)
-                _hunterOwnDamage += amount;
+            UpdateLootPoolForDamageShift();
         }
 
         /// <summary>
@@ -1020,6 +1037,29 @@ namespace MHServerEmu.Games.Entities.IncursionEntity
         /// Ties (including 0/0, e.g. a kill this tracking never saw) favor crediting the player.
         /// </summary>
         public bool DidHunterEarnNemesisCredit => _hunterPhantomDamage <= _hunterOwnDamage;
+
+        /// <summary>
+        /// Re-rolls this invader's loot pool the moment the phantom-vs-player damage ratio
+        /// crosses the rank 4/5 "phantoms are carrying this fight" threshold, in either
+        /// direction. Only rank 4/5 has jackpot loot to lose, so lower ranks no-op immediately.
+        /// This has to be checked on every hit rather than once at death: the loot table is
+        /// stamped onto the agent as a property at spawn and rolled natively the instant the
+        /// killing blow lands (WorldEntity's health-application/Kill() path), before this
+        /// controller's own Think() poll ever notices the death - there's no later hook to
+        /// intercept, so the property has to already be correct going into every hit.
+        /// </summary>
+        private void UpdateLootPoolForDamageShift()
+        {
+            if (_nemesisRank < 4) return;
+
+            bool shouldDowngrade = _hunterPhantomDamage > _hunterOwnDamage;
+            if (shouldDowngrade == _lootPoolDowngraded) return;
+
+            _lootPoolDowngraded = shouldDowngrade;
+            Agent agent = GetAgent();
+            if (agent != null)
+                ApplyLootPool(agent);
+        }
 
         /// <summary>
         /// Looks up the hunted player's current Nemesis rank (0-5) against this villain shorthand,

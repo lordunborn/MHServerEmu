@@ -287,7 +287,9 @@ namespace MHServerEmu.Games.Populations
 
             RoguesGalleryDatabase db = RoguesGalleryDatabase.Instance;
             bool villainFlavored = db.IsVillainFlavored(avatarShorthand);
-            IReadOnlyList<string> pool = villainFlavored ? db.GetHeroHunterPool(avatarShorthand) : db.GetRoguePoolForAvatar(avatarShorthand);
+            (IReadOnlyList<string> pool, IReadOnlySet<string> curatedRogues) = villainFlavored
+                ? db.GetHeroHunterPool(avatarShorthand)
+                : db.GetRoguePoolForAvatar(avatarShorthand);
             if (pool.Count == 0)
             {
                 LogVerbose($"[RogueNemesis] TrySpawnEncounter: resolved pool is empty for avatar '{avatarShorthand}' " +
@@ -309,9 +311,11 @@ namespace MHServerEmu.Games.Populations
             int spawnCount = Math.Min(maxSpawns, pool.Count);
 
             // Distinct picks, no repeats within a single encounter - weighted so an active
-            // (undefeated) Nemesis is more likely to come back than a villain with no history.
+            // (undefeated) Nemesis is more likely to come back than a villain with no history,
+            // and so a curated rivalry (e.g. Thor -> Loki) is favored over the rest of the
+            // fallback pool without excluding it entirely (see RogueNemesisCuratedRogueWeightShare).
             int levelRankCap = RogueNemesisTierDatabase.GetLevelRankCap(avatar.CharacterLevel);
-            List<string> picks = PickWeightedDistinct(pool, spawnCount, player.RogueNemesisData, levelRankCap);
+            List<string> picks = PickWeightedDistinct(pool, curatedRogues, spawnCount, player.RogueNemesisData, levelRankCap);
 
             List<ulong> spawnedEntityIds = new();
             for (int i = 0; i < picks.Count; i++)
@@ -399,9 +403,10 @@ namespace MHServerEmu.Games.Populations
         /// weighting so a low-level avatar isn't disproportionately biased toward a villain whose
         /// persisted rank is higher than what that avatar's level is allowed to actually fight.
         /// </summary>
-        private List<string> PickWeightedDistinct(IReadOnlyList<string> pool, int count, RogueNemesisPlayerData data, int levelRankCap)
+        private List<string> PickWeightedDistinct(IReadOnlyList<string> pool, IReadOnlySet<string> curatedRogues, int count, RogueNemesisPlayerData data, int levelRankCap)
         {
             float rankWeight = Math.Max(0f, _game.CustomGameOptions.RogueNemesisRankWeightMultiplier);
+            float curatedBias = ComputeCuratedBias(pool, curatedRogues);
 
             List<string> remaining = new(pool);
             List<float> weights = new(remaining.Count);
@@ -409,7 +414,10 @@ namespace MHServerEmu.Games.Populations
             {
                 NemesisEntry entry = data.FindNemesisEntry(shorthand);
                 int rank = Math.Min(entry?.Rank ?? 0, levelRankCap);
-                weights.Add(1f + rank * rankWeight);
+                float weight = 1f + rank * rankWeight;
+                if (curatedRogues.Contains(shorthand))
+                    weight *= curatedBias;
+                weights.Add(weight);
             }
 
             List<string> result = new();
@@ -437,6 +445,28 @@ namespace MHServerEmu.Games.Populations
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Solves the per-item weight multiplier applied to curated rogues (RoguesGallery.json's
+        /// heroRogues/villainHunters) so that, before any Nemesis rank-history weighting is
+        /// applied, the curated entries collectively account for RogueNemesisCuratedRogueWeightShare
+        /// of total pick weight and the rest of the pool splits the remainder evenly. Returns 1
+        /// (no bias) when there's no curated entry for this avatar, or when curated somehow covers
+        /// the entire pool - both cases where a bias multiplier would be meaningless.
+        /// </summary>
+        private float ComputeCuratedBias(IReadOnlyList<string> pool, IReadOnlySet<string> curatedRogues)
+        {
+            int curatedCount = curatedRogues.Count;
+            if (curatedCount == 0 || curatedCount >= pool.Count)
+                return 1f;
+
+            float share = Math.Clamp(_game.CustomGameOptions.RogueNemesisCuratedRogueWeightShare, 0f, 1f);
+            if (share <= 0f) return 0f;
+            if (share >= 1f) return 1_000_000f; // effectively "curated only", without risking a float-overflow sum below
+
+            int fallbackOnlyCount = pool.Count - curatedCount;
+            return (share * fallbackOnlyCount) / ((1f - share) * curatedCount);
         }
 
         /// <summary>

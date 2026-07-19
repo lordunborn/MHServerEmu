@@ -126,10 +126,19 @@ namespace MHServerEmu.Commands.Implementations
 
             var db = RoguesGalleryDatabase.Instance;
             bool villainFlavored = db.IsVillainFlavored(shorthand);
-            IReadOnlyList<string> pool = villainFlavored ? db.GetHeroHunterPool(shorthand) : db.GetRoguePoolForAvatar(shorthand);
+            (IReadOnlyList<string> pool, IReadOnlySet<string> curated) = villainFlavored
+                ? db.GetHeroHunterPool(shorthand)
+                : db.GetRoguePoolForAvatar(shorthand);
+
+            string poolText = pool.Count > 0
+                ? string.Join(", ", pool.Select(name => curated.Contains(name) ? $"*{name}" : name))
+                : "(empty)";
+            string curatedNote = curated.Count > 0
+                ? $" (* = curated, {ConfigManager.Instance.GetConfig<CustomGameOptionsConfig>().RogueNemesisCuratedRogueWeightShare:P0} baseline pick-weight share)"
+                : "";
 
             return $"'{shorthand}' is {(villainFlavored ? "villain-flavored (hero hunter pool)" : "hero-flavored (rogue pool)")}: " +
-                   $"{(pool.Count > 0 ? string.Join(", ", pool) : "(empty)")}";
+                   $"{poolText}{curatedNote}";
         }
 
         [Command("roguegallery")]
