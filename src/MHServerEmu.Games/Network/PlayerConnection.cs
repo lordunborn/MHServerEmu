@@ -565,7 +565,7 @@ namespace MHServerEmu.Games.Network
                 // case ClientToGameServerMessage.NetMessageDebugAcquireAndSwitchToAvatar:  OnDebugAcquireAndSwitchToAvatar(message); break;
                 case ClientToGameServerMessage.NetMessageSwitchAvatar:                      OnSwitchAvatar(message); break;
                 case ClientToGameServerMessage.NetMessageChangeDifficulty:                  OnChangeDifficulty(message); break;
-                // case ClientToGameServerMessage.NetMessageSelectPublicEventTeam:          OnSelectPublicEventTeam(message); break;
+                case ClientToGameServerMessage.NetMessageSelectPublicEventTeam:             OnSelectPublicEventTeam(message); break;
                 case ClientToGameServerMessage.NetMessageRefreshAbilityKeyMapping:          OnRefreshAbilityKeyMapping(message); break;
                 case ClientToGameServerMessage.NetMessageAbilitySlotToAbilityBar:           OnAbilitySlotToAbilityBar(message); break;
                 case ClientToGameServerMessage.NetMessageAbilityUnslotFromAbilityBar:       OnAbilityUnslotFromAbilityBar(message); break;
@@ -1192,6 +1192,9 @@ namespace MHServerEmu.Games.Network
             Avatar avatar = Player.GetActiveAvatarByIndex(useInteractableObject.AvatarIndex);
             if (!Verify.IsNotNull(avatar)) return;
 
+            if (MissionManager.Debug && useInteractableObject.IdTarget == Entity.InvalidId)
+                Logger.Debug($"OnUseInteractableObject(): notification click received, missionRef={((PrototypeId)useInteractableObject.MissionPrototypeRef).GetName()}");
+
             avatar.UseInteractableObject(useInteractableObject.IdTarget, (PrototypeId)useInteractableObject.MissionPrototypeRef);
         }
 
@@ -1298,6 +1301,17 @@ namespace MHServerEmu.Games.Network
 #endif
 
             avatar.Properties[PropertyEnum.DifficultyTierPreference] = difficultyTierProtoRef;
+        }
+
+        private void OnSelectPublicEventTeam(in MailboxMessage message)
+        {
+            var selectPublicEventTeam = message.As<NetMessageSelectPublicEventTeam>();
+            if (!Verify.IsNotNull(selectPublicEventTeam)) return;
+
+            PrototypeId teamProtoRef = (PrototypeId)selectPublicEventTeam.TeamPrototypeId;
+
+            if (Player.SetPublicEventTeam(teamProtoRef) == false)
+                Logger.Warn($"OnSelectPublicEventTeam(): Failed to set team {teamProtoRef.GetName()} for player {Player}");
         }
 
         private void OnRefreshAbilityKeyMapping(in MailboxMessage message)

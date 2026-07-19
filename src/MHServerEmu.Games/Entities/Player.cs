@@ -615,6 +615,24 @@ namespace MHServerEmu.Games.Entities
             return Properties[teamProp];
         }
 
+        public bool SetPublicEventTeam(PrototypeId teamProtoRef)
+        {
+            PublicEventTeamPrototype teamProto = teamProtoRef.As<PublicEventTeamPrototype>();
+            if (teamProto == null || teamProto.PublicEventRef == PrototypeId.Invalid) return false;
+
+            PublicEventPrototype eventProto = GameDatabase.GetPrototype<PublicEventPrototype>(teamProto.PublicEventRef);
+            if (eventProto == null) return false;
+
+            int eventInstance = eventProto.GetEventInstance();
+            var teamProp = new PropertyId(PropertyEnum.PublicEventTeamAssignment, eventProto.DataRef, eventInstance);
+            Properties[teamProp] = teamProtoRef;
+
+            Region region = GetRegion();
+            region?.PlayerEventTeamChangedEvent.Invoke(new(this, teamProtoRef));
+
+            return true;
+        }
+
         public PublicEventTeamPrototype GetPublicEventTeamPrototype()
         {
             // TODO PropertyEnum.PublicEventTeamAssignment

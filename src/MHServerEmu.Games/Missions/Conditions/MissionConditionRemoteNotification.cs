@@ -1,3 +1,4 @@
+using MHServerEmu.Core.Logging;
 using MHServerEmu.Games.Events;
 using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.Prototypes;
@@ -7,9 +8,11 @@ namespace MHServerEmu.Games.Missions.Conditions
 {
     public class MissionConditionRemoteNotification : MissionPlayerCondition
     {
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
         private Event<NotificationInteractGameEvent>.Action _notificationInteractAction;
 
-        public MissionConditionRemoteNotification(Mission mission, IMissionConditionOwner owner, MissionConditionPrototype prototype) 
+        public MissionConditionRemoteNotification(Mission mission, IMissionConditionOwner owner, MissionConditionPrototype prototype)
             : base(mission, owner, prototype)
         {
             // AxisRaidBreadcrumb
@@ -20,6 +23,8 @@ namespace MHServerEmu.Games.Missions.Conditions
         {
             var player = evt.Player;
             var missionRef = evt.MissionRef;
+
+            if (MissionManager.Debug) Logger.Debug($"[{Mission.PrototypeName}] OnNotificationInteract received: player={player} missionRef={missionRef.GetName()}");
 
             if (missionRef != PrototypeId.Invalid && missionRef != Mission.PrototypeDataRef) return;
             if (player == null || IsMissionPlayer(player) == false) return;
@@ -34,6 +39,8 @@ namespace MHServerEmu.Games.Missions.Conditions
 
             UpdatePlayerContribution(player);
             Count++;
+
+            if (MissionManager.Debug) Logger.Debug($"[{Mission.PrototypeName}] OnNotificationInteract accepted, Count={Count}");
         }
 
         public override void RegisterEvents(Region region)
