@@ -3,6 +3,7 @@ using MHServerEmu.Core.Extensions;
 using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.LiveTuning;
 using MHServerEmu.Games.GameData.Prototypes;
+using MHServerEmu.Games.GameData.Prototypes.Markers;
 
 namespace LootTableDumper
 {
@@ -53,6 +54,20 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--cellsearch")
+            {
+                string pattern = args.Length > 1 ? args[1] : "";
+                CellMarkerSearch(pattern);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--designstatesweep")
+            {
+                string pattern = args.Length > 1 ? args[1] : "";
+                DesignStateSweep(pattern);
+                return;
+            }
+
             string[] tablePaths = args.Length > 0 ? args : new[]
             {
                 "Loot/Tables/Mob/Bosses/PatrolHightown/CrossbonesHightownTable.prototype",
@@ -84,6 +99,104 @@ namespace LootTableDumper
                 VisitedInChain.Clear();
                 PrintNode(proto, 0);
             }
+        }
+
+        /// <summary>
+        /// Searches every CellPrototype's MarkerSet for EntityMarker entries whose resolved entity name
+        /// (or LastKnownEntityName, baked into the marker itself) contains the given pattern. Useful for
+        /// finding where content is ACTUALLY placed in the world, as opposed to guessing/patching new markers.
+        /// </summary>
+        private static void CellMarkerSearch(string pattern)
+        {
+            Console.WriteLine($"==================== Searching all cell markers for entities matching '{pattern}' ====================");
+
+            int cellCount = 0, matchCount = 0;
+            foreach (PrototypeId cellRef in DataDirectory.Instance.IteratePrototypesInHierarchy<CellPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                cellCount++;
+                CellPrototype cell = GameDatabase.GetPrototype<CellPrototype>(cellRef);
+                if (cell?.MarkerSet?.Markers == null) continue;
+
+                List<string> hits = new();
+                for (int i = 0; i < cell.MarkerSet.Markers.Length; i++)
+                {
+                    if (cell.MarkerSet.Markers[i] is not EntityMarkerPrototype entityMarker) continue;
+
+                    string entityName = null;
+                    if (entityMarker.EntityGuid != PrototypeGuid.Invalid)
+                    {
+                        PrototypeId entityRef = GameDatabase.GetDataRefByPrototypeGuid(entityMarker.EntityGuid);
+                        if (entityRef != PrototypeId.Invalid)
+                            entityName = SafeGetName(entityRef);
+                    }
+                    entityName ??= entityMarker.LastKnownEntityName;
+                    if (string.IsNullOrEmpty(entityName)) continue;
+
+                    if (entityName.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                        hits.Add($"Markers[{i}] {entityName} @ {entityMarker.Position} (Guid={(ulong)entityMarker.EntityGuid})");
+                }
+
+                if (hits.Count > 0)
+                {
+                    matchCount++;
+                    Console.WriteLine($"[Cell] {SafeGetName(cellRef)} (Ref={(ulong)cellRef})");
+                    foreach (string hit in hits)
+                        Console.WriteLine($"  {hit}");
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- Searched {cellCount} cells, {matchCount} contained a match --");
+        }
+
+        /// <summary>
+        /// Sweeps every prototype whose name matches pattern and, if it has a "DesignState" property
+        /// (Missions, WorldEntities, MetaStates, Powers, etc. each declare their own), reports its value.
+        /// Used to find every cut/NotInGame entity belonging to a content pack in one pass.
+        /// </summary>
+        private static void DesignStateSweep(string pattern)
+        {
+            Console.WriteLine($"==================== DesignState sweep for prototypes matching '{pattern}' ====================");
+
+            int total = 0;
+            var byState = new Dictionary<string, List<string>>();
+
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                string name = SafeGetName(protoRef);
+                if (name.Contains(pattern, StringComparison.OrdinalIgnoreCase) == false) continue;
+
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto == null) continue;
+
+                var designStateProp = proto.GetType().GetProperty("DesignState");
+                if (designStateProp == null) continue;
+
+                object value;
+                try { value = designStateProp.GetValue(proto); }
+                catch { continue; }
+                if (value == null) continue;
+
+                total++;
+                string state = value.ToString();
+                if (byState.TryGetValue(state, out List<string> list) == false)
+                {
+                    list = new();
+                    byState[state] = list;
+                }
+                list.Add($"{name} [{proto.GetType().Name}]");
+            }
+
+            foreach (var kvp in byState.OrderBy(k => k.Key))
+            {
+                Console.WriteLine();
+                Console.WriteLine($"-- DesignState={kvp.Key}: {kvp.Value.Count} --");
+                foreach (string entry in kvp.Value.OrderBy(e => e))
+                    Console.WriteLine($"  {entry}");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {total} prototypes with a DesignState field matched '{pattern}' --");
         }
 
         /// <summary>Searches ALL prototype names (any type), useful for locating door/gate/blocker/kismet entities by keyword.</summary>
