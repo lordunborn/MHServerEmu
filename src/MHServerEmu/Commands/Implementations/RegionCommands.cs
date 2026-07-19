@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+using Gazillion;
 using MHServerEmu.Commands.Attributes;
+using MHServerEmu.Core.Memory;
 using MHServerEmu.Core.Network;
 using MHServerEmu.DatabaseAccess.Models;
 using MHServerEmu.Games;
@@ -39,7 +41,20 @@ namespace MHServerEmu.Commands.Implementations
                 return $"Unsafe warp destination: {regionName}.";
 
             Player player = ((PlayerConnection)client).Player;
-            Teleporter.DebugTeleportToTarget(player, regionProto.StartTarget);
+
+            // DebugTeleportToTarget() leaves DifficultyTierRef at Invalid, which Region.Initialize()
+            // just warns about and moves past - but downstream systems that depend on
+            // Properties[PropertyEnum.DifficultyTier] being set silently break, hanging the client
+            // on the loading screen even though the region generates successfully server-side.
+            // Resolve a valid tier for the destination the same way a normal (non-debug) teleport would.
+            PrototypeId difficultyTierRef = player.GetDifficultyTierForRegion(regionProtoRef);
+            if (difficultyTierRef == PrototypeId.Invalid)
+                difficultyTierRef = GameDatabase.GlobalsPrototype.DifficultyTierDefault;
+
+            using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+            teleporter.Initialize(player, TeleportContextEnum.TeleportContext_Debug);
+            teleporter.DifficultyTierRef = difficultyTierRef;
+            teleporter.TeleportToTarget(regionProto.StartTarget);
 
             return $"Warping to {regionName}.";
         }
@@ -52,8 +67,18 @@ namespace MHServerEmu.Commands.Implementations
         public string Reload(string[] @params, NetClient client)
         {
             Player player = ((PlayerConnection)client).Player;
-            RegionPrototype regionProto = player.GetRegion()?.Prototype;
-            Teleporter.DebugTeleportToTarget(player, regionProto.StartTarget);
+            Region region = player.GetRegion();
+            RegionPrototype regionProto = region?.Prototype;
+            if (regionProto == null) return "Failed to find the current region.";
+
+            PrototypeId difficultyTierRef = region.DifficultyTierRef;
+            if (difficultyTierRef == PrototypeId.Invalid)
+                difficultyTierRef = GameDatabase.GlobalsPrototype.DifficultyTierDefault;
+
+            using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+            teleporter.Initialize(player, TeleportContextEnum.TeleportContext_Debug);
+            teleporter.DifficultyTierRef = difficultyTierRef;
+            teleporter.TeleportToTarget(regionProto.StartTarget);
 
             // TODO: Fix this for endless regions
 
