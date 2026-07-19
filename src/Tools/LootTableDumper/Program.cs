@@ -68,6 +68,20 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--assetsearch")
+            {
+                string pattern = args.Length > 1 ? args[1] : "";
+                AssetSearch(pattern);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--clientmapsearch")
+            {
+                string pattern = args.Length > 1 ? args[1] : "";
+                RegionClientMapSearch(pattern);
+                return;
+            }
+
             string[] tablePaths = args.Length > 0 ? args : new[]
             {
                 "Loot/Tables/Mob/Bosses/PatrolHightown/CrossbonesHightownTable.prototype",
@@ -199,6 +213,41 @@ namespace LootTableDumper
             Console.WriteLine($"-- {total} prototypes with a DesignState field matched '{pattern}' --");
         }
 
+        /// <summary>Searches asset names across all asset types for the given substring.</summary>
+        private static void AssetSearch(string pattern)
+        {
+            Console.WriteLine($"==================== Searching all asset names for '{pattern}' ====================");
+
+            int count = 0;
+            foreach (AssetId assetId in GameDatabase.SearchAssets(pattern, DataFileSearchFlags.IgnoreCase | DataFileSearchFlags.SortMatchesByName))
+            {
+                string name = GameDatabase.GetAssetName(assetId);
+                Console.WriteLine($"  {name} (AssetId={(ulong)assetId})");
+                count++;
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {count} matches --");
+        }
+
+        /// <summary>Prints every non-abstract RegionPrototype's name alongside its resolved ClientMap asset name.</summary>
+        private static void RegionClientMapSearch(string pattern)
+        {
+            Console.WriteLine($"==================== Region ClientMap survey (filter: '{pattern}') ====================");
+
+            foreach (PrototypeId regionRef in DataDirectory.Instance.IteratePrototypesInHierarchy<RegionPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                string name = SafeGetName(regionRef);
+                if (string.IsNullOrEmpty(pattern) == false && name.Contains(pattern, StringComparison.OrdinalIgnoreCase) == false) continue;
+
+                RegionPrototype proto = GameDatabase.GetPrototype<RegionPrototype>(regionRef);
+                if (proto == null) continue;
+
+                string clientMapName = proto.ClientMap != AssetId.Invalid ? GameDatabase.GetAssetName(proto.ClientMap) : "(none)";
+                Console.WriteLine($"{name} -> ClientMap: {clientMapName}");
+            }
+        }
+
         /// <summary>Searches ALL prototype names (any type), useful for locating door/gate/blocker/kismet entities by keyword.</summary>
         private static void NameSearch(string pattern)
         {
@@ -274,6 +323,12 @@ namespace LootTableDumper
                 {
                     if (protoIdVal == PrototypeId.Invalid) continue;
                     Console.WriteLine($"{indent}{prop.Name}: {SafeGetName(protoIdVal)} (Ref={(ulong)protoIdVal})");
+                }
+                else if (value is AssetId assetIdVal)
+                {
+                    if (assetIdVal == AssetId.Invalid) continue;
+                    string assetName = GameDatabase.GetAssetName(assetIdVal);
+                    Console.WriteLine($"{indent}{prop.Name}: {(string.IsNullOrEmpty(assetName) ? "(UNRESOLVED)" : assetName)} (AssetId={(ulong)assetIdVal})");
                 }
                 else if (value is PrototypeId[] protoIdArr)
                 {
