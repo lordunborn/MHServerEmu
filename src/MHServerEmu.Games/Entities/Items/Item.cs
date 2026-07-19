@@ -1079,10 +1079,22 @@ namespace MHServerEmu.Games.Entities.Items
             // Apply stack settings
             ItemStackSettingsPrototype stackSettings = itemProto.StackSettings;
             if (stackSettings != null)
-            {
                 Properties[PropertyEnum.InventoryStackSizeMax] = stackSettings.MaxStacks;
-                Properties[PropertyEnum.ItemLevel] = stackSettings.ItemLevelOverride;
-                Properties[PropertyEnum.Requirement, PropertyEnum.CharacterLevel] = (float)stackSettings.RequiredCharLevelOverride;
+
+            // For consumable containers (boxes/Fortune Cards that roll a loot table on use), pin
+            // the ITEM SPEC's own level - NOT Properties[ItemLevel], which the open-time loot roll
+            // still needs at its original value (see DoItemActionReplaceSelfLootTable/
+            // DoPowerEventActionSpawnLootTable, which use useAvatarLevel/useItemLevel instead) - so
+            // every stack displays/merges at a consistent level regardless of the level of whoever
+            // or whatever dropped each individual instance. _itemSpec is serialized to the client
+            // SEPARATELY from Properties (see Serialize()), and that's what the client's "Level
+            // Required" tooltip is actually driven by - setting Properties[ItemLevel] alone (the
+            // previous approach here) never reached it.
+            bool isContainer = itemProto.IsConsumableContainer() || stackSettings != null;
+            if (isContainer)
+            {
+                _itemSpec.ItemLevel = stackSettings?.ItemLevelOverride ?? 1;
+                Properties[PropertyEnum.Requirement, PropertyEnum.CharacterLevel] = (float)(stackSettings?.RequiredCharLevelOverride ?? 1);
             }
 
             // Apply rarity bonus to item level

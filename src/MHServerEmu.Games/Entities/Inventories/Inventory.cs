@@ -11,6 +11,8 @@ namespace MHServerEmu.Games.Entities.Inventories
 {
     public class Inventory
     {
+        private static readonly Logger Logger = LogManager.CreateLogger();
+
         public const uint InvalidSlot = uint.MaxValue;      // 0xFFFFFFFF / -1
 
         // The client uses a set of std::pair here, the main requirement is that this has to be sorted by key (slot)
@@ -666,6 +668,20 @@ namespace MHServerEmu.Games.Entities.Inventories
 
             // Update stack sizes
             entityToStackWith.Properties[PropertyEnum.InventoryStackCount] = stackSize;
+
+            // Re-pin the surviving stack's ItemSpec level (what the client's tooltip actually
+            // reads - see Item.ApplyItemSpecProperties()) every merge, in case it predates this
+            // override - a merge should never let a stale level survive just because the
+            // destination stack happened to be created first.
+            if (entityToStackWith is Item itemToStackWith)
+            {
+                ItemStackSettingsPrototype stackSettings = itemToStackWith.ItemPrototype?.StackSettings;
+                if (stackSettings != null)
+                {
+                    itemToStackWith.ItemSpec.ItemLevel = stackSettings.ItemLevelOverride;
+                    entityToStackWith.Properties[PropertyEnum.Requirement, PropertyEnum.CharacterLevel] = (float)stackSettings.RequiredCharLevelOverride;
+                }
+            }
 
             if (remaining > 0)
                 entityToStack.Properties[PropertyEnum.InventoryStackCount] = remaining;
