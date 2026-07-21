@@ -34,9 +34,9 @@ Our Discord server MVPs are not directly involved with the development of MHServ
 
 Some of the custom features in this fork are based on ideas and implementations from other MHServerEmu forks. Credit to their original creators:
 
-- [CorvaeOboro](https://corvaeoboro.github.io/MHServerEmu/) — Loot Filter, Stash Affinity, Item Auto Pickup, Throwable Toggle, and Item Chest Auto Open.
+- [CorvaeOboro](https://corvaeoboro.github.io/MHServerEmu/) — Loot Filter, Stash Affinity, Item Auto Pickup, Throwable Toggle, Item Chest Auto Open, and Incursion.
 
-- [TruSkillzzRuns](https://github.com/TruSkillzzRuns/MHServerEmu) — Phantom Heroes.
+- [TruSkillzzRuns](https://github.com/TruSkillzzRuns/MHServerEmu) — Phantom Heroes and Rogue Nemesis.
 
 - [mtzimas92](https://github.com/mtzimas92/MHServerEmu) — this repository's direct parent fork. The `!stash` command and the `DayOfWeekRotation` change, plus the features inherited from his fork: the gift service, the `!commendations` and `!ultron` commands, the `!player bring`/`!player goto` admin commands, and the admin-only mission reset.
 
