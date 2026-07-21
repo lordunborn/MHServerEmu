@@ -14,6 +14,10 @@ This repository's lineage is [Crypto137/MHServerEmu](https://github.com/Crypto13
 
 - **Phantom Heroes** — spawn server-side AI-controlled hero companions (`!phantom spawn`) that fight alongside a solo player as a synthetic party, up to 9 active phantoms per player (configurable). Includes idle-follow formation locomotion, level-scaled damage and gear (armor/artifact pool restrictions, a configurable bad-item blacklist, level-scaled relic stacks), ultimates and charge-release power support, death/despawn handling, and full party-HUD integration (health bars, leave/kick/disband/convert-to-raid). Based on and adapted from [TruSkillzzRuns's fork](https://github.com/TruSkillzzRuns/MHServerEmu).
 
+- **Rogue Nemesis** — an opt-in (`!rogue enable`), per-player villain ambush system. Eligible players periodically get ambushed by a rogue drawn from a curated gallery of hero-to-villain matchups (weighted, with a fallback pool so it doesn't become fully predictable), which builds up a 0-5 Nemesis rank against you the more you fight it, with difficulty and loot quality scaling with rank. Rank 4/5 loot is gated behind your own damage share in the fight (so summoned companions can't farm top-tier rewards for you), and rank-5 kills are capped to once per day to prevent loot farming. Check your status with `!rogue status`.
+
+- **Incursion** — an experimental, toggleable random invader system: a hostile impostor enemy (skinned as a random hero variant, drawn from a large roster) periodically hunts a player in eligible patrol zones. Configurable spawn cadence, damage/visual scaling, lifetime, and a per-region allow-list. Controlled via `!incursion start` / `stop` / `status`, off by default.
+
 - **Server-Side Player Loot Filter** — players can configure filters for loot they don't want, and the server simply won't spawn those items for them. Based on [CorvaeOboro's fork](https://corvaeoboro.github.io/MHServerEmu/).
 
 - **Item Auto-Pickup** — configurable server-side auto-pickup for currency, crafting ingredients, Runeword Glyphs, and Relics within a radius, with per-category stash-vs-inventory routing. Players can opt out of individual categories or override routing for themselves via `!autopickup`, independent of the server-wide defaults. Based on CorvaeOboro's fork.
@@ -31,6 +35,8 @@ This repository's lineage is [Crypto137/MHServerEmu](https://github.com/Crypto13
 - **Changed `DayOfWeekRotation`** — changed LiveTuning event rotation to actually cycle weekly on the configured weekday, instead of firing all rotation events simultaneously on the month's 5th occurrence. Based on [mtzimas92's fork](https://github.com/mtzimas92/MHServerEmu).
 
 - **Stackable loot boxes and Fortune Cards** — chests and cards like Midtown Madness Chests, Odin's Bounty, Worldstone Caches/Giftboxes, Reliquaries, and Fortune Cards can now stack in inventory instead of taking a separate slot each, with the level requirement removed so stacks aren't locked to the level they first dropped at. Each individual item opened from a stack still rolls its own independent, level-appropriate reward rather than repeating whatever the first one in the stack rolled. Based on a fix contributed by @sillyotter in the MHServerEmu Discord.
+
+- **In-game news page** — the client's login news popup (and any other embedded-browser window) can point at server-hosted static content instead of an external URL, hot-reloadable via `!server reloadnews`.
 
 - **Stability fixes and admin tooling** — fixed a null-reference crash in `Teleporter.CanTeleport()` that could take down a whole game instance on the CH0906 Loki boss region, added admin debug commands that dump item, power, and orb prototype data to JSON (`!debug dumpitems` / `dumppower` / `listorbs`), and tuned several server config defaults (Eternity Splinter cooldown/stacking, credit chest conversion, account binding off).
 
