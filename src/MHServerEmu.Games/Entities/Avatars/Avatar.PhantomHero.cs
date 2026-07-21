@@ -1924,6 +1924,32 @@ namespace MHServerEmu.Games.Entities.Avatars
         public ulong SpawnPhantomHeroFromIntent(PrototypeId avatarRefOverride, int level, string username, bool lockLevel, ulong costumeRef, out string error, List<ulong> gearRefs = null)
             => SpawnPhantomHeroCore(avatarRefOverride, level, username, lockLevel, costumeRef, gearRefs, out error);
 
+        /// <summary>
+        /// Comma-separated substrings matched against the region's full prototype path
+        /// (PhantomHeroesExcludedRegions config) - same pattern as RogueNemesisManager.IsExcludedRegion.
+        /// Used to keep phantoms out of content that scales around a fixed player count
+        /// (e.g. wave-battle events), where N players each bringing up to 9 phantoms would
+        /// blow past the intended scaling.
+        /// </summary>
+        private bool IsPhantomExcludedRegion(Region region)
+        {
+            if (region?.Prototype == null) return false;
+
+            string patterns = Game.CustomGameOptions?.PhantomHeroesExcludedRegions;
+            if (string.IsNullOrWhiteSpace(patterns)) return false;
+
+            string name = GameDatabase.GetPrototypeName(region.PrototypeDataRef);
+            if (string.IsNullOrEmpty(name)) return false;
+
+            foreach (string pattern in patterns.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (name.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
         private ulong SpawnPhantomHeroCore(PrototypeId avatarRefOverride, int levelOverride, string username, bool lockLevel, ulong costumeRef, List<ulong> gearRefs, out string error)
         {
             error = null;
@@ -1931,6 +1957,8 @@ namespace MHServerEmu.Games.Entities.Avatars
 
             Region region = Region;
             if (region == null) { error = "no region"; return 0; }
+
+            if (IsPhantomExcludedRegion(region)) { error = "phantoms are disabled in this region"; return 0; }
 
             int maxActive = Game.CustomGameOptions.PhantomHeroesMaxActive;
             if (PhantomHeroCount >= maxActive) { error = $"phantom cap reached ({PhantomHeroCount}/{maxActive})"; return 0; }

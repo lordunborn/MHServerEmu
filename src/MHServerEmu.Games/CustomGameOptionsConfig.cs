@@ -52,6 +52,7 @@ namespace MHServerEmu.Games
         public string PhantomGearItemBlacklist { get; private set; } = "";
         public int PhantomHeroesDownedGracePeriodMs { get; private set; } = 30000;
         public int PhantomHeroesReviveCooldownMs { get; private set; } = 60000;
+        public string PhantomHeroesExcludedRegions { get; private set; } = "";
 
         // Throwable Options
         public bool DisableInteractiveThrowables { get; private set; } = true;

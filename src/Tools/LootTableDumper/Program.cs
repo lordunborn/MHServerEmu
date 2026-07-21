@@ -4,6 +4,9 @@ using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.LiveTuning;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.GameData.Prototypes.Markers;
+using MHServerEmu.Games.Locales;
+using MHServerEmu.Games.Properties;
+using System.Reflection;
 
 namespace LootTableDumper
 {
@@ -79,6 +82,81 @@ namespace LootTableDumper
             {
                 string pattern = args.Length > 1 ? args[1] : "";
                 RegionClientMapSearch(pattern);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--findunrealclass")
+            {
+                if (args.Length > 1 && ulong.TryParse(args[1], out ulong assetIdVal))
+                    FindUnrealClass((AssetId)assetIdVal);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--findtrackable")
+            {
+                string pattern = args.Length > 1 ? args[1] : "";
+                FindTrackableEntities(pattern);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--getguid")
+            {
+                if (args.Length > 1 && ulong.TryParse(args[1], out ulong refVal))
+                {
+                    PrototypeId protoRef = (PrototypeId)refVal;
+                    PrototypeGuid guid = GameDatabase.GetPrototypeGuid(protoRef);
+                    Console.WriteLine($"Ref={refVal} ({SafeGetName(protoRef)}) -> Guid={(ulong)guid}");
+                }
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--findbytype")
+            {
+                string typeName = args.Length > 1 ? args[1] : "";
+                FindByCSharpType(typeName);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--findteleportnpc")
+            {
+                FindTeleportInteractMissions();
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--dumplootprops")
+            {
+                string path = args.Length > 1 ? args[1] : "";
+                DumpLootTableProps(path);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--dumpallprops")
+            {
+                string path = args.Length > 1 ? args[1] : "";
+                DumpAllProps(path);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--dumpstrings")
+            {
+                string locoDir = args.Length > 1 ? args[1] : "";
+                string searchPattern = args.Length > 2 ? args[2] : "";
+                DumpStrings(locoDir, searchPattern);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--findlocalestringref")
+            {
+                if (args.Length > 1 && ulong.TryParse(args[1], out ulong localeStringVal))
+                    FindLocaleStringRef((LocaleStringId)localeStringVal);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--lookupstring")
+            {
+                string locoDir = args.Length > 1 ? args[1] : "";
+                string idStr = args.Length > 2 ? args[2] : "";
+                LookupString(locoDir, idStr);
                 return;
             }
 
@@ -191,6 +269,327 @@ namespace LootTableDumper
         /// (Missions, WorldEntities, MetaStates, Powers, etc. each declare their own), reports its value.
         /// Used to find every cut/NotInGame entity belonging to a content pack in one pass.
         /// </summary>
+        private static void FindTrackableEntities(string pattern)
+        {
+            Console.WriteLine($"==================== Searching for entities with working ObjectiveInfo.EdgeEnabled + a real UnrealClass, name filter '{pattern}' ====================");
+
+            int count = 0;
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                string name = SafeGetName(protoRef);
+                if (pattern.Length > 0 && name.Contains(pattern, StringComparison.OrdinalIgnoreCase) == false) continue;
+
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto == null) continue;
+
+                var objectiveInfoProp = proto.GetType().GetProperty("ObjectiveInfo");
+                var unrealClassProp = proto.GetType().GetProperty("UnrealClass");
+                var designStateProp = proto.GetType().GetProperty("DesignState");
+                if (objectiveInfoProp == null || unrealClassProp == null) continue;
+
+                object objectiveInfo;
+                object unrealClassVal;
+                try
+                {
+                    objectiveInfo = objectiveInfoProp.GetValue(proto);
+                    unrealClassVal = unrealClassProp.GetValue(proto);
+                }
+                catch { continue; }
+
+                if (objectiveInfo == null || unrealClassVal is not AssetId unrealClass || unrealClass == AssetId.Invalid) continue;
+
+                var edgeEnabledProp = objectiveInfo.GetType().GetProperty("EdgeEnabled");
+                if (edgeEnabledProp == null) continue;
+
+                object edgeEnabledVal;
+                try { edgeEnabledVal = edgeEnabledProp.GetValue(objectiveInfo); }
+                catch { continue; }
+                if (edgeEnabledVal is not bool edgeEnabled || edgeEnabled == false) continue;
+
+                string designState = "?";
+                if (designStateProp != null)
+                {
+                    try { designState = designStateProp.GetValue(proto)?.ToString() ?? "?"; }
+                    catch { }
+                }
+
+                count++;
+                Console.WriteLine($"  {name} [{proto.GetType().Name}] DesignState={designState} UnrealClass={GameDatabase.GetAssetName(unrealClass)} (Ref={(ulong)protoRef})");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {count} matches --");
+        }
+
+        private static void FindUnrealClass(AssetId targetAssetId)
+        {
+            Console.WriteLine($"==================== Searching all prototypes for UnrealClass={(ulong)targetAssetId} ({GameDatabase.GetAssetName(targetAssetId)}) ====================");
+
+            int count = 0;
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto == null) continue;
+
+                var unrealClassProp = proto.GetType().GetProperty("UnrealClass");
+                if (unrealClassProp == null) continue;
+
+                object value;
+                try { value = unrealClassProp.GetValue(proto); }
+                catch { continue; }
+                if (value is not AssetId assetId || assetId != targetAssetId) continue;
+
+                count++;
+                Console.WriteLine($"  {SafeGetName(protoRef)} [{proto.GetType().Name}] (Ref={(ulong)protoRef})");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {count} matches --");
+        }
+
+        private static void FindByCSharpType(string typeName)
+        {
+            Console.WriteLine($"==================== All prototypes whose C# type is exactly '{typeName}' ====================");
+
+            int count = 0;
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto == null) continue;
+                if (proto.GetType().Name != typeName) continue;
+
+                count++;
+                Console.WriteLine($"  {SafeGetName(protoRef)} (Ref={(ulong)protoRef})");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {count} matches --");
+        }
+
+        private static void DumpLootTableProps(string path)
+        {
+            PrototypeId protoRef = GameDatabase.GetPrototypeRefByName(path);
+            if (protoRef == PrototypeId.Invalid)
+            {
+                Console.WriteLine($"Could not resolve prototype name '{path}'.");
+                return;
+            }
+
+            Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+            var propsField = proto.GetType().GetProperty("Properties");
+            if (propsField == null || propsField.GetValue(proto) is not PropertyCollection properties)
+            {
+                Console.WriteLine("This prototype has no Properties collection.");
+                return;
+            }
+
+            Console.WriteLine($"==================== LootTablePrototype properties on {path} ====================");
+            foreach (var kvp in properties)
+            {
+                PropertyId id = kvp.Key;
+                if (id.Enum != PropertyEnum.LootTablePrototype) continue;
+
+                Property.FromParam(id, 0, out AssetId param0);
+                Property.FromParam(id, 1, out int param1);
+                Property.FromParam(id, 2, out AssetId param2);
+                PrototypeId value = kvp.Value;
+
+                Console.WriteLine($"  [{GameDatabase.GetAssetName(param0)}={(ulong)param0}] [{param1}] [{GameDatabase.GetAssetName(param2)}={(ulong)param2}] = {SafeGetName(value)} ({(ulong)value})");
+            }
+        }
+
+        private static void DumpAllProps(string path)
+        {
+            PrototypeId protoRef = GameDatabase.GetPrototypeRefByName(path);
+            if (protoRef == PrototypeId.Invalid) { Console.WriteLine($"Could not resolve prototype name '{path}'."); return; }
+
+            Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+            var propsField = proto.GetType().GetProperty("Properties");
+            if (propsField == null || propsField.GetValue(proto) is not PropertyCollection properties)
+            { Console.WriteLine("This prototype has no Properties collection."); return; }
+
+            Console.WriteLine($"==================== ALL properties on {path} ====================");
+            foreach (var kvp in properties)
+                Console.WriteLine($"  {kvp.Key} = {(int)kvp.Value} (int) / {(float)kvp.Value} (float)");
+        }
+
+        /// <summary>
+        /// Loads the client's real *.string files (e.g. Data/Game/Loco/eng.all) directly via Locale.ImportStringStream,
+        /// bypassing LocaleManager/full locale setup entirely, and either dumps everything or filters by substring.
+        /// This does not touch the running server's own Data/Config - it's a standalone read-only tool.
+        /// </summary>
+        private static void DumpStrings(string locoDir, string searchPattern)
+        {
+            if (Directory.Exists(locoDir) == false)
+            {
+                Console.WriteLine($"Directory not found: {locoDir}");
+                return;
+            }
+
+            Locale locale = new(LocaleManager.Instance, Path.Combine(locoDir, "dummy.locale"), "English",
+                LocaleLanguage.English, "English", LocaleRegion.All, "Everywhere", "eng.all");
+
+            int fileCount = 0;
+            foreach (string filePath in Directory.GetFiles(locoDir, "*.string"))
+            {
+                using FileStream fs = File.OpenRead(filePath);
+                if (locale.ImportStringStream(filePath, fs))
+                    fileCount++;
+                else
+                    Console.WriteLine($"Failed to import {filePath}");
+            }
+
+            var field = typeof(Locale).GetField("_stringMap", BindingFlags.NonPublic | BindingFlags.Instance);
+            var stringMap = (Dictionary<LocaleStringId, LocaleDefaultString>)field.GetValue(locale);
+
+            Console.WriteLine($"Loaded {fileCount} .string files, {stringMap.Count} total strings from {locoDir}");
+
+            if (string.IsNullOrEmpty(searchPattern))
+            {
+                Console.WriteLine("(pass a search term as the 2nd argument to filter by substring, e.g. --dumpstrings <dir> \"threat\")");
+                return;
+            }
+
+            Console.WriteLine($"==================== Strings containing '{searchPattern}' ====================");
+            int matches = 0;
+            foreach (var kvp in stringMap)
+            {
+                if (kvp.Value.String.Contains(searchPattern, StringComparison.OrdinalIgnoreCase) == false)
+                    continue;
+
+                Console.WriteLine($"  {(ulong)kvp.Key} = \"{kvp.Value.String}\"");
+                matches++;
+            }
+            Console.WriteLine($"-- {matches} matches --");
+        }
+
+        /// <summary>
+        /// Scans every prototype's public properties (including nested Prototype-typed fields/arrays, one level deep)
+        /// for a LocaleStringId field matching the given value. Used to find which field on which prototype actually
+        /// carries a given string id, when it's not obvious from a targeted --dump.
+        /// </summary>
+        private static void FindLocaleStringRef(LocaleStringId targetId)
+        {
+            Console.WriteLine($"==================== Searching all prototypes for LocaleStringId={(ulong)targetId} ====================");
+
+            int count = 0;
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto == null) continue;
+
+                foreach (var prop in proto.GetType().GetProperties())
+                {
+                    if (prop.GetIndexParameters().Length > 0) continue;
+                    object value;
+                    try { value = prop.GetValue(proto); }
+                    catch { continue; }
+
+                    if (value is LocaleStringId lsid && lsid == targetId)
+                    {
+                        count++;
+                        Console.WriteLine($"  {SafeGetName(protoRef)} [{proto.GetType().Name}].{prop.Name} (Ref={(ulong)protoRef})");
+                    }
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {count} matches --");
+        }
+
+        private static void LookupString(string locoDir, string idStr)
+        {
+            if (Directory.Exists(locoDir) == false || ulong.TryParse(idStr, out ulong idVal) == false)
+            {
+                Console.WriteLine("Usage: --lookupstring <locoDir> <numeric LocaleStringId>");
+                return;
+            }
+
+            Locale locale = new(LocaleManager.Instance, Path.Combine(locoDir, "dummy.locale"), "English",
+                LocaleLanguage.English, "English", LocaleRegion.All, "Everywhere", "eng.all");
+
+            foreach (string filePath in Directory.GetFiles(locoDir, "*.string"))
+            {
+                using FileStream fs = File.OpenRead(filePath);
+                locale.ImportStringStream(filePath, fs);
+            }
+
+            string text = locale.GetLocaleString((LocaleStringId)idVal);
+            Console.WriteLine(string.IsNullOrEmpty(text) ? $"{idVal} = (not found)" : $"{idVal} = \"{text}\"");
+        }
+
+        private static void FindTeleportInteractMissions()
+        {
+            Console.WriteLine("==================== Missions containing BOTH a MissionConditionEntityInteractPrototype AND a MissionActionPlayerTeleportPrototype ====================");
+
+            int count = 0;
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IteratePrototypesInHierarchy<MissionPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto == null) continue;
+
+                VisitedInChain.Clear();
+                bool hasInteract = ContainsTypeInGraph(proto, "MissionConditionEntityInteractPrototype", 0, 6);
+                VisitedInChain.Clear();
+                bool hasTeleport = ContainsTypeInGraph(proto, "MissionActionPlayerTeleportPrototype", 0, 6);
+
+                if (hasInteract && hasTeleport)
+                {
+                    count++;
+                    Console.WriteLine($"  {SafeGetName(protoRef)} (Ref={(ulong)protoRef})");
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {count} matches --");
+        }
+
+        private static bool ContainsTypeInGraph(object obj, string typeName, int depth, int maxDepth)
+        {
+            if (obj == null || depth > maxDepth) return false;
+
+            Type type = obj.GetType();
+            if (type.IsValueType == false)
+            {
+                if (VisitedInChain.Contains(obj)) return false;
+                VisitedInChain.Add(obj);
+            }
+
+            if (obj is Prototype && type.Name == typeName)
+                return true;
+
+            if (obj is Prototype)
+            {
+                foreach (var prop in type.GetProperties())
+                {
+                    if (prop.GetIndexParameters().Length > 0) continue;
+                    object value;
+                    try { value = prop.GetValue(obj); }
+                    catch { continue; }
+                    if (value == null) continue;
+
+                    if (value is Prototype childProto)
+                    {
+                        if (childProto.GetType().Name == typeName) return true;
+                        if (ContainsTypeInGraph(childProto, typeName, depth + 1, maxDepth)) return true;
+                    }
+                    else if (value is System.Collections.IEnumerable enumerable && value is not string)
+                    {
+                        foreach (var item in enumerable)
+                        {
+                            if (item is Prototype itemProto)
+                            {
+                                if (itemProto.GetType().Name == typeName) return true;
+                                if (ContainsTypeInGraph(itemProto, typeName, depth + 1, maxDepth)) return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private static void DesignStateSweep(string pattern)
         {
             Console.WriteLine($"==================== DesignState sweep for prototypes matching '{pattern}' ====================");
@@ -763,6 +1162,11 @@ namespace LootTableDumper
                 Console.WriteLine($"{indent}[LootDropItemFilterPrototype] ParentDataRef={(ulong)itemFilter.ParentDataRef} NumMin={itemFilter.NumMin} NumMax={itemFilter.NumMax} ItemRank={itemFilter.ItemRank} UISlot={itemFilter.UISlot} Weight={itemFilter.Weight}");
                 PrintModifiers(itemFilter, indent);
             }
+            else if (proto is LootDropAgentPrototype agentDrop)
+            {
+                Console.WriteLine($"{indent}[LootDropAgentPrototype] Agent={SafeGetName(agentDrop.Agent)} (Ref={(ulong)agentDrop.Agent}) ParentDataRef={(ulong)agentDrop.ParentDataRef} NumMin={agentDrop.NumMin} NumMax={agentDrop.NumMax} Weight={agentDrop.Weight}");
+                PrintModifiers(agentDrop, indent);
+            }
             else if (proto is LootDropCharacterTokenPrototype charToken)
             {
                 Console.WriteLine($"{indent}[LootDropCharacterTokenPrototype] ParentDataRef={(ulong)charToken.ParentDataRef} AllowedTokenType={charToken.AllowedTokenType} FilterType={charToken.FilterType} Weight={charToken.Weight} OnTokenUnavailable={(charToken.OnTokenUnavailable == null ? "null" : charToken.OnTokenUnavailable.GetType().Name)}");
@@ -802,6 +1206,7 @@ namespace LootTableDumper
                     LootRollRequireDropperKeywordPrototype t => $"Choices=[{string.Join(", ", (t.Choices ?? Array.Empty<PrototypeId>()).Select(SafeGetName))}]",
                     LootRollForbidDropperKeywordPrototype t => $"Choices=[{string.Join(", ", (t.Choices ?? Array.Empty<PrototypeId>()).Select(SafeGetName))}]",
                     LootRollSetUsablePrototype t => $"Usable={t.Usable}",
+                    LootRollSetRarityPrototype t => $"Choices=[{string.Join(", ", (t.Choices ?? Array.Empty<PrototypeId>()).Select(SafeGetName))}]",
                     _ => ""
                 };
 

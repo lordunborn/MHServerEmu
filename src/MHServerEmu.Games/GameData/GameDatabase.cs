@@ -98,9 +98,6 @@ namespace MHServerEmu.Games.GameData
             PropertyInfoTable = new();
             PropertyInfoTable.Initialize();
 
-            // Initialize PrototypePatchManager
-            PrototypePatchManager.Instance.Initialize(config.EnablePatchManager);
-
             // Load globals prototypes
             PrototypeId globalsPrototypeId = GetPrototypeRefByName("Globals/Globals.defaults");
             GlobalsPrototype = GetPrototype<GlobalsPrototype>(globalsPrototypeId);
@@ -120,6 +117,17 @@ namespace MHServerEmu.Games.GameData
             GamepadGlobalsPrototype = GetPrototype<GamepadGlobalsPrototype>(GlobalsPrototype.GamepadGlobals);
             DifficultyGlobalsPrototype = GetPrototype<DifficultyGlobalsPrototype>(GlobalsPrototype.DifficultyGlobals);
             ConsoleGlobalsPrototype = GetPrototype<ConsoleGlobalsPrototype>(GlobalsPrototype.ConsoleGlobals);
+
+            // Initialize PrototypePatchManager
+            // NOTE: Must run after Globals are resolved above - patch entries using ValueType "Prototype"/"PrototypeArray"
+            // (e.g. custom loot table construction) trigger CopyPrototypeDataRefFields(), which can force early
+            // deserialization of LootTablePrototype instances. LootTablePrototype.PostProcess() needs
+            // GameDatabase.LootGlobalsPrototype to compute LootTablePrototypeEnumValue - if patches load first,
+            // that Verify fails (harmless fallback to DefaultTuningVarValue, but permanently caches a bad enum
+            // value on whatever got force-loaded, silently disabling LiveTuning overrides for it for the
+            // lifetime of the process). No existing patch file targets a Globals-family prototype, so moving
+            // this here is safe.
+            PrototypePatchManager.Instance.Initialize(config.EnablePatchManager);
 
             // initializeKeywordPrototypes
 
