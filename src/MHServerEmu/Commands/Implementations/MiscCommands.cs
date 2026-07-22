@@ -231,30 +231,45 @@ namespace MHServerEmu.Commands.Implementations
         }
 
         [CommandGroup("Ultron")]
-        [CommandGroupDescription("Teleports to the Ultron Raid.")]
+        [CommandGroupDescription("Teleports to the Ultron Raid at a forced difficulty tier.")]
         [CommandGroupFlags(CommandGroupFlags.SingleCommand)]
         public class UltronCommand : CommandGroup
         {
             [DefaultCommand]
+            [CommandUsage("Ultron [t3|t4|t5]")]
             [CommandInvokerType(CommandInvokerType.Client)]
             public string Ultron(string[] @params, NetClient client)
             {
                 Player player = ((PlayerConnection)client).Player;
                 PrototypeId targetProtoRef = (PrototypeId)6101407482858775734;
-                PrototypeId omegaDifficulty = (PrototypeId)586640101754933627;
-                if (omegaDifficulty == PrototypeId.Invalid)
+
+                // Default to t3 (Cosmic) - the tier this command has forced since it was
+                // last hand-edited, kept as the no-argument default for anyone used to
+                // just typing "!Ultron". Resolved by name, not a hardcoded numeric literal
+                // - the Tier4/Tier5 values below were previously found to be inconsistent
+                // with each other from exactly that kind of copy/paste drift.
+                string tierParam = @params.Length > 0 ? @params[0].ToLower() : "t3";
+
+                PrototypeId difficultyTierRef = tierParam switch
                 {
-                    return "Error: Could not find 'Difficulty/Tiers/Tier4Cosmic.prototype'.";
-                }
+                    "t3" => GameDatabase.GetPrototypeRefByName("Difficulty/Tiers/Tier3Superheroic.prototype"),
+                    "t4" => (PrototypeId)1087474643293441873,  // Difficulty/Tiers/Tier4Cosmic.prototype
+                    "t5" => (PrototypeId)424700179461639950,   // Difficulty/Tiers/Tier5Omega1.prototype
+                    _ => PrototypeId.Invalid
+                };
+
+                if (difficultyTierRef == PrototypeId.Invalid)
+                    return "Unknown difficulty. Valid difficulties: t3, t4, t5";
+
                 using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
                 teleporter.Initialize(player, TeleportContextEnum.TeleportContext_Debug);
-                teleporter.DifficultyTierRef = omegaDifficulty;
+                teleporter.DifficultyTierRef = difficultyTierRef;
 
                 if (teleporter.TeleportToTarget(targetProtoRef) == false)
                 {
                     return "Teleport failed. Check server logs for details.";
                 }
-                return "Teleporting to Ultron (Cosmic)...";
+                return $"Teleporting to Ultron ({tierParam.ToUpper()})...";
             }
         }
 
@@ -303,6 +318,68 @@ namespace MHServerEmu.Commands.Implementations
                     return "Teleport failed. Check server logs for details.";
                 }
                 return $"Teleporting to {@params[0]} ({@params[1].ToUpper()})...";
+            }
+        }
+
+        [CommandGroup("difficulty")]
+        [CommandGroupDescription("Sets your difficulty tier preference (including T4/T5, which the normal slider can't reach) or reports the current region's actual difficulty tier with 'status'.")]
+        [CommandGroupFlags(CommandGroupFlags.SingleCommand)]
+        public class DifficultyCommand : CommandGroup
+        {
+            [DefaultCommand]
+            [CommandUsage("difficulty [status|t1|t2|t3|t4|t5]")]
+            [CommandInvokerType(CommandInvokerType.Client)]
+            public string Difficulty(string[] @params, NetClient client)
+            {
+                Player player = ((PlayerConnection)client).Player;
+                Avatar avatar = player.CurrentAvatar;
+                if (avatar == null)
+                    return "No active avatar.";
+
+                // No argument or "status" - report the ACTUAL difficulty tier the
+                // current region was created with, not just your preference. This
+                // is the only way to visually confirm T4/T5 are really in effect,
+                // since the waypoint bar can't display them and !ultron/!patrol's
+                // own reply only echoes back what you requested, not what the
+                // region ended up resolving to.
+                if (@params.Length < 1 || @params[0].ToLower() == "status")
+                {
+                    Region region = avatar.Region;
+                    if (region == null)
+                        return "Not currently in a region.";
+
+                    PrototypeId currentTierRef = region.DifficultyTierRef;
+                    if (currentTierRef == PrototypeId.Invalid)
+                        return "Current region has no difficulty tier set.";
+
+                    return $"Current region difficulty: {currentTierRef.GetNameFormatted()}";
+                }
+
+                // t1/t2/t3 resolved by name rather than a hardcoded numeric literal -
+                // there's no previously-verified value for these in this codebase, and
+                // guessing one is exactly how !Ultron's tier ended up wrong before.
+                PrototypeId difficultyTierRef = @params[0].ToLower() switch
+                {
+                    "t1" => GameDatabase.GetPrototypeRefByName("Difficulty/Tiers/Tier1Normal.prototype"),
+                    "t2" => GameDatabase.GetPrototypeRefByName("Difficulty/Tiers/Tier2Heroic.prototype"),
+                    "t3" => GameDatabase.GetPrototypeRefByName("Difficulty/Tiers/Tier3Superheroic.prototype"),
+                    "t4" => (PrototypeId)1087474643293441873,  // Difficulty/Tiers/Tier4Cosmic.prototype
+                    "t5" => (PrototypeId)424700179461639950,   // Difficulty/Tiers/Tier5Omega1.prototype
+                    _ => PrototypeId.Invalid
+                };
+
+                if (difficultyTierRef == PrototypeId.Invalid)
+                    return "Unknown difficulty. Valid difficulties: t1, t2, t3, t4, t5";
+
+                if (player.CanChangeDifficulty(difficultyTierRef) == false)
+                    return $"You haven't unlocked {@params[0].ToUpper()} yet.";
+
+                // Triggers Avatar.OnPropertyChange's existing DifficultyTierPreference
+                // case - notifies the PlayerManager and syncs party difficulty the same
+                // way picking a difficulty on the normal slider already does.
+                avatar.Properties[PropertyEnum.DifficultyTierPreference] = difficultyTierRef;
+
+                return $"Difficulty preference set to {@params[0].ToUpper()}. Takes effect the next time you enter a region.";
             }
         }
 

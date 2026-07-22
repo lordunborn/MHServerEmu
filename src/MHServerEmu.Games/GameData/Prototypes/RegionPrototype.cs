@@ -407,6 +407,19 @@ namespace MHServerEmu.Games.GameData.Prototypes
             {
                 if (mask.HasFlag((DifficultyTierMask)(1 << (int)i)))
                 {
+                    // The requested tier's own coarse bucket is already allowed by this
+                    // region - return the EXACT tier the caller asked for instead of
+                    // whatever single prototype happens to be registered for that bucket
+                    // (GetDifficultyTierByEnum only ever returns one). Multiple distinct
+                    // DifficultyTierPrototypes can share the same coarse Tier enum value
+                    // (Tier3Superheroic/Tier4Cosmic/Tier5Omega1 are all "Cosmic") - without
+                    // this, any of them would silently collapse down to whichever one is
+                    // registered, even on a direct/exact match. Only fall back to the
+                    // registered bucket prototype below when genuinely crossing to a
+                    // DIFFERENT bucket the caller didn't ask for.
+                    if (i == tier)
+                        return difficultyTierProto.DataRef;
+
                     DifficultyTierPrototype constrainedDifficultyProto = GameDatabase.GlobalsPrototype.GetDifficultyTierByEnum(i);
                     return constrainedDifficultyProto.DataRef;
                 }

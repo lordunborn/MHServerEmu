@@ -204,6 +204,21 @@ namespace MHServerEmu.Games.Regions
             }
 
             // Keep difficulty consistent for teleports that are expected to be local (e.g. resurrect, Surtur raid teleport).
+            //
+            // TeleportContext_MetaGame covers MetaGameMode.TeleportPlayersToTarget - the
+            // shared internal stage-transition helper used by every metagame-driven raid
+            // (Ultron, Axis, Surtur, and anything future). It never sets DifficultyTierRef
+            // itself, so without this case it fell through to Player.GetDifficultyTierPreference()
+            // below - the player's raw STORED preference, not the tier the raid instance is
+            // actually running at. Added defensively alongside the Mission/Power/Resurrect
+            // cases for consistency; the specific "already in queue" bug found on Ultron's
+            // stage-3-to-boss-arena transition turned out to be a different, region-data
+            // issue (UltronRaidRegionCosmic's own AccessDifficulties never declared Cosmic
+            // access at all - see PatchDataMod_Difficulty_Raid_AgeofUltron.json), reached via
+            // TeleportContext_Transition rather than this case. Kept anyway since the same
+            // failure shape (a stale/mismatched stored preference reached via a MetaGame-
+            // driven transition) is a real, if not yet observed, risk for any raid using this
+            // helper.
             if (DifficultyTierRef == PrototypeId.Invalid)
             {
                 switch (Context)
@@ -211,6 +226,7 @@ namespace MHServerEmu.Games.Regions
                     case TeleportContextEnum.TeleportContext_Mission:
                     case TeleportContextEnum.TeleportContext_Power:
                     case TeleportContextEnum.TeleportContext_Resurrect:
+                    case TeleportContextEnum.TeleportContext_MetaGame:
                         DifficultyTierRef = region.DifficultyTierRef;
                         break;
                 }
