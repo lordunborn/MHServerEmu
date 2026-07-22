@@ -1,0 +1,28 @@
+[
+    {
+        "Enabled": true,
+        "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+        "Path": "MarkerSet.Markers[13].EntityGuid",
+        "Description": "Change BUXGiver to Silver Sable from Midtown Vendors",
+        "ValueType": "PrototypeGuid",
+        "Value": 11632935904948665871
+    },
+	{
+		"Enabled": true,
+		"Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/ItemVendors/MidtownVendorWeapon.prototype",
+		"Path": "Properties",
+		"Description": "Set Vendor Type to Special Event Vendor",
+		"ValueType": "Properties",
+		"Value": {
+			"VendorType": 12101943770254220031
+		}
+	},	
+    {
+        "Enabled": true,
+        "Prototype": "Entity/Characters/Vendors/VendorTypes/SpecialEventVendor.prototype",
+        "Path": "Inventories[0].LootTable",
+        "Description": "Add Summer Event to Special Events Vendor",
+        "ValueType": "PrototypeId",
+        "Value": 16485753690354620499
+    }
+]    

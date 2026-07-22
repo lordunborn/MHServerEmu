@@ -1,0 +1,702 @@
+[
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolBrooklyn/BrooklynPatrolRegionBand.prototype",
+    "Setting": "eRT_BonusXPPct",
+    "Value": 1.25
+  },
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolBrooklyn/BrooklynPatrolRegionBand.prototype",
+    "Setting": "eRT_BonusItemFindMultiplier",
+    "Value": 10
+  },
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolBrooklyn/BrooklynPatrolRegionBand.prototype",
+    "Setting": "eRT_XPBuffDisplay",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBosses.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBosses.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesAll.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesAll.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmic.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmic.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmicSub.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmicSub.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventAmalgamatedOne.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventAmalgamatedOne.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventAmalgamatedOne.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBackInBlack.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBackInBlack.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBackInBlack.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeBlue.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeBlue.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeBlue.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeGreen.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeGreen.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeGreen.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeRed.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeRed.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeRed.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneEotE.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneEotE.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneEotE.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneFF.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneFF.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneFF.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneSuper.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneSuper.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneSuper.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventDoctorOctopus.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventGrimReaper.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventGrimReaper.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventGrimReaper.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventKraven.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventKraven.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventKraven.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLivingLaser.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLivingLaser.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLivingLaser.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLoki.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLoki.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLoki.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV01.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV01.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV01.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV02.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV02.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV02.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV03.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV03.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV03.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOK.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOK.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOK.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalker.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalker.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalker.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV2.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV2.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV2.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV3.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV3.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV3.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV4.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV4.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV4.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMrSinister.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMrSinister.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMrSinister.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventRhino.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventRhino.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventRhino.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSDoctorOctopus.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSElectro.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSElectro.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSElectro.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSGrimReaper.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSGrimReaper.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSGrimReaper.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSKraven.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSKraven.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSKraven.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSLizard.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSLizard.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSLizard.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSRhino.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSRhino.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSRhino.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonArcherBoss.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonArcherBoss.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonArcherBoss.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonDualBoss.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonDualBoss.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonDualBoss.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonMaulBoss.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonMaulBoss.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonMaulBoss.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonSwordBoss.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonSwordBoss.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonSwordBoss.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Hood.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Hood.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Hood.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1LivingLaser.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1LivingLaser.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1LivingLaser.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Taskmaster.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Taskmaster.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Taskmaster.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Bullseye.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Bullseye.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Bullseye.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Kingpin.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Kingpin.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Kingpin.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Tombstone.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Tombstone.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Tombstone.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTaskmaster.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTaskmaster.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTaskmaster.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTombstone.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTombstone.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTombstone.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventVenom.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventVenom.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventVenom.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventWizard.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventWizard.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventWizard.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  }
+]

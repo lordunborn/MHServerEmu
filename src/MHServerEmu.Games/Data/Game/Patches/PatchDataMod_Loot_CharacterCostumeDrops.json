@@ -1,0 +1,36 @@
+[
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/ItemType/SpecialsCards.prototype",
+        "Path": "Choices[0].Choices[0]",
+        "Description": "Overwrite leftover FortuneCardMark1 slot with Costume drop (cloned from SpecialsCostumesCardsTokens' own Costume entry)",
+        "ValueType": "Prototype",
+        "Value": {
+            "ParentDataRef": 7084891761292086861,
+            "NumMin": 1,
+            "NumMax": 1,
+            "ItemRank": 1,
+            "UISlot": "Costume",
+            "Weight": 10
+        }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/ItemType/SpecialsCards.prototype",
+        "Path": "Choices[0].Choices[]",
+        "Description": "Add Character/Hero Unlock Token drop (cloned from SpecialsCostumesCardsTokens' own Character Token entry, includes LootRollSetUsablePrototype modifier)",
+        "ValueType": "Prototype",
+        "Value": {
+            "ParentDataRef": 9012181047433237614,
+            "Weight": 1
+        }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Mob/Bosses/SpecialEventsTable.prototype",
+        "Path": "Choices[]",
+        "Description": "Attach SpecialsCards (Costume + Character Token only, separate from the Doops-only SpecialsCostumesCardsTokens pool) to SpecialEventsTable",
+        "ValueType": "PrototypeDataRef",
+        "Value": 894593934331679178
+    }
+]

@@ -1,0 +1,130 @@
+[
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[0]",
+		"Description": "Slot 0: attach CosmicArtifactsTable as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 6601388876799612218
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[1]",
+		"Description": "Slot 1: attach BossExpOrbs as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 2136636186332238253
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[2]",
+		"Description": "Slot 2: attach SpecialEventsTable as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 3381467897344824433
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[3]",
+		"Description": "Slot 3: attach CosmicEssenceTable as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 6146100900051620258
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[4]",
+		"Description": "Slot 4: attach SplinterBoostTable as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 6663934888230850666
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[5]",
+		"Description": "Slot 5: attach EpicCatalystRewardLootTable as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 3288527341911414714
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[6]",
+		"Description": "Slot 6: attach RingOffenseOrDefense as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 181874990376424634
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[7]",
+		"Description": "Slot 7: attach RunewordGlyphsGeneral as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 2871311605222937940
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[8]",
+		"Description": "Slot 8: attach randomicpringtable as a subtable choice.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 9249959112398803934
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[9]",
+		"Description": "Slot 9: HeroComm10Box.",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 7963913432821078741,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[10]",
+		"Description": "Slot 10: ProtComm10Box.",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 10583912791301561068,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[11]",
+		"Description": "Slot 11: SixInfinityOrbChest.",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1899042455121240292,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+		"Path": "Choices[12]",
+		"Description": "Slot 12: RandomCostumeBox.",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 18074377730390301555,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	}
+]

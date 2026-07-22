@@ -1,0 +1,50 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBosses.prototype",
+    "Path": "Choices[]",
+    "Description": "Patrol Jackpot to Hightown Patrol Bosses",
+    "ValueType": "PrototypeDataRef",
+    "Value": 5392213491293232190
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBossesCosmicSub.prototype",
+    "Path": "Choices[]",
+    "Description": "Patrol Jackpot to Hightown Patrol Bosses",
+    "ValueType": "PrototypeDataRef",
+    "Value": 5392213491293232190
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBosses.prototype",
+    "Path": "Choices[]",
+    "Description": "Patrol Jackpot to Midtown Patrol Bosses",
+    "ValueType": "PrototypeDataRef",
+    "Value": 5392213491293232190
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmicSub.prototype",
+    "Path": "Choices[]",
+    "Description": "Patrol Jackpot to Midtown Patrol Bosses",
+    "ValueType": "PrototypeDataRef",
+    "Value": 5392213491293232190
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBosses.prototype",
+    "Path": "Choices[]",
+    "Description": "Patrol Jackpot to Industry City Patrol Bosses",
+    "ValueType": "PrototypeDataRef",
+    "Value": 5392213491293232190
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmicSub.prototype",
+    "Path": "Choices[]",
+    "Description": "Patrol Jackpot to Industry City Patrol Bosses",
+    "ValueType": "PrototypeDataRef",
+    "Value": 5392213491293232190
+  }
+]

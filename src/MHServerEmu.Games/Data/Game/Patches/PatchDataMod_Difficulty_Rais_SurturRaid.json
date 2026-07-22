@@ -1,0 +1,42 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid1Surtur.prototype",
+    "Path": "TuningDamageMobToPlayerDCL",
+    "Description": "[3-Man Raid Scaling] Cut global incoming enemy damage to 40%",
+    "ValueType": "Float",
+    "Value": 0.40
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid1Surtur.prototype",
+    "Path": "TuningDamagePlayerToMobDCL",
+    "Description": "[3-Man Raid Scaling] 300% player damage to compensate for missing DPS",
+    "ValueType": "Float",
+    "Value": 6.6
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid1Surtur.prototype",
+    "Path": "TuningDamageByRank[0].TuningMobToPlayer",
+    "Description": "[3-Man Raid Scaling] Lower Popcorn mob damage scaling",
+    "ValueType": "Float",
+    "Value": 0.40
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid1Surtur.prototype",
+    "Path": "TuningDamageByRank[1].TuningMobToPlayer",
+    "Description": "[3-Man Raid Scaling] Lower Champion mob damage scaling",
+    "ValueType": "Float",
+    "Value": 0.45
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid1Surtur.prototype",
+    "Path": "TuningDamageByRank[2].TuningMobToPlayer",
+    "Description": "[3-Man Raid Scaling] Lower Elite mob damage scaling",
+    "ValueType": "Float",
+    "Value": 0.55
+  }
+]

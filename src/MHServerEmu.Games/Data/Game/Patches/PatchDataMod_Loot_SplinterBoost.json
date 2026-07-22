@@ -1,0 +1,96 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/SplinterBoostTable.prototype",
+    "Path": "Modifiers[0].Choices",
+    "Description": "Disable boost condition requirement for the SplinterBoost loot table.",
+    "ValueType": "PrototypeId[]",
+    "Value": []
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/ItemType/ESDropNormalDropTable.prototype",
+    "Path": "Modifiers[0].Choices",
+    "Description": "Allow ESDropNormalDropTable drops when the boost condition is applied.",
+    "ValueType": "PrototypeId[]",
+    "Value": []
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/ItemType/ESDropNormalDropTable.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "Set minimum drop of ES in Normal Drop loot table to 1.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/ItemType/ESDropNormalDropTable.prototype",
+    "Path": "PickMethod",
+    "Description": "Let the base ES drop and the bonus jackpot roll fire independently instead of picking only one.",
+    "ValueType": "Enum",
+    "Value": "PickWeightTryAll"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/ItemType/ESDropNormalDropTable.prototype",
+    "Path": "Choices[]",
+    "Description": "Rare bonus jackpot roll: 10-35 Eternity Splinters, low weight so it stays uncommon.",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1071992662862269383,
+      "Item": 11087194553833821680,
+      "NumMin": 10,
+      "NumMax": 35,
+      "Weight": 5
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/SplinterBoostTable.prototype",
+    "Path": "Choices[1].NumMin",
+    "Description": "Make minimum ES drop to 10 from boost table.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/NormalMobs/PopcornSharedTable.prototype",
+    "Path": "Choices[]",
+    "Description": "add splinter boost table",
+    "ValueType": "PrototypeDataRef",
+    "Value": 6663934888230850666
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/NormalMobs/DrStrangeEventPopcornMobs.prototype",
+    "Path": "Choices[]",
+    "Description": "add splinter boost table",
+    "ValueType": "PrototypeDataRef",
+    "Value": 6663934888230850666
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/NormalMobs/ElitePopcornSharedTable.prototype",
+    "Path": "Choices[]",
+    "Description": "add splinter boost table",
+    "ValueType": "PrototypeDataRef",
+    "Value": 6663934888230850666
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/NormalMobs/MiniBossSharedTable.prototype",
+    "Path": "Choices[]",
+    "Description": "add splinter boost table",
+    "ValueType": "PrototypeDataRef",
+    "Value": 6663934888230850666
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/NormalMobs/NEWBossSharedTable.prototype",
+    "Path": "Choices[]",
+    "Description": "add splinter boost table",
+    "ValueType": "PrototypeDataRef",
+    "Value": 6663934888230850666
+  }
+]

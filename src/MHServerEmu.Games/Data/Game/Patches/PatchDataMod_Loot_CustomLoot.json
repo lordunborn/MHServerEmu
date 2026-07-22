@@ -1,0 +1,301 @@
+[
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "NoDropPercent",
+		"Description": "Overall chance this loot pool drops anything. 0.95 = 5% total pool chance, 0.99 = 1%, 0 = 100%.",
+		"ValueType": "Float",
+		"Value": 0.99
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "NumMax",
+		"Description": "Max number of items this will drop on a single roll",
+		"ValueType": "Integer",
+		"Value": 1
+	},
+
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[0].Item",
+		"Description": "Base pool item(Ancient Forgotten Device) in existing slot 0.",
+		"ValueType": "PrototypeId",
+		"Value": 4919439181153312772
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[0].NumMin",
+		"Description": "Minimum quantity for slot 0.",
+		"ValueType": "Integer",
+		"Value": 1
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[0].NumMax",
+		"Description": "Maximum quantity for slot 0.",
+		"ValueType": "Integer",
+		"Value": 1
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[0].Weight",
+		"Description": "Relative chance for slot 0 inside the pool. Higher weight = higher chance compared to the other enabled items.",
+		"ValueType": "Integer",
+		"Value": 100
+	},
+
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 2(GotG FC Retro Cassette Tape).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 15292115407077122934,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},
+
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 3(S.H.I.E.L.D. FC Level 7 ID Lanyard).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 7292422905196715026,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},
+
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 4(Homecoming FC Web Shooters - Lower Weight).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 9072028411918295426,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 50
+		}
+	},
+	
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 5(Age of Ultron FC Severed Ultron Head).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1893263250250014062,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},
+
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 6(Logan FC Admantium Shard - Lower Weight).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 3913392495043287769,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 50
+		}
+	},
+		
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 7(Odin FC Arrowhead).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 6825515037285555782,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},
+
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 8(Secret Invasion FC Transmorphic DNA - Lower Weight).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 333604255445884597,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 50
+		}
+	},
+		
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 9(Heroes for Hire FC Brass Knuckles).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 14121103299803160125,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},	
+		
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 10(FC Mark 3 Ruby Quartz).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 17201126761717898874,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},	
+		
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 11(FC Mark 4 Microchip).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 9750623044610432635,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},	
+		
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 12(FC Mark 5 Stark ID).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1768692415399665276,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},	
+		
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 13(FC Mark 6 Blueprints).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 7175688321281564285,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},	
+		
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 14(FC Mark 7 Forge Notes).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 18180936160606232190,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},	
+		
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 15(Cosmic FC Kree Microchip).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 17269029039912591130,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},	
+			
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Test/TestCores.prototype",
+		"Path": "Choices[]",
+		"Description": "Extra pool item 16(Winter FC Everlasting Snowflake).",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 9102582861729897313,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 100
+		}
+	},	
+			
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/NormalMobs/MiniBossSharedTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Attach TestCores loot pool to minibosses.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 15626733749195706004
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/ChampionsElites/YellowShared.prototype",
+		"Path": "Choices[]",
+		"Description": "Attach TestCores loot pool to yellow elites.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 15626733749195706004
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/ChampionsElites/BlueShared.prototype",
+		"Path": "Choices[]",
+		"Description": "Attach TestCores loot pool to blue elites.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 15626733749195706004
+	}
+]

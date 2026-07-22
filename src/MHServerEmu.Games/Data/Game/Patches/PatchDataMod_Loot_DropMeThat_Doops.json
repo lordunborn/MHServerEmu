@@ -1,0 +1,922 @@
+[
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "NumMax",
+		"Description": "Dropable SpecialsCostumesCardsTokens NumMax",
+		"ValueType": "Integer",
+		"Value": 1
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "NumMin",
+		"Description": "Dropable SpecialsCostumesCardsTokens NumMin",
+		"ValueType": "Integer",
+		"Value": 1
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[0].Weight",
+		"Description": "Costumes Weight (default 100)",
+		"ValueType": "Integer",
+		"Value": 10
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[1].Item",
+		"Description": "Chest of 2 Fortune Cards instead of Fortune Card Mark 1",
+		"ValueType": "PrototypeId",
+		"Value": 4265203178090274256
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Entity/Items/Consumables/Prototypes/CSGrant/LoginFortuneCardBox.prototype",
+		"Path": "StackSettings",
+		"Description": "Stackable Chest of 2 Fortune Cards",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1263193475407877124,
+			"AutoStackWhenAddedToInventory": true,
+			"ItemLevelOverride": 1,
+			"MaxStacks": 9999,
+			"RequiredCharLevelOverride": 1,
+			"StacksCanBeSplit": true
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[1].Weight",
+		"Description": "Chest of 2 Fortune Cards Weight (default 300)",
+		"ValueType": "Integer",
+		"Value": 300
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[2].Weight",
+		"Description": "Heroes Tokens Weight (default 10)",
+		"ValueType": "Integer",
+		"Value": 1
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Random Team-Up Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 2988754540081125925,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + AncientForgottenDevice",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 4919439181153312772,
+			"NumMin": 1,
+			"NumMax": 1,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Lucky Random Costume Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 18074377730390301555,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Entity/Items/MissionItems/SpecialRewards/RandomCostumeBox.prototype",
+		"Path": "StackSettings",
+		"Description": "Stackable Lucky Random Costume Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1263193475407877124,
+			"AutoStackWhenAddedToInventory": true,
+			"ItemLevelOverride": 1,
+			"MaxStacks": 9999,
+			"RequiredCharLevelOverride": 1,
+			"StacksCanBeSplit": true
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Avengers Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1528482404631913425,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Team Captain America Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 17546342028166048137,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Team Iron Man Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 7873925855885731531,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Cosmic Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 12848405922260132596,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Halloween Mystery Bag",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 2282370008873116725,
+			"Weight": 0
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Holiday Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 5510531546915218272,
+			"Weight": 0
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Lunar New Year Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 3980739820714730136,
+			"Weight": 0
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Pym Technologies Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 14181895682336629616,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Sorcerer Supreme Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 5064982150159935196,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Valentine's Day Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 9425488326478407149,
+			"Weight": 0
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Mystic Mayhem Mystery Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 3228669383330833808,
+			"Weight": 0
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Mystic Mayhem Coffer",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 8062767881802293790,
+			"Weight": 33
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Legendary Mystic Scroll",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 5994781768883380972,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + One Year Anniversary Gift 1",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 11000690653486915161,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + One Year Anniversary Gift 2",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 92372018352561754,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + One Year Anniversary Gift 3",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 13891058503866523227,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + One Year Anniversary Gift 4",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 16860880655061163612,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + One Year Anniversary Gift 8",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 16422221390127111776,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + World's Greatest Hamburger Recipe - Foodie Achievement",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 15527303861083838815,
+			"Weight": 0
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Random Boost Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 6724902023990484885,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+		"Path": "Choices[0].Choices[]",
+		"Description": "SpecialsCostumesCardsTokens + Random Vanity Pet Box",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 11131660824719138712,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomVanityPetTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Vanity Pet Box + D.O.O.M.H.E.R.B.I.E.",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 15292232670149480758,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomVanityPetTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Vanity Pet Box + Kronan",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 11509014527419355041,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomVanityPetTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Vanity Pet Box + Punisher H.E.R.B.I.E.",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 452873239228781299,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomVanityPetTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Vanity Pet Box + H.E.R.B.I.E. Gold",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 5243964680499630939,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomVanityPetTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Vanity Pet Box + Future Foundation Spider-Ham",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 16936369461436486516,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomVanityPetTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Vanity Pet Box + Celebration H.E.R.B.I.E.",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 17123923700298224714,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomVanityPetTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Vanity Pet Box + Mini Mandroid Mk 7 (Holiday 2016 Edition)",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1495953050276270535,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + Blue Cupcake - Foodie Achievement",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 15559722475959821127,
+			"Weight": 33
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + Red Cupcake - Foodie Achievement",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 5624251729081672520,
+			"Weight": 33
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + Yellow Cupcake - Foodie Achievement",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 10341255293410026313,
+			"Weight": 33
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + Never Melting Ice Cream Bar - Foodie Achievement",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 11208245055931881247,
+			"Weight": 33
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + World's Greatest Hamburger - Foodie Achievement",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 13616581413661844210,
+			"Weight": 33
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + Odin's Bounty Boost Potion - 2 Hours",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 11269524368488673931,
+			"Weight": 100
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + Eternity Splinter Boost Potion - 3 Hours",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 17993433440082866856,
+			"Weight": 100
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + Spring Candy Boost - 70 minutes",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 8485311135013220817,
+			"Weight": 100
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginRandomShopBoostTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Random Boost Box + Galactic Guardian's Boost - 3 Hour",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 6315111532207158587,
+			"Weight": 100
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Cosmic Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 11797866468091305623,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Cowpocalypse Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 17622955599300993330,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Asgardian Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 8652531632129843415,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Guardians of the Galaxy Vol. 2 Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 17412548336846579190,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Spider-Man Homecoming Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 8669962911793554434,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Old Man Logan Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 11660572688292912682,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Uncanny Fortune Card Ver 1",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 7561248414309032083,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Uncanny Fortune Card Ver 2",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 17369422094381293716,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + X-Men Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 13360552517740469713,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Summer Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 9623878311681793882,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Beach Party Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 16566255714732875836,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Winter Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1946373172390272690,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Mardi Gras Fortune Card Ver 2",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 14320224649364840786,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + St. Patrick's Day Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 77989783120191903,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Midtown Madness Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 13888546326582206235,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Cosmic Midtown Madness Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1960659165089702297,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Industry City Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 13614484023278574933,
+			"Weight": 50
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Cosmic Industry City Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 18289941723503468499,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Foil Fortune Card Mark 1",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 3506187152480543095,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Foil Fortune Card Mark 2",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 12198594024871764344,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Foil Fortune Card Mark 3",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 7549373703129801081,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Foil Fortune Card Mark 4 Ver 2",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1207534857110364921,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Foil Fortune Card Mark 5",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 9255188748638888315,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Foil Fortune Card Mark 6",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 1842938857832259964,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Foil Uncanny Fortune Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 15629284864133571223,
+			"Weight": 10
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Super Costume Card",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 18194583438247994193,
+			"Weight": 5
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Deprecated/Fortune Card Mark 4 Ver 1",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 7373536787234431909,
+			"Weight": 5
+		}
+	},
+	{
+		"Enabled": false,
+		"Prototype": "Loot/Tables/RandomGiftboxes/DailyGift/LoginFortuneCardTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Chest of 2 Fortune Cards + Deprecated/Mardi Gras Fortune Card Ver 1",
+		"ValueType": "Prototype",
+		"Value": {
+			"ParentDataRef": 1071992662862269383,
+			"Item": 10424692444551652736,
+			"Weight": 5
+		}
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/NormalMobs/SharedDoopAllChapters.prototype",
+		"Path": "Choices[]",
+		"Description": "Dropable SpecialsCostumesCardsTokens",
+		"ValueType": "PrototypeDataRef",
+		"Value": 9518055978027522001
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/ChampionsElites/YellowDoopLoot.prototype",
+		"Path": "Choices[]",
+		"Description": "Dropable SpecialsCostumesCardsTokens",
+		"ValueType": "PrototypeDataRef",
+		"Value": 9518055978027522001
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/NormalMobs/SharedCosmicDoopAllChapters.prototype",
+		"Path": "Choices[]",
+		"Description": "Dropable SpecialsCostumesCardsTokens",
+		"ValueType": "PrototypeDataRef",
+		"Value": 9518055978027522001
+	}
+]

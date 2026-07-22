@@ -1,0 +1,26 @@
+[
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/NormalMobs/MiniBossSharedTable.prototype",
+		"Path": "Choices[]",
+		"Description": "Attach Rune Drops pool to minibosses.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 1955216797357969701
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/ChampionsElites/YellowShared.prototype",
+		"Path": "Choices[]",
+		"Description": "Attach Rune Drops pool to yellow elites.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 1955216797357969701
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Mob/ChampionsElites/BlueShared.prototype",
+		"Path": "Choices[]",
+		"Description": "Attach Rune Drops pool to blue elites.",
+		"ValueType": "PrototypeDataRef",
+		"Value": 1955216797357969701
+	}
+]

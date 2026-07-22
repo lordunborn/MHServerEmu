@@ -1,0 +1,106 @@
+[
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
+    "Path": "WaveDurationMS",
+    "Description": "[TEST ONLY] Shorten wave duration to 60s for fast boss-spawn iteration testing - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 60000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase2Base.prototype",
+    "Path": "WaveDurationMS",
+    "Description": "[TEST ONLY] Shorten wave duration to 60s for fast boss-spawn iteration testing - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 60000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase3Base.prototype",
+    "Path": "WaveDurationMS",
+    "Description": "[TEST ONLY] Shorten wave duration to 60s for fast boss-spawn iteration testing - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 60000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase4Base.prototype",
+    "Path": "WaveDurationMS",
+    "Description": "[TEST ONLY] Shorten wave duration to 60s for fast boss-spawn iteration testing - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 60000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase5Base.prototype",
+    "Path": "WaveDurationMS",
+    "Description": "[TEST ONLY] Shorten wave duration to 60s for fast boss-spawn iteration testing - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 60000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase6Base.prototype",
+    "Path": "WaveDurationMS",
+    "Description": "[TEST ONLY] Shorten wave duration to 60s for fast boss-spawn iteration testing - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 60000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase7Base.prototype",
+    "Path": "WaveDurationMS",
+    "Description": "[TEST ONLY] Shorten boss-phase timeout for fast iteration testing - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 45000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
+    "Path": "PowerUpSpawnMS",
+    "Description": "[TEST ONLY] Fit inside the shortened 60s WaveDurationMS - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 15000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase2Base.prototype",
+    "Path": "PowerUpSpawnMS",
+    "Description": "[TEST ONLY] Fit inside the shortened 60s WaveDurationMS - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 15000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase3Base.prototype",
+    "Path": "PowerUpSpawnMS",
+    "Description": "[TEST ONLY] Fit inside the shortened 60s WaveDurationMS - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 15000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase4Base.prototype",
+    "Path": "PowerUpSpawnMS",
+    "Description": "[TEST ONLY] Fit inside the shortened 60s WaveDurationMS - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 15000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase5Base.prototype",
+    "Path": "PowerUpSpawnMS",
+    "Description": "[TEST ONLY] Fit inside the shortened 60s WaveDurationMS - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 15000
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase6Base.prototype",
+    "Path": "PowerUpSpawnMS",
+    "Description": "[TEST ONLY] Fit inside the shortened 60s WaveDurationMS - remove/disable before real use",
+    "ValueType": "Integer",
+    "Value": 15000
+  }
+]

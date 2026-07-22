@@ -1,0 +1,216 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Modifiers",
+    "Description": "[Custom Prize Table] This test prototype natively carries 3 table-wide modifiers left over from its original dev use (LootRollSetUsablePrototype Usable=1, LootRollUseLevelVerbatimPrototype, LootRollOffsetLevelPrototype) - the level-verbatim/offset ones would lock every child reward's level-scaling to a fixed test level instead of scaling to whichever player actually picks up the loot, directly working against the goal of this table helping both sub-60 and level-60 characters. Cleared to an empty array so every slot below scales normally per-player, same as any other boss loot table in the game",
+    "ValueType": "PrototypeArray",
+    "Value": []
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[0]",
+    "Description": "[Custom Prize Table] Slot 0: Cosmic Artifact, back to 100% guaranteed (reverted from an earlier 50% test) but kept OnceDaily(PerAccount) - user's final call: first King Lizard kill of the day guarantees an artifact, then locked out for 20h (per model variant - see KingLizardBossEG02/Rider's LootCooldownTimeHours patch). Still clones the full CosmicArtifactsTable.prototype (all 48 choices intact) rather than hand-copying, only NoDropPercent + Modifiers are overridden on the clone",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 6601388876799612218,
+      "NoDropPercent": 0,
+      "Modifiers": [ { "ParentDataRef": 2702037107533811112 } ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[1]",
+    "Description": "[Custom Prize Table] Slot 1: BossExpOrbs.prototype, referenced directly. Native structure already exactly matches spec: 3 guaranteed Large XP Orbs (LootRollUseLevelVerbatimPrototype pins these specifically to the boss's own level, matching how boss XP orbs behave everywhere else in the game) + independent 50% chance each for a 4th and 5th orb",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2136636186332238253
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[2]",
+    "Description": "[Custom Prize Table] Slot 2: SpecialEventsTable.prototype, referenced directly. Native NoDropPercent=0 (PickAll/29 choices), each individual entry is independently event/date-gated, so this is a safe always-on pass-through that only actually produces something during an active event",
+    "ValueType": "PrototypeDataRef",
+    "Value": 3381467897344824433
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[3]",
+    "Description": "[Custom Prize Table] Slot 3: Cosmic Essence at a real 2% chance. Rebuilt inline rather than referencing CosmicEssenceTable.prototype directly - that table already has the right NoDropPercent (0.98) but also carries a LootRollRequireDifficultyTierPrototype modifier gated to Tier3Superheroic, which would make it NEVER drop in any Tier2Heroic-locked region. Same item, same 2%, no tier gate",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 5508985158461163528,
+      "PickMethod": "PickWeight",
+      "NoDropPercent": 0.98,
+      "Choices": [
+        { "ParentDataRef": 1071992662862269383, "Item": 3307062732337321722, "NumMin": 1, "NumMax": 1, "Weight": 100 }
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[4]",
+    "Description": "[Custom Prize Table] Slot 4: Eternity Splinters, rebuilt inline rather than referencing SplinterBoostTable.prototype - that table's entire contents are gated behind a LootRollRequireConditionKeywordPrototype requiring an active 'SplinterBoost' buff, so referenced directly it would drop nothing at all in practice. Rebuilt as: 2 guaranteed + independent 50% chance for a 3rd + 25% chance for a 4th + 10% chance for a 5th (diminishing ladder, max 5 total, no buff requirement)",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 5508985158461163528,
+      "PickMethod": "PickAll",
+      "NoDropPercent": 0,
+      "Choices": [
+        { "ParentDataRef": 1071992662862269383, "Item": 11087194553833821680, "NumMin": 2, "NumMax": 2, "Weight": 100 },
+        {
+          "ParentDataRef": 5508985158461163528, "PickMethod": "PickWeight", "NoDropPercent": 0.5,
+          "Choices": [ { "ParentDataRef": 1071992662862269383, "Item": 11087194553833821680, "NumMin": 1, "NumMax": 1, "Weight": 100 } ]
+        },
+        {
+          "ParentDataRef": 5508985158461163528, "PickMethod": "PickWeight", "NoDropPercent": 0.75,
+          "Choices": [ { "ParentDataRef": 1071992662862269383, "Item": 11087194553833821680, "NumMin": 1, "NumMax": 1, "Weight": 100 } ]
+        },
+        {
+          "ParentDataRef": 5508985158461163528, "PickMethod": "PickWeight", "NoDropPercent": 0.9,
+          "Choices": [ { "ParentDataRef": 1071992662862269383, "Item": 11087194553833821680, "NumMin": 1, "NumMax": 1, "Weight": 100 } ]
+        }
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[5]",
+    "Description": "[Custom Prize Table] Slot 5: CostumeCore crafting ingredient, rarity floor raised to Cosmic only, chance bumped from 10% to 25% (user's call, to make up for the Cosmic Artifact slot being capped to 50%+OnceDaily)",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 5508985158461163528,
+      "PickMethod": "PickWeight",
+      "NoDropPercent": 0.75,
+      "Choices": [
+        {
+          "ParentDataRef": 1071992662862269383, "Item": 3158655076108343964, "NumMin": 1, "NumMax": 1, "Weight": 100,
+          "Modifiers": [ { "ParentDataRef": 2629776241329573335, "Choices": [8643734431032020798] } ]
+        }
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[6]",
+    "Description": "[Custom Prize Table] Slot 6: HeroComm10Box, now OnceDaily(PerAccount) to limit farming. LootRollOnceDailyPrototype.IsValidForNode() only accepts LootTablePrototype nodes (checked in source), not a bare LootDropItemPrototype - so this had to move from a direct item-drop into a wrapper table (PickWeight, NoDropPercent=0 so it's still guaranteed whenever the cooldown allows) to carry the modifier",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 5508985158461163528,
+      "PickMethod": "PickWeight",
+      "NoDropPercent": 0,
+      "Modifiers": [ { "ParentDataRef": 2702037107533811112 } ],
+      "Choices": [
+        { "ParentDataRef": 1071992662862269383, "Item": 7963913432821078741, "NumMin": 1, "NumMax": 1, "Weight": 100 }
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[7]",
+    "Description": "[Custom Prize Table] Slot 7: ProtComm10Box, same OnceDaily(PerAccount) wrapper as HeroComm10Box, tracked independently",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 5508985158461163528,
+      "PickMethod": "PickWeight",
+      "NoDropPercent": 0,
+      "Modifiers": [ { "ParentDataRef": 2702037107533811112 } ],
+      "Choices": [
+        { "ParentDataRef": 1071992662862269383, "Item": 10583912791301561068, "NumMin": 1, "NumMax": 1, "Weight": 100 }
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[8]",
+    "Description": "[Custom Prize Table] Slot 8: 6 guaranteed Large Experience Orbs, matching SharedEndgameWaveBattles' own bonus-XP slot - deliberately built WITHOUT the LootRollUseLevelVerbatimPrototype modifier that BossExpOrbs (Slot 1) carries, so this orb's value scales to whichever player picks it up rather than a fixed level. Helps sub-60 characters as well as level 60",
+    "ValueType": "Prototype",
+    "Value": { "ParentDataRef": 17282256753597680679, "Agent": 9200193991835392089, "NumMin": 6, "NumMax": 6, "Weight": 100 }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[9]",
+    "Description": "[Custom Prize Table] Slot 9: SixInfinityOrbChest, guaranteed 100%",
+    "ValueType": "Prototype",
+    "Value": { "ParentDataRef": 1071992662862269383, "Item": 1899042455121240292, "NumMin": 1, "NumMax": 1, "Weight": 100 }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[10]",
+    "Description": "[Custom Prize Table] Slot 10: Relics, guaranteed, NumMin=5/NumMax=15 (native AllRelicsLootTable.prototype only grants exactly 1 - rebuilt inline with the same Relic.defaults item since the shared table can't be safely mutated for other consumers)",
+    "ValueType": "Prototype",
+    "Value": { "ParentDataRef": 1071992662862269383, "Item": 8255039456199642606, "NumMin": 5, "NumMax": 15, "Weight": 100 }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[11]",
+    "Description": "[Custom Prize Table] Slot 11: Costume/Card/Pet at a real 2% chance, OnceDaily(PerAccount). Rebuilt inline rather than referencing SpecialsCostumeCardPet.prototype directly - that table's own NoDropPercent is 0 (the 1.375%/once-daily gate actually lives on a wrapper INSIDE SharedEndgameWaveBattles, not on this named table), so a direct reference here would be 100% instead of 2%. Replicates the same internal weighted odds (Fortune Card / Rank-1 Costume / Old Lace Pet / Rank-8 prestige Costume) under our own 2% gate",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 5508985158461163528,
+      "PickMethod": "PickWeight",
+      "NoDropPercent": 0.98,
+      "Modifiers": [ { "ParentDataRef": 2702037107533811112 } ],
+      "Choices": [
+        { "ParentDataRef": 7084891761292086861, "ItemRank": 1, "UISlot": "Costume", "NumMin": 1, "NumMax": 1, "Weight": 100 },
+        { "ParentDataRef": 1071992662862269383, "Item": 15142736093714783733, "NumMin": 1, "NumMax": 1, "Weight": 200 },
+        { "ParentDataRef": 1071992662862269383, "Item": 11922313247660511208, "NumMin": 1, "NumMax": 1, "Weight": 50 },
+        {
+          "ParentDataRef": 7084891761292086861, "ItemRank": 8, "UISlot": "Costume", "NumMin": 1, "NumMax": 1, "Weight": 2,
+          "Modifiers": [ { "ParentDataRef": 7386301686671674808, "Usable": 1.0 } ]
+        }
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[12]",
+    "Description": "[Custom Prize Table] Slot 12: 4 guaranteed armor pieces (same shape as SharedEndgameWaveBattles Choices[0]) but rarity floor raised to Cosmic/Unique only instead of Rare/Epic/Unique/Cosmic",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1071992662862269383, "Item": 7244648064590089631, "NumMin": 4, "NumMax": 4, "Weight": 100,
+      "Modifiers": [ { "ParentDataRef": 2629776241329573335, "Choices": [8643734431032020798, 6033964048325414744] } ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[13]",
+    "Description": "[Custom Prize Table] Slot 13: TeamUp Gear, rarity floor raised to Cosmic only, chance bumped from 10% to 25% (user's call, to make up for the Cosmic Artifact slot being capped)",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 5508985158461163528,
+      "PickMethod": "PickWeight",
+      "NoDropPercent": 0.75,
+      "Choices": [
+        {
+          "ParentDataRef": 1071992662862269383, "Item": 7130114525711765639, "NumMin": 1, "NumMax": 1, "Weight": 100,
+          "Modifiers": [ { "ParentDataRef": 2629776241329573335, "Choices": [8643734431032020798] } ]
+        }
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
+    "Path": "Choices[14]",
+    "Description": "[Custom Prize Table] Slot 14: Crafting Elements, chance bumped from 15% to 25% (user's call). Clones the existing CraftingElementScaling.prototype (all 7 level-bracket entries intact via CopyPrototypeDataRefFields) and overrides just NoDropPercent, rather than direct-referencing it (which would mean editing the shared prototype used elsewhere) or hand-retyping all 7 tiers",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 9641901066064634873,
+      "NoDropPercent": 0.75
+    }
+  }
+]

@@ -1,0 +1,57 @@
+[
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/Daredevil.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+	{
+        "Prototype": "Entity/Characters/Avatars/Shipping/IronFist.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/LukeCage.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/Punisher.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/Elektra.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+	{
+        "Prototype": "Entity/Characters/Avatars/Shipping/MoonKnight.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/Blade.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/BlackCat.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/GhostRider.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/Deadpool.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    },
+    {
+        "Prototype": "Entity/Characters/Avatars/Shipping/SheHulk.prototype",
+        "Setting": "eAETV_BonusXPPct",
+        "Value": 1.50
+    }
+]

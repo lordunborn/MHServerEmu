@@ -1,0 +1,50 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/AgeOfUltron.prototype",
+    "Path": "TuningDamageMobToPlayerDCL",
+    "Description": "[3-Man] Drop incoming global mob damage to manageable levels",
+    "ValueType": "Float",
+    "Value": 0.4
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/AgeOfUltron.prototype",
+    "Path": "TuningDamagePlayerToMobDCL",
+    "Description": "[3-Man] Boost player damage to burn down Axis boss health pools faster",
+    "ValueType": "Float",
+    "Value": 5.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/AgeOfUltron.prototype",
+    "Path": "TuningDamageByRank[0].TuningMobToPlayer",
+    "Description": "[3-Man] Lower Popcorn rank damage scaling",
+    "ValueType": "Float",
+    "Value": 0.9
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/AgeOfUltron.prototype",
+    "Path": "TuningDamageByRank[1].TuningMobToPlayer",
+    "Description": "[3-Man] Lower Champion rank damage scaling",
+    "ValueType": "Float",
+    "Value": 0.6
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/AgeOfUltron.prototype",
+    "Path": "TuningDamageByRank[2].TuningMobToPlayer",
+    "Description": "[3-Man] Lower Elite rank damage scaling",
+    "ValueType": "Float",
+    "Value": 0.5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/AgeOfUltron.prototype",
+    "Path": "TuningDamageByRank[3].TuningMobToPlayer",
+    "Description": "[3-Man] Lower base Boss rank damage scaling",
+    "ValueType": "Float",
+    "Value": 0.4
+  }
+]

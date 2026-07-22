@@ -1,0 +1,42 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid2AxisGreen.prototype",
+    "Path": "TuningDamageMobToPlayerDCL",
+    "Description": "[3-Man Axis Scaling] Drop incoming global mob damage to manageable levels",
+    "ValueType": "Float",
+    "Value": 0.35
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid2AxisGreen.prototype",
+    "Path": "TuningDamagePlayerToMobDCL",
+    "Description": "[3-Man Axis Scaling] Boost player damage to burn down Axis boss health pools faster",
+    "ValueType": "Float",
+    "Value": 7.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid2AxisGreen.prototype",
+    "Path": "TuningDamageByRank[0].TuningMobToPlayer",
+    "Description": "[3-Man Axis Scaling] Lower Champion rank damage scaling",
+    "ValueType": "Float",
+    "Value": 0.6
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid2AxisGreen.prototype",
+    "Path": "TuningDamageByRank[1].TuningMobToPlayer",
+    "Description": "[3-Man Axis Scaling] Lower Elite rank damage scaling",
+    "ValueType": "Float",
+    "Value": 0.5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Raid2AxisGreen.prototype",
+    "Path": "TuningDamageByRank[2].TuningMobToPlayer",
+    "Description": "[3-Man Axis Scaling] Lower base Boss rank damage scaling",
+    "ValueType": "Float",
+    "Value": 0.4
+  }
+]

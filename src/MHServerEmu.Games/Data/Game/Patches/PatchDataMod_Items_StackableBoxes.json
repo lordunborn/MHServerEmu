@@ -1,0 +1,407 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/MidtownMadnessChest.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Midtown Madness Chest",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/MidtownMadnessChestRev2.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Midtown Madness Chest Rev2",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/OdinsBountyChest.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Odin's Bounty Chest",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/WorldstoneCache.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Worldstone Cache",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/WorldstoneGiftbox.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Worldstone Giftbox",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/CosmicReliquaryOfRarity.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Cosmic Reliquary Of Rarity",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/CosmicReliquaryOfRarityAnniversary.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Cosmic Reliquary Of Rarity Anniversary",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/CosmicReliquaryOfRarityClea.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Cosmic Reliquary Of Rarity Clea",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/CosmicReliquaryOfRarityCW.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Cosmic Reliquary Of Rarity CW",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/CosmicReliquaryOfRarityDogTags.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Cosmic Reliquary Of Rarity Dog Tags",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/CosmicReliquaryOfRarityICC.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Cosmic Reliquary Of Rarity ICC",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/CosmicReliquaryOfRarityOFTH.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Cosmic Reliquary Of Rarity OFTH",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/ReliquaryOfRarity.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Reliquary Of Rarity",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/ReliquaryOfRarityARMOR.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Reliquary Of Rarity ARMOR",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/ReliquaryOfRarityClea.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Reliquary Of Rarity Clea",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/ReliquaryOfRarityLevel63.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Reliquary Of Rarity Level 63",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/DailyGift/CosmicReliquaryOfRarityBundlesofCash.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Cosmic Reliquary Of Rarity Bundles of Cash",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/SharedQuestLootBox/SharedQuestLootBoxSmall.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Shared Quest Loot Box",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/SharedQuestLootBox/SharedQuestLootBoxMedium.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Shared Quest Loot Box",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/SharedQuestLootBox/SharedQuestLootBoxLarge.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Shared Quest Loot Box",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/SharedQuestLootBox/SharedQuestLootBoxExtraLarge.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Shared Quest Loot Box",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/SharedQuestLootBox/SharedQuestLootBoxXXLarge.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Shared Quest Loot Box",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/FortuneCardMidtown.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Midtown FC",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/CosmicFortuneCardMidtown.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Midtown FC",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/FortuneCardICP.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable ICP FC",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/CosmicFortuneCardICP.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable ICP FC",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/GShop/SHIELDSupplyBoost/BonusItemFindBox.prototype",
+    "Path": "StackSettings",
+    "Description": "Stackable Bonus Item Find Box (SHIELD Supply Boost)",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 1263193475407877124,
+      "AutoStackWhenAddedToInventory": true,
+      "ItemLevelOverride": 1,
+      "MaxStacks": 9999,
+      "RequiredCharLevelOverride": 1,
+      "StacksCanBeSplit": true
+    }
+  }
+]

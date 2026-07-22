@@ -1,10 +1,5 @@
 [
   {
-    "Prototype": "Entity/Items/Orbs/PowerUps/Items/Event/ARMOR/CWEventLootPowerUpTeamCapMoleMan.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0.0
-  },
-  {
     "Prototype": "Entity/Characters/Vendors/Prototypes/HUB01AvengersTower/ARMOREventVendor.prototype",
     "Setting": "eWETV_Visible",
     "Value": 0.0
@@ -22,11 +17,13 @@
   {
     "Prototype": "Entity/Characters/Vendors/Prototypes/HUB01AvengersTower/BIFBuxGiver.prototype",
     "Setting": "eWETV_Visible",
+    "Description": "Do Not Enable this is the Special Events Vendor",
     "Value": 0.0
   },
   {
     "Prototype": "Entity/Characters/Vendors/Prototypes/HUB01AvengersTower/BIFBuxTaker.prototype",
     "Setting": "eWETV_Visible",
+    "Description": "Do not enable.  This is Iron Fist Cube Shards Vendor",
     "Value": 0.0
   },
   {
@@ -80,37 +77,7 @@
     "Value": 0.0
   },
   {
-    "Prototype": "Regions/EndGame/StaticScenarios/CivilWar/Airport/CivilWarAirportCaptainAmericaRegionBand.prototype",
-    "Setting": "eRTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarHubCaptainAmericaWarehouseRegion.prototype",
-    "Setting": "eRTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Regions/EndGame/StaticScenarios/CivilWar/Bazaar/AltRegions/CivilWarBazaarRegion60Cosmic.prototype",
-    "Setting": "eRTV_Enabled",
-    "Value": 0.0
-  },
-  {
     "Prototype": "Regions/EndGame/TierX/Limbo/LimboRegionBand.prototype",
-    "Setting": "eRTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Regions/EndGame/StaticScenarios/CivilWar/Airport/AltRegions/AirportCap/CivilWarAirportCaptainAmericaRegion60Cosmic.prototype",
-    "Setting": "eRTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Regions/EndGame/StaticScenarios/CivilWar/Bazaar/CivilWarBazaarRegionBand.prototype",
-    "Setting": "eRTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarHubIronManAvengersRoofRegion.prototype",
     "Setting": "eRTV_Enabled",
     "Value": 0.0
   },
@@ -120,11 +87,6 @@
     "Value": 0.75
   },
   {
-    "Prototype": "Regions/EndGame/StaticScenarios/CivilWar/Airport/CivilWarAirportIronManRegionBand.prototype",
-    "Setting": "eRTV_Enabled",
-    "Value": 0.0
-  },
-  {
     "Prototype": "Regions/EndGame/DangerRoomMode/UniqueScenarios/Tutorial/DRRegionUniqueTutorialFight.prototype",
     "Setting": "eRT_BonusItemFindMultiplier",
     "Value": 0.0
@@ -132,17 +94,12 @@
   {
     "Prototype": "Regions/EndGame/TierX/UltronGameMode/UltronRaidRegionCosmic.prototype",
     "Setting": "eRTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Regions/EndGame/StaticScenarios/CivilWar/Airport/AltRegions/AirportIronMan/CivilWarAirportIronManRegion60Cosmic.prototype",
-    "Setting": "eRTV_Enabled",
-    "Value": 0.0
+    "Value": 2.0
   },
   {
     "Prototype": "Regions/RAIDS/AxisRaid/AxisRaidRegionRed.prototype",
     "Setting": "eRTV_Enabled",
-    "Value": 0.0
+    "Value": 2.0
   },
   {
     "Prototype": "Loot/Tables/Vendor/SpecialEvent/SpecialEventBeast.prototype",
@@ -267,7 +224,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/NewspapersTable.prototype",
     "Setting": "eLTTV_Enabled",
-    "Value": 0.0
+    "Value": 2.0
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Subtables/XDEFChestBuffed.prototype",
@@ -445,8 +402,78 @@
     "Value": 0.0
   },
   {
-    "Prototype": "Events/PublicEvents/Events/CivilWar.prototype",
-    "Setting": "ePETV_Enabled",
+    "Prototype": "Entity/Items/CurrencyItems/SeasonalLE/Seasonal/Anniversary/BirthdayCakeSlice.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedMidtownMADNESS.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Missions/Prototypes/BonusMissions/AccountMissions/Hidden/HiddenOneTimeGiveGs.prototype",
+    "Setting": "eMTV_Enabled",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownAGITrainer.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "This is the Iron Fist Vendor for Cube Shards",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/ItemVendors/MidtownVendorWeapon.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "This is the Silver Sable Summer Event Vendor",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/MysteryBox/AvengersMysteryBox.prototype",
+    "Setting": "eWETV_EternitySplinterPrice",
+    "Value": 100
+  },
+  {
+    "Prototype": "Loot/Tables/Events/SpecialBig10EventBox.prototype",
+    "Setting": "eLTTV_NoDropPercent",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/ItemType/SpecialsCards.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Description": "Costume/Character-Token event pool - master on/off switch. 0.0=off (default/resting state). Set to 2.0 to force-enable during an active event, then back to 0.0 when the event ends. Requires 'server reloadlivetuning' (server console only) or a restart to take effect - does not hot-reload.",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Loot/Tables/ItemType/SpecialsCards.prototype",
+    "Setting": "eLTTV_NoDropPercent",
+    "Description": "Costume/Character-Token event pool - drop rate while eLTTV_Enabled is on (has no effect while Enabled=0.0). 0.99 = 1% chance per roll.",
+    "Value": 0.99
+  },
+  {
+    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownACCTrainer.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "This is the Silver Sable Anniversary Vendor",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Subtables/CosmicJackpot.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Subtables/CosmicJackpot.prototype",
+    "Setting": "eLTTV_NoDropPercent",
+    "Value": 0.995
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Subtables/PatrolJackpot.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Loot/Tables/Test/RuneTestGiftbox.prototype",
+    "Setting": "eLTTV_Enabled",
     "Value": 0.0
   }
 ]

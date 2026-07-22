@@ -38,6 +38,8 @@ This repository's lineage is [Crypto137/MHServerEmu](https://github.com/Crypto13
 
 - **In-game news page** — the client's login news popup (and any other embedded-browser window) can point at server-hosted static content instead of an external URL, hot-reloadable via `!server reloadnews`.
 
+- **Custom gameplay data (Patches & LiveTuning)** — this fork ships with a substantial set of custom `Data/Game/Patches` JSON patches (custom loot tables, vendor overhauls, difficulty tuning, stackable-box wiring, and full standalone content like the **Dinos Invade Manhattan** wave-battle event) and `Data/Game/LiveTuning` event scheduling (weekly rotations, seasonal events, XP bonus weeks). These are active gameplay content, not just code, so building from source gets the same experience as the live server.
+
 - **Stability fixes and admin tooling** — fixed a null-reference crash in `Teleporter.CanTeleport()` that could take down a whole game instance on the CH0906 Loki boss region, added admin debug commands that dump item, power, and orb prototype data to JSON (`!debug dumpitems` / `dumppower` / `listorbs`), and tuned several server config defaults (Eternity Splinter cooldown/stacking, credit chest conversion, account binding off).
 
 ### Inherited from mtzimas92's fork

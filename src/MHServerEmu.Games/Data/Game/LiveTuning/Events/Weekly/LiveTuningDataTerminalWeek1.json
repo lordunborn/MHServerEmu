@@ -1,0 +1,281 @@
+[
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/KingpinsWarehouse/DrOctopusTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/KingpinsWarehouse/DrOctopusTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/AbandonedSubway/ShockerTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/AbandonedSubway/ShockerTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/AvengersWarSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/AvengersWarSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/CosmicWarSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/CosmicWarSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/InfernalWarSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/InfernalWarSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/KlrtSuperSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/KlrtSuperSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/WarXSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SkrullInvasion/WarXSkrullTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/AIMWeaponFacility/ModokTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/AIMWeaponFacility/ModokTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+
+
+
+
+
+
+
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD02GDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD02GDoctorOctopus.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD02GDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD01GShocker.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD01GShocker.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD01GShocker.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD13GKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD13GKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD13GKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD07GMODOK.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD07GMODOK.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD07GMODOK.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+
+
+
+
+
+
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD02RDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD02RDoctorOctopus.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD02RDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD01RShocker.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD01RShocker.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD01RShocker.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD13RKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD13RKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD13RKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD07RMODOK.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD07RMODOK.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD07RMODOK.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.0
+  },
+
+
+
+
+
+
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD02CDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD02CDoctorOctopus.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD02CDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD01CShocker.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD01CShocker.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD01CShocker.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD13CKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD13CKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD13CKlrtSuperSkrull.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD07CMODOK.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD07CMODOK.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD07CMODOK.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.5
+  }
+]

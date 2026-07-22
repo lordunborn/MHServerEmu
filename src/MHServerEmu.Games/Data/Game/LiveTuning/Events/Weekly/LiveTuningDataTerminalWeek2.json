@@ -1,0 +1,409 @@
+[
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/ChurchOfPurification/JuggernautTerminaLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/ChurchOfPurification/JuggernautTerminaLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/CastleDoom/DrDoomTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/CastleDoom/DrDoomTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/CastleDoom/ElectroLootGreen.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/CastleDoom/ElectroLootGreen.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/CastleDoom/GrimReaperLootGreen.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/CastleDoom/GrimReaperLootGreen.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/CastleDoom/LivingLaserLootGreen.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/CastleDoom/LivingLaserLootGreen.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SinisterLab/MisterSinisterTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/SinisterLab/MisterSinisterTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/StrykerCommandBunker/MagnetoTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/StrykerCommandBunker/MagnetoTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/StrykerCommandBunker/PyroTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/StrykerCommandBunker/PyroTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD12GJuggernaut.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD12GJuggernaut.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD12GJuggernaut.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD09GDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD06GMrSinister.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD06GMrSinister.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD06GMrSinister.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD05GMagneto.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD05GMagneto.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD05GMagneto.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD05GPyro.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD05GPyro.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD05GPyro.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+
+
+
+
+
+
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD12RJuggernaut.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD12RJuggernaut.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD12RJuggernaut.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD09RDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD06RMrSinister.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD06RMrSinister.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD06RMrSinister.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD05RMagneto.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD05RMagneto.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD05RMagneto.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD05RPyro.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD05RPyro.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD05RPyro.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+
+
+
+
+
+
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD12CJuggernaut.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD12CJuggernaut.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD12CJuggernaut.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase1.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase2.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD09CDrDoomPhase3.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD06CMrSinister.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD06CMrSinister.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD06CMrSinister.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD05CMagneto.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD05CMagneto.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD05CMagneto.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD05CPyro.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD05CPyro.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD05CPyro.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  }
+]

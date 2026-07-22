@@ -1,0 +1,36 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/SpecialEvent/SpecialEventOrdersFromTheHand.prototype",
+    "Path": "Choices[]",
+    "Description": "Add Items to the Orders From The Hand Vendor Table",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Description": "Mysterious Unique Box",
+        "Item": 17977060928656253073
+      },
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Description": "Cosmic Teamup Gear",
+        "Item": 2656959895595854482
+      },
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Description": "Red Box",
+        "Item": 16556245230988698916
+      },
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Description": "Random Cosmic Artifact Box",
+        "Item": 17239579611855004786
+      },
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Description": "Random Relic Box",
+        "Item": 10533008717855465012
+      }
+    ]
+  }
+]

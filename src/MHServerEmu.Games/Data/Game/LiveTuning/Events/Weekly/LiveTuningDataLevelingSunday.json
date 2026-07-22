@@ -1,0 +1,22 @@
+[
+    {
+        "Prototype": "",
+        "Setting": "eGTV_VendorXPGain",
+        "Value": 2.0
+    },
+    {
+        "Prototype": "",
+        "Setting": "eGTV_XPGain",
+        "Value": 2.0
+    },
+    {
+        "Prototype": "",
+        "Setting": "eGTV_LootSpecialDropRate",
+        "Value": 2.0
+    },
+    {
+        "Prototype": "",
+        "Setting": "eGTV_LootRarity",
+        "Value": 2.0
+    }
+]

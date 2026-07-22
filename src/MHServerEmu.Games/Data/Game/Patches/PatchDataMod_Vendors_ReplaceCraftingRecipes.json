@@ -1,0 +1,26 @@
+[
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting01.prototype",
+        "Path": "Choices[0].Item",
+        "Description": "Change Crafting Choices 0 to Transmog Unique to Large Relic Box",
+        "ValueType": "PrototypeId",
+        "Value": 4323396685654662374
+	},
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting05.prototype",
+        "Path": "Choices[1].Item",
+        "Description": "Change Crafting Choices 1 to Cash",
+        "ValueType": "PrototypeId",
+        "Value": 4946361853513506036
+    },	
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting12.prototype",
+        "Path": "Choices[2].Item",
+        "Description": "Change Crafting Choices 2 to Transmog Unique to Large Rune Box",
+        "ValueType": "PrototypeId",
+        "Value": 6421168023772863632
+    }	
+]

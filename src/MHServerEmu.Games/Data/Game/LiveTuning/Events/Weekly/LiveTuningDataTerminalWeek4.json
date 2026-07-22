@@ -1,0 +1,344 @@
+[
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/NewspapersTable.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/NewspapersTable.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/DocOctMiniBossLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/DocOctMiniBossLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/KravenMiniBossLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/KravenMiniBossLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/LizardMiniBossLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/LizardMiniBossLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/ShockerMiniBossLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/ShockerMiniBossLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/VultureTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DailyBugle/VultureTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/OdinsPalace/KurseTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/OdinsPalace/KurseTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireBlasterTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireBlasterTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireJackhammerTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireJackhammerTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireLauncherTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireLauncherTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireMelterTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireMelterTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireScrapperTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/IronLegionnaireScrapperTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/UltronTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TimesSquare/UltronTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DarkDimensions/KaeciliusTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/DarkDimensions/KaeciliusTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 2
+  },
+  
+  
+  
+  
+  
+  
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleDoctorOctopus.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleShocker.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleShocker.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleShocker.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD11GKurse.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD11GKurse.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD11GKurse.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  
+  
+  
+  
+  
+  
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD11RKurse.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD11RKurse.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD11RKurse.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  }, 
+ 
+ 
+ 
+ 
+ 
+   {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD11CKurse.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD11CKurse.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD11CKurse.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD14CUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD14CUltronTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD14CUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+ 
+ 
+ 
+ 
+ 
+ 
+  {
+    "Prototype": "Entity/Characters/Bosses/VultureBase.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/VultureBase.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/VultureBase.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  
+  
+  
+  
+  
+  
+  
+  {
+    "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimension.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimension.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimension.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  
+  
+  
+  
+  
+  
+  
+  {
+    "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimensionCosmic.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimensionCosmic.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimensionCosmic.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  }  
+]

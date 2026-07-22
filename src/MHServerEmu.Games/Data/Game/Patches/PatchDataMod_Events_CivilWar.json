@@ -1,0 +1,102 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[27].EntityGuid",
+    "Description": "Add Civil War Vendor - Captain America",
+    "ValueType": "PrototypeGuid",
+    "Value": 15383464624246565865
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[27].Position",
+    "Description": "Change Dagger position",
+    "ValueType": "Vector3",
+    "Value": [
+      -694.76,
+      2003.63,
+      160.97
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[28].EntityGuid",
+    "Description": "Add Civil War Vendor - Iron Man",
+    "ValueType": "PrototypeGuid",
+    "Value": 4060449926510752328
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarCurrencyTableLT.prototype",
+    "Path": "NoDropPercent",
+    "Description": "[Civil War] Set NoDropPercent for CivilWarMiniBossCurrencyTable",
+    "ValueType": "Float",
+    "Value": 0.98
+  },
+    {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamCap.prototype",
+    "Path": "LiveTuningDefaultEnabled",
+    "Description": "[Civil War] Set Live Tuning for Team Cap Table",
+    "ValueType": "Boolean",
+    "Value": true
+  },
+    {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamIM.prototype",
+    "Path": "LiveTuningDefaultEnabled",
+    "Description": "[Civil War] Set Live Tuning for Team Iron Man Table",
+    "ValueType": "Boolean",
+    "Value": true
+  },
+    {
+    "Enabled": false,
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamCapBox.prototype",
+    "Path": "Choices[6].Weight",
+    "Description": "[Civil War] Set Weight of Mole Man",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+    {
+    "Enabled": true,
+    "Prototype": "Loot/Cooldowns/Channels/CWBuffLootCD20min.prototype",
+    "Path": "DurationMinutes",
+    "Description": "[Civil War] Set Cooldwon for Targets to 10 minutes",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/SpecialEventsTable.prototype",
+    "Path": "Choices[]",
+    "Description": "Add Civil War Currency to SpecialEventsTable",
+    "ValueType": "PrototypeDataRef",
+    "Value": 7628717567382787751
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/SpecialEventsTable.prototype",
+    "Path": "Choices[]",
+    "Description": "Add Civil War Mini Boss Table to SpecialEventsTable",
+    "ValueType": "PrototypeDataRef",
+    "Value": 9496289974662338937
+  },  
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/SpecialEventsTable.prototype",
+    "Path": "Choices[]",
+    "Description": "Add Civil War Power Up Captain America to SpecialEventsTable",
+    "ValueType": "PrototypeDataRef",
+    "Value": 18023119180051978859
+  },  
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/SpecialEventsTable.prototype",
+    "Path": "Choices[]",
+    "Description": "Add Civil War Power Up Iron Man to SpecialEventsTable",
+    "ValueType": "PrototypeDataRef",
+    "Value": 11081437661087144461
+  }
+]

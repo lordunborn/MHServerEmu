@@ -1,0 +1,368 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosArea1.prototype",
+    "Path": "AreaName",
+    "Description": "[Dinos Invade Manhattan] CONFIRMED INERT 2026-07-21 - user tested live, banner still reads 'Dinos Invade Manhattan: PvE Test Environment' unchanged. Traced via LootTableDumper --findlocalestringref to this area's own AreaName field (12798526419926254962 = 'PvE Test Environment', a leftover dev/QA label) and confirmed UESvsDinosArea1.prototype IS the only area this region's generator actually uses, so it's not a wrong-area issue. Same architecture wall as UnrealClass/Icons/DialogTextList: the client resolves Area/Region display names entirely from its own local prototype copy and never asks the server, so this patch (verified correctly applied in data) has zero visible effect. Left in place as a marker of intent, same convention as the ShannaA DialogTextList Weight patches",
+    "ValueType": "LocaleStringId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Populations/Clusters/Dinosaur/Deprecated/PvEWaveBattleEG02Phase1Boss.prototype",
+    "Path": "Entity",
+    "Description": "[Dinos Invade Manhattan] Retarget this deprecated/unused single-entity cluster (Max=1/Min=1, already correctly shaped as a solo boss spawn) from its native PvEWaveGameEG02Phase1Boss.prototype (shares the same MarvelAgent_DinoRider_TRex model, but not the exact prototype the user tested) directly to KingLizardRiderBossEG02.prototype - user confirmed via !entity spawn that this model renders correctly and looks great. Part of promoting King Lizard from a wave-trash Elite spawn to the event's actual final boss (random toss-up between this and PvEWaveBattleEG02Phase2Boss's retarget)",
+    "ValueType": "PrototypeId",
+    "Value": 12761272367405933307
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Populations/Clusters/Dinosaur/Deprecated/PvEWaveBattleEG02Phase2Boss.prototype",
+    "Path": "Entity",
+    "Description": "[Dinos Invade Manhattan] Same repurposing as PvEWaveBattleEG02Phase1Boss - retarget this deprecated/unused single-entity cluster to KingLizardBossEG02.prototype (plain, non-rider King Lizard boss model, also confirmed working via !entity spawn)",
+    "ValueType": "PrototypeId",
+    "Value": 9671380227843956965
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase7Base.prototype",
+    "Path": "WaveDurationMS",
+    "Description": "[Dinos Invade Manhattan] Native 300000 (5 min) confirmed by user (skilled play, char they know well) to be about a minute short of achievable given the boss's HP + the low Heroic-tier player damage multiplier, plus random spawn-location variance eating into available fight time. Explicitly NOT a difficulty complaint - user wants the fight to stay properly hard, just needs ~1 more minute of clock. Bumped to 360000 (6 min)",
+    "ValueType": "Integer",
+    "Value": 360000
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase7Base.prototype",
+    "Path": "BossPopulationObjects",
+    "Description": "[Dinos Invade Manhattan] Replaced the native 12-entry random-supervillain rotation (Magneto, Venom, Rhino, Hood, Elektra, Juggernaut, Taskmaster, Blob, Sabretooth, Electro, Gorgon, MadameHydra) with just the two retargeted King Lizard boss clusters (PvEWaveBattleEG02Phase1Boss=Rider, PvEWaveBattleEG02Phase2Boss=plain) - user's call: a random Marvel villain showing up mid-dinosaur-invasion was thematically incoherent, whereas King Lizard (already the wave pool's own Yellow/Elite-tier spawn) escalating into the final boss reads as the same threat ramping up. ScheduledBossSpawn's leader-detection already handles plain (non-PopulationLeaderPrototype) single-entity clusters correctly - leaderRef resolves to Invalid, so the one spawned entity is automatically treated as the leader for win-detection",
+    "ValueType": "PrototypeIdArray",
+    "Value": [17249891207680302903, 18311221370764795704]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Dinosaurs/Redacted/DinosaursEG02/KingLizardBossEG02.prototype",
+    "Path": "Properties",
+    "Description": "[Dinos Invade Manhattan] UPDATED 2026-07-21 - now points at the custom-built Loot/Tables/Test/RaidTestPunisherTable.prototype (see PatchDataMod_Loot_CustomPrizeTable.json for the full 15-slot design), replacing both the earlier Lizard-medal mistake and the plain SharedEndgameWaveBattles fallback. ALSO added LootCooldownTimeHours: 20 (int) - traced a live 'Verify failed: _cooldownData.OriginProtoRef != PrototypeId.Invalid' warning (ItemResolverContext.GetDropChance) to King Lizard being a repurposed EG02 mob that never had this property, unlike every real boss (confirmed EGWB01Magneto natively carries LootCooldownTimeHours=20). Without it, ItemResolverContext.FindCooldownOrigin() can't find a cooldown anchor for ANY OnceDaily-gated node on this entity, so GetDropChance() short-circuits to 0% for all 4 OnceDaily slots (Cosmic Artifact, both comm boxes, Costume/Card/Pet) rather than throwing - a silent full miss, not a crash. Both LootTablePrototype and LootCooldownTimeHours must live in the SAME Properties patch entry - PrototypePatchManager.CheckProperties() only ever applies the FIRST ValueType:Properties patch entry found for a given prototype, so a second separate entry would be ignored entirely",
+    "ValueType": "Properties",
+    "Value": {
+      "LootTablePrototype": [3567626871840706965, 0, 9316722085805298222, 1974318842335662990],
+      "LootCooldownTimeHours": 20
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Dinosaurs/Redacted/DinosaursEG02/KingLizardRiderBossEG02.prototype",
+    "Path": "Properties",
+    "Description": "[Dinos Invade Manhattan] Same custom prize table + LootCooldownTimeHours fix as KingLizardBossEG02 - see that entry's description",
+    "ValueType": "Properties",
+    "Value": {
+      "LootTablePrototype": [3567626871840706965, 0, 9316722085805298222, 1974318842335662990],
+      "LootCooldownTimeHours": 20
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype",
+    "Path": "AlwaysShutdownWhenVacant",
+    "Description": "[Dinos Invade Manhattan] Native false + Behavior:PublicCombatZone/IsPublic:True means this region is configured like an open-world patrol zone (e.g. Midtown) meant to persist and be shared, not a private instanced scenario that closes when done. Confirmed via server log: a player manually leaving (RegionHandle.RemovePlayer fires clean) never set RegionFlags.ShutdownWhenVacant (only Prototype.AlwaysShutdownWhenVacant or an explicit Region.RequestShutdown() sets it), so RegionHandle.ShutdownIfVacant()'s PlayerCount==0 check never fires and the whole PvEScaleGameMode instance kept ticking unattended for multiple real minutes (threat climbing every tick with tracked=0, no players to spawn wave mobs for) - the stale, already-elevated-threat instance a later player walks back into. This single flag covers all the requested close-out triggers uniformly (death/teleport-out/failure/victory all end with player count reaching 0), since Region.RequestShutdown() (called from FailMode's shutdown chain) only sets this same flag and checks vacancy rather than force-killing regardless of it",
+    "ValueType": "Boolean",
+    "Value": true
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Dinos Invade Manhattan] TEST - append Tier3Superheroic to the native [Tier1Normal, Tier2Heroic] access list to see if a T3 option becomes selectable when entering. RegionPrototype.PostProcess() only tracks 3 coarse color bands (Green/Red/Cosmic) via DifficultyTierMask, auto-recomputed from this array - no need to hand-patch the mask separately. Confirmed via Globals.defaults DifficultyTiers[] that Tier3Superheroic is the ONLY tier occupying the global Cosmic slot (Tier4Cosmic/Tier5Omega1 exist as prototypes but aren't in the active global rotation), so this unambiguously means Tier3Superheroic specifically, not some other Cosmic-named tier. Open question this test is meant to answer: does the difficulty-select UI actually offer it, or is that resolved from the client's own unpatched local copy of AccessDifficulties (same wall hit repeatedly this session for other fields). NOTE: must use ValueType PrototypeId not PrototypeDataRef here - AccessDifficulties is a raw PrototypeId[] array, and PrototypeDataRef's IsTypeCompatible check forces comparison against typeof(Prototype), which fails for a PrototypeId[] element type",
+    "ValueType": "PrototypeId",
+    "Value": 586640101754933627
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
+    "Path": "PowerUpItem",
+    "Description": "[Dinos Invade Manhattan] PvEWaveBattlePowerUpItem never got a working model. EventLootPowerUpKingpin (tried first) worked visually but carries ARMOR-event mission baggage (granted a 'go kill Kingpin' condition on pickup). DangerRoomTrackedRegionScoreOrb200 is a generic, mission-free 'pick up to adjust a tracked score' orb - DesignState Live, native ObjectiveInfo (VisibleAlways, 50000 edge range) and Icons, no villain-specific side effects",
+    "ValueType": "PrototypeDataRef",
+    "Value": 757805338125411516
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase2Base.prototype",
+    "Path": "PowerUpItem",
+    "Description": "[Dinos Invade Manhattan] Same substitution as Phase1",
+    "ValueType": "PrototypeDataRef",
+    "Value": 757805338125411516
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase3Base.prototype",
+    "Path": "PowerUpItem",
+    "Description": "[Dinos Invade Manhattan] Same substitution as Phase1",
+    "ValueType": "PrototypeDataRef",
+    "Value": 757805338125411516
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase4Base.prototype",
+    "Path": "PowerUpItem",
+    "Description": "[Dinos Invade Manhattan] Same substitution as Phase1",
+    "ValueType": "PrototypeDataRef",
+    "Value": 757805338125411516
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase5Base.prototype",
+    "Path": "PowerUpItem",
+    "Description": "[Dinos Invade Manhattan] Same substitution as Phase1",
+    "ValueType": "PrototypeDataRef",
+    "Value": 757805338125411516
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase6Base.prototype",
+    "Path": "PowerUpItem",
+    "Description": "[Dinos Invade Manhattan] Same substitution as Phase1",
+    "ValueType": "PrototypeDataRef",
+    "Value": 757805338125411516
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Dinosaurs/DinosaurRaptorBase.prototype",
+    "Path": "PlayDramaticEntrance",
+    "Description": "[Dinos Invade Manhattan] Native Always plays a real ~5s scripted entrance animation on spawn during which the mob has no health bar and can't be targeted/attacked by the player, while its own AI wakes and can attack the player almost immediately (WakeRandomStartMS is only 500ms - a separate, much shorter gate). Confirmed in-game: player takes hits with no way to fight back for the full animation. Disabling it removes the flourish from this same shared mob prototype's other use (Savage Land CH07 story chapter) too, but that's a one-time story beat vs. this happening on every wave spawn - accepted tradeoff",
+    "ValueType": "Enum",
+    "Value": "Never"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Dinosaurs/DinosaurKingLizardBase.prototype",
+    "Path": "PlayDramaticEntrance",
+    "Description": "[Dinos Invade Manhattan] Same fix as DinosaurRaptorBase - see that entry's description",
+    "ValueType": "Enum",
+    "Value": "Never"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Dinosaurs/DinosaurPterosaurBase.prototype",
+    "Path": "PlayDramaticEntrance",
+    "Description": "[Dinos Invade Manhattan] Same fix as DinosaurRaptorBase - see that entry's description",
+    "ValueType": "Enum",
+    "Value": "Never"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Beetles/BeetleExploderBase.prototype",
+    "Path": "PlayDramaticEntrance",
+    "Description": "[Dinos Invade Manhattan] Same fix as DinosaurRaptorBase - see that entry's description",
+    "ValueType": "Enum",
+    "Value": "Never"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Beetles/BeetleExploderFireBase.prototype",
+    "Path": "PlayDramaticEntrance",
+    "Description": "[Dinos Invade Manhattan] Same fix as DinosaurRaptorBase - see that entry's description",
+    "ValueType": "Enum",
+    "Value": "Never"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Beetles/BeetleGasBase.prototype",
+    "Path": "PlayDramaticEntrance",
+    "Description": "[Dinos Invade Manhattan] Same fix as DinosaurRaptorBase - see that entry's description",
+    "ValueType": "Enum",
+    "Value": "Never"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Cliffwalkers/CliffwalkerTribeWarriorBase.prototype",
+    "Path": "PlayDramaticEntrance",
+    "Description": "[Dinos Invade Manhattan] Same fix as DinosaurRaptorBase - see that entry's description",
+    "ValueType": "Enum",
+    "Value": "Never"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Mobs/Cliffwalkers/CliffwalkerTribeDarterBase.prototype",
+    "Path": "PlayDramaticEntrance",
+    "Description": "[Dinos Invade Manhattan] Same fix as DinosaurRaptorBase - see that entry's description",
+    "ValueType": "Enum",
+    "Value": "Never"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/ShannaA.prototype",
+    "Path": "DesignState",
+    "Description": "[Dinos Invade Manhattan] Portal-guide stand-in NPC for EGPVEManhattan (whose own UnrealClass never renders client-side - confirmed via controlled experiments, server patches to UnrealClass/Icons/ObjectiveInfo are never sent to the client). Spawned in code (Region.SpawnShannaPortalGuide, called from Region.Initialize for NPEAvengersTowerHUBRegion) at EGPVEManhattan's own marker position, which is left untouched so the return-trip target lookup (Cell.FindTargetLocation, a static EntityGuid->marker lookup) keeps resolving correctly. Only blocker for spawning her at all was DesignState",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/ShannaA.prototype",
+    "Path": "DialogTextList[1].Weight",
+    "Description": "[Dinos Invade Manhattan] DialogTextList has 3 weighted lines (all Weight 1 natively); [1] and [2] reference her being in the Savage Land, which doesn't fit as the Manhattan portal guide. KNOWN LIMITATION: this patch applies successfully server-side (confirmed in logs) but has no visible effect - DialogData.PickDialog(Game, WorldEntityPrototype) is the only server-side weighted picker for this field and it is never called for a plain (non-Mission) DialogOption interact like hers, only for Mission-driven MissionConditionEntityInteract popups. Line selection for her appears to happen entirely client-side from the client's own unpatched copy, same architecture wall as UnrealClass/Icons/ObjectiveInfo. Left in place (harmless) as a marker of intent. Future option: rewire her interact through an unused Mission's EntityInteractCondition (which does call PickDialog server-side) if this is ever worth revisiting - not done now, purely cosmetic",
+    "ValueType": "Integer",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/ShannaA.prototype",
+    "Path": "DialogTextList[2].Weight",
+    "Description": "[Dinos Invade Manhattan] Same as DialogTextList[1], same known limitation - see that entry's description",
+    "ValueType": "Integer",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
+    "Path": "WaveDifficultyPerSecond",
+    "Description": "[Dinos Invade Manhattan] Native 0.05/sec, bumped to 0.08 in an earlier round, now to 0.10 (~18 rise/phase) alongside making PowerUpDifficultyReduction a real lever (0.7->8.0) - confirmed via a full clean-win log that 0.08+0.15/cluster-reduction gave a good felt climb (~5.5-6/phase, ~35/50 by the boss phase), so this round is specifically about making the power-up orb a meaningful, worth-detouring-for objective rather than raising overall difficulty much further. See PowerUpDifficultyReduction's own description for the full reasoning",
+    "ValueType": "Float",
+    "Value": 0.10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase2Base.prototype",
+    "Path": "WaveDifficultyPerSecond",
+    "Description": "[Dinos Invade Manhattan] Same rate bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase3Base.prototype",
+    "Path": "WaveDifficultyPerSecond",
+    "Description": "[Dinos Invade Manhattan] Same rate bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase4Base.prototype",
+    "Path": "WaveDifficultyPerSecond",
+    "Description": "[Dinos Invade Manhattan] Same rate bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase5Base.prototype",
+    "Path": "WaveDifficultyPerSecond",
+    "Description": "[Dinos Invade Manhattan] Same rate bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase6Base.prototype",
+    "Path": "WaveDifficultyPerSecond",
+    "Description": "[Dinos Invade Manhattan] Same rate bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Native 0.7 against a ~18/phase total rise (at the new 0.10/sec rate) is under 4% of a phase's rise in one grab - user's own read: 'that's half of a cluster's worth of threat,' not worth detouring for. Bumped to 8.0 - roughly 44% of a phase's total rise in one deliberate pickup (only one orb spawns per phase, at PowerUpSpawnMS=45000). Skipping every orb across all 6 phases still fails the run (6 x ~18 rise vastly exceeds the 50 cap even with normal kill-reduction help), but grabbing it each phase plus normal kill activity should keep a competent group comfortably under the cap - makes seeking the orb a real, worthwhile objective instead of a rounding error",
+    "ValueType": "Float",
+    "Value": 8.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase2Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 8.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase3Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 8.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase4Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 8.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase5Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 8.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase6Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same bump as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 8.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
+    "Path": "MobTotalDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Native 4.2/cluster, then cut to 0.6/cluster in an earlier round - still far too strong. Server log from a real run (level 60, shield bug already fixed) showed threat pinned at ~0.48 (one tick's pure rise) almost the entire run while 'tracked' (alive wave mobs) climbed into the 50s-60s - i.e. even FALLING BEHIND on kills (not clearing everything) still generated enough cumulative reduction to fully cancel the rise every tick, since a single cluster's reduction (0.6) already exceeds the whole tick's rise (0.48). Cut to 0.15/cluster: even perfect nonstop clearing (2-3 clusters/tick) now yields only 0.3-0.45 reduction, LESS than the 0.48 rise, so kills alone can only slow the climb, never fully erase it. PowerUpDifficultyReduction (0.7, one deliberate pickup ~every 45s) becomes the main lever again, matching the original design intent ('collect power flares to decrease the threat'). Starting point for live tuning, not a final number",
+    "ValueType": "Float",
+    "Value": 0.15
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase2Base.prototype",
+    "Path": "MobTotalDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.15
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase3Base.prototype",
+    "Path": "MobTotalDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.15
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase4Base.prototype",
+    "Path": "MobTotalDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.15
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase5Base.prototype",
+    "Path": "MobTotalDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.15
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase6Base.prototype",
+    "Path": "MobTotalDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.15
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameWaveBattles/Subtables/SharedEndgameWaveBattles.prototype",
+    "Path": "Choices[4].NoDropPercent",
+    "Description": "[Dinos Invade Manhattan] REVERTED 2026-07-21 - disabled the costume/card/pet slot (Choices[4].Choices[0] -> SpecialsCostumeCardPet.prototype) based on an early '15 costumes dropping' report, but that turned out to be an unrelated patch/LiveTuning issue elsewhere (confirmed by the user via isolation testing - disabling other events/patches stopped it), not this table. SpecialsCostumeCardPet is tagged MarkSpecial/OnceDaily(PerAccount), so it was never actually spam-prone to begin with. Restoring the natural drop chance - a hard ~20 min boss fight rewarding a rare, once-daily-gated costume chance fits the intended design (user's own framing: 'this being a hard fight and the end MAY reward the player with a costume'). Left in the file disabled rather than deleted, in case the boss-loot redesign this unblocks needs to reference the original find",
+    "ValueType": "Float",
+    "Value": 1.0
+  }
+]

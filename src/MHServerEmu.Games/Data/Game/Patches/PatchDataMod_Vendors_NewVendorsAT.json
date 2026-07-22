@@ -1,0 +1,108 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[29].EntityGuid",
+    "Description": "Add Raid Vendor",
+    "ValueType": "PrototypeGuid",
+    "Value": 5131636323208863595
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[29].Position",
+    "Description": "Change Raid Vendor position",
+    "ValueType": "Vector3",
+    "Value": [
+      1701.125,
+      -1497.625,
+      368
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[30].EntityGuid",
+    "Description": "Add MistyKnight",
+    "ValueType": "PrototypeGuid",
+    "Value": 16515306148303751715
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[30].Position",
+    "Description": "Change Misty Knight position",
+    "ValueType": "Vector3",
+    "Value": [
+      -1241.375,
+      1944.625,
+      128
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Vendors/Prototypes/CH01HellsKitchen/HKRooftopVendorArmor.prototype",
+    "Path": "Properties",
+    "Description": "Set Vendor Type to Legendary",
+    "ValueType": "Properties",
+    "Value": {
+        "VendorType": 16660856751085590967
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/EternitySplinter/VendorEternitySplinterLoot.prototype",
+    "Path": "Choices[1].Item",
+    "Description": "Add Random Costume Box to Adam Warlock",
+    "ValueType": "PrototypeId",
+    "Value": 18074377730390301555
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/EternitySplinter/VendorEternitySplinterLoot.prototype",
+    "Path": "Choices[6].Item",
+    "Description": "Add X-Men Daily Gift Box to Adam Warlock",
+    "ValueType": "PrototypeId",
+    "Value": 12394613170218606020
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/EternitySplinter/VendorEternitySplinterLoot.prototype",
+    "Path": "Choices[2].Item",
+    "Description": "Add Team Up XP Potion to Adam Warlock",
+    "ValueType": "PrototypeId",
+    "Value": 2701744368746174040
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/EternitySplinter/VendorEternitySplinterLoot.prototype",
+    "Path": "Choices[3].Item",
+    "Description": "Add Mini Sentinel to Adam Warlock",
+    "ValueType": "PrototypeId",
+    "Value": 9371101726143877678
+  },  
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/EternitySplinter/VendorEternitySplinterLoot.prototype",
+    "Path": "Choices[5].Item",
+    "Description": "Add Mindless Ones to Adam Warlock",
+    "ValueType": "PrototypeId",
+    "Value": 1566005023430545852
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/EternitySplinter/VendorEternitySplinterLoot.prototype",
+    "Path": "Choices[7].Item",
+    "Description": "Add Midtown Daily Gift Box to Adam Warlock",
+    "ValueType": "PrototypeId",
+    "Value": 13684641736241979150
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/ItemType/RunewordGlyphsGeneral.prototype",
+    "Path": "Choices[15].Weight",
+    "Description": "Change Tyr from 1 weight to 10",
+    "ValueType": "Integer",
+    "Value": 10
+  }
+]

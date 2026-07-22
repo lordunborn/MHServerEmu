@@ -17,15 +17,58 @@
     ]
   },
   {
+    "Name": "Saturday Patrol",
+    "IsEnabled": true,
+    "Type": "DayOfWeek",
+    "StartDayOfWeek": "Saturday",
+    "Events": [
+      "SaturdayPatrol"
+    ]
+  },
+  {
+    "Name": "Friday Nights On The Town",
+    "IsEnabled": true,
+    "Type": "DayOfWeek",
+    "StartDayOfWeek": "Friday",
+    "Events": [
+      "FridayPatrol"
+    ]
+  },
+  {
+    "Name": "Saturday Patrols",
+    "IsEnabled": false,
+    "Type": "DayOfWeek",
+    "StartDayOfWeek": "Saturday",
+    "Events": [
+      "SaturdayMidtown",
+	  "SaturdayBrooklyn",
+      "SaturdayHightown"
+    ]
+  },
+  {
+    "Name": "XP Event Rotation",
+    "IsEnabled": true,
+    "Type": "DayOfWeekRotation",
+    "StartDayOfWeek": "Sunday",
+    "Events": [
+      "AvengersXP",
+	  "HeroesForHireXP",
+	  "XmenXP",
+	  "VillainsXP",
+	  "Fantastic4XP",
+	  "GuardiansXP"
+    ]
+  },
+  {
     "Name": "Core Weekly Rotation",
     "IsEnabled": true,
     "Type": "WeeklyRotation",
     "StartDayOfWeek": "Friday",
     "Events": [
-      "CosmicChaos",
+      "MysticMayhem",
+	  "CosmicChaos",
       "OdinsBounty",
       "OperationOmega",
-      "MysticMayhem",
       "ArmorIncursion"
     ]
   },
@@ -36,6 +79,7 @@
     "StartDayOfWeek": "Friday",
     "Events": [
       "HeroesForHire",
+	  "CivilWar",
       "WealthOfKingsCounty",
       "OrdersFromTheHand"
     ]
@@ -137,6 +181,63 @@
     "DurationDays": 14,
     "Events": [
       "WinterHoliday"
+    ]
+  },
+  {
+    "Name": "Brooklyn Beatdown",
+    "IsEnabled": true,
+    "Type": "DayOfWeek",
+    "StartDayOfWeek": "Wednesday",
+    "Events": [
+      "BrooklynBeatdown"
+    ]
+  },
+  {
+    "Name": "Terminal Turmoil",
+    "IsEnabled": true,
+    "Type": "DayOfWeekRotation",
+    "StartDayOfWeek": "Tuesday",
+    "Events": [
+      "TerminalWeek1",
+      "TerminalWeek2",
+      "TerminalWeek3",
+      "TerminalWeek4",
+	  "TerminalWeek5"
+    ]
+  },
+  {
+    "Name": "Terminal Turmoil",
+    "IsEnabled": true,
+    "Type": "DayOfWeekRotation",
+    "StartDayOfWeek": "Thursday",
+    "Events": [
+      "TerminalWeek3",
+      "TerminalWeek4",
+	  "TerminalWeek5",
+      "TerminalWeek1",
+      "TerminalWeek2"
+    ]
+  },
+  {
+    "Name": "Stan Lee's Birthday",
+    "IsEnabled": true,
+    "Type": "SpecialDate",
+    "StartMonth": 12,
+    "StartDay": 27,
+    "DurationDays": 3,
+    "Events": [
+      "StanLeeBDay"
+    ]
+  },
+  {
+    "Name": "Jack Kirby's Birthday",
+    "IsEnabled": true,
+    "Type": "SpecialDate",
+    "StartMonth": 8,
+    "StartDay": 27,
+    "DurationDays": 3,
+    "Events": [
+      "JackKirbyBDay"
     ]
   }
 ]

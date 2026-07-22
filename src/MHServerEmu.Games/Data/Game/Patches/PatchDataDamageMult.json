@@ -1,0 +1,632 @@
+[
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Angela.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/AntMan.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Beast.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/BlackBolt.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/BlackCat.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/BlackPanther.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/BlackWidow.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Blade.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Cable.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/CaptainAmerica.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/MsMarvel.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Carnage.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Colossus.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Cyclops.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Daredevil.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Deadpool.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/DoctorDoom.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/DoctorStrange.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Elektra.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/EmmaFrost.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Gambit.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/GhostRider.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/GreenGoblin.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Hawkeye.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Hulk.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/HumanTorch.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Iceman.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/InvisibleWoman.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/IronFist.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/IronMan.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Avatars/Shipping/JeanGrey.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1.025
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Juggernaut.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/KittyPryde.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Loki.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/LukeCage.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Magik.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Magneto.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/MrFantastic.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/MoonKnight.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/NickFury.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Nightcrawler.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Nova.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Psylocke.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Punisher.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/RocketRaccoon.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Rogue.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/ScarletWitch.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/SheHulk.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/SilverSurfer.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/SpiderMan.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/SquirrelGirl.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/StarLord.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Storm.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Taskmaster.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Thing.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Thor.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Ultron.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Venom.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Vision.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/WarMachine.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/WinterSoldier.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/Wolverine.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Entity/Characters/Avatars/Shipping/X23.prototype",
+    "Path": "Properties",
+    "Description": "Damage Multiplier",
+    "ValueType": "Properties",
+    "Value": {
+      "DamageMult": 1
+    }
+  }
+]

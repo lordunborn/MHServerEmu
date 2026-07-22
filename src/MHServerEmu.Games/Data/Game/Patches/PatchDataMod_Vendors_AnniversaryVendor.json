@@ -1,0 +1,44 @@
+[
+    {
+        "Enabled": true,
+        "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+        "Path": "MarkerSet.Markers[13].EntityGuid",
+        "Description": "Change BUXGiver to Silver Sable",
+        "ValueType": "PrototypeGuid",
+        "Value": 6316078327140856161
+    },
+	{
+		"Enabled": true,
+		"Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownACCTrainer.prototype",
+		"Path": "Properties",
+		"Description": "Set Vendor Type to Event",
+		"ValueType": "Properties",
+		"Value": {
+			"VendorType": 12101943770254220031
+		}
+	},	
+    {
+        "Enabled": true,
+        "Prototype": "Entity/Characters/Vendors/VendorTypes/SpecialEventVendor.prototype",
+        "Path": "Inventories[0].LootTable",
+        "Description": "Add Anniversary 2017 Vendor",
+        "ValueType": "PrototypeId",
+        "Value": 13601394654621801607
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/SpecialEvent/Anniversary2017VendorLootTable.prototype",
+        "Path": "Choices[11].Item",
+        "Description": "Change Choices 11 to Civil War Items Box",
+        "ValueType": "PrototypeId",
+        "Value": 14233766741659558870
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/SpecialEvent/Anniversary2017VendorLootTable.prototype",
+        "Path": "Choices[12].Item",
+        "Description": "Change Choices 12 to Random ICP Ring",
+        "ValueType": "PrototypeId",
+        "Value": 569049126350300307
+    }
+]    

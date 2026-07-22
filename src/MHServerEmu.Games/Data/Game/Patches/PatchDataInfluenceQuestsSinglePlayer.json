@@ -1,0 +1,154 @@
+[
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily01Sentinels.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Take Down Sentinels (Default 10)",
+        "ValueType": "Integer",
+        "Value": 5
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily01Sentinels.prototype",
+        "Path": "Objectives[4].SuccessConditions.Conditions[0].Count",
+        "Description": "Subdue MGH Mutants (Default 50)",
+        "ValueType": "Integer",
+        "Value": 25
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily02RedSkull.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Red HYDRA Units (Default 100)",
+        "ValueType": "Integer",
+        "Value": 50
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily02RedSkull.prototype",
+        "Path": "Objectives[4].SuccessConditions.Conditions[0].Count",
+        "Description": "Destroy HYDRA Vehicles (Default 20)",
+        "ValueType": "Integer",
+        "Value": 10
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily03Brood.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Exterminate King Wasps (Default 3)",
+        "ValueType": "Integer",
+        "Value": 2
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily04AIMCity.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat AIM Scientists (Default 100)",
+        "ValueType": "Integer",
+        "Value": 50
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily05Hulkbusters.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Red HYDRA Units (Default 100)",
+        "ValueType": "Integer",
+        "Value": 50
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily06Wakanda.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Jabari Warriors (Default 100)",
+        "ValueType": "Integer",
+        "Value": 50
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily06Wakanda.prototype",
+        "Path": "Objectives[7].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Moloids (Default 60)",
+        "ValueType": "Integer",
+        "Value": 30
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily07SnakesOfMidtown.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Hydra Commanders (Default 10)",
+        "ValueType": "Integer",
+        "Value": 5
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily07SnakesOfMidtown.prototype",
+        "Path": "Objectives[4].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Gunners And Skyrakers (Default 200)",
+        "ValueType": "Integer",
+        "Value": 100
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaDaily07SnakesOfMidtown.prototype",
+        "Path": "Objectives[5].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Gang Members (Default 150)",
+        "ValueType": "Integer",
+        "Value": 75
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaWeekly01CosmicXMen.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Elite Enemies Of The X-Men (Default 300)",
+        "ValueType": "Integer",
+        "Value": 150
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaWeekly02CosmicAvengers.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Elite Enemies Of The Avengers (Default 300)",
+        "ValueType": "Integer",
+        "Value": 150
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaWeekly03StationToStation.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat HYDRA ExoSuits in HYDRA Island Terminal (Default 20)",
+        "ValueType": "Integer",
+        "Value": 10
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaWeekly03StationToStation.prototype",
+        "Path": "Objectives[7].SuccessConditions.Conditions[0].Count",
+        "Description": "Destroy AIM Computers in AIM Facility Terminal (Default 24)",
+        "ValueType": "Integer",
+        "Value": 12
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaWeekly04Conspirators.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Sub Bosses in Castle Doom Terminal (Default 3)",
+        "ValueType": "Integer",
+        "Value": 2
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaWeekly04Conspirators.prototype",
+        "Path": "Objectives[6].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Red HYDRA in HYDRA Island Terminal (Default 300)",
+        "ValueType": "Integer",
+        "Value": 150
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/InfluenceMissions/GLF/GenoshaWeekly05Wakanda.prototype",
+        "Path": "Objectives[3].SuccessConditions.Conditions[0].Count",
+        "Description": "Defeat Spider Slayers in the Wakanda One Shot (Default 30)",
+        "ValueType": "Integer",
+        "Value": 15
+    }
+]

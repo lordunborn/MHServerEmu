@@ -1,0 +1,108 @@
+[
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/FiskTower/KingpinLTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/FiskTower/KingpinLTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/HoodsHideout/HoodTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/HoodsHideout/HoodTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/HydraIsland/MandarinTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/HydraIsland/MandarinTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TaskmasterInstitute/TaskmasterTerminalLoot.prototype",
+    "Setting": "eLTTV_Weight",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameDailies/Terminals/TaskmasterInstitute/TaskmasterTerminalLoot.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+
+
+
+
+
+
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD10GKingpin.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD10GKingpin.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD10GKingpin.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD04GHood.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD04GHood.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD04GHood.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD08GMandarin.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD08GMandarin.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD08GMandarin.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD03GTaskmaster.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD03GTaskmaster.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD03GTaskmaster.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  }
+]

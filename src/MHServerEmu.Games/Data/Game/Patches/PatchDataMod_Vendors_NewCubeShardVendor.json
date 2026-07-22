@@ -1,0 +1,236 @@
+[
+    {
+        "Enabled": true,
+        "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+        "Path": "MarkerSet.Markers[14].EntityGuid",
+        "Description": "Change to Iron Fist Skill Trainer",
+        "ValueType": "PrototypeGuid",
+        "Value": 12426129186128603905
+    },
+	{
+		"Enabled": true,
+		"Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownAGITrainer.prototype",
+		"Path": "Properties",
+		"Description": "Set Vendor Type of Iron Fist to BUXGiver",
+		"ValueType": "Properties",
+		"Value": {
+			"VendorType": 2526896923216255306
+		}
+	},
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[0].Item",
+        "Description": "Change Choices 0 to FC 1",
+        "ValueType": "PrototypeId",
+        "Value": 15142736093714783733
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[1].Item",
+        "Description": "Change Choices 1 to FC 2",
+        "ValueType": "PrototypeId",
+        "Value": 5460518059085536758
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[2].Item",
+        "Description": "Change Choices 2 to FC 3",
+        "ValueType": "PrototypeId",
+        "Value": 9964627584974134775
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[3].Item",
+        "Description": "Change Choices 3 to FC 4",
+        "ValueType": "PrototypeId",
+        "Value": 16513128686675238775
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[4].Item",
+        "Description": "Change Choices 4 to FC 5",
+        "ValueType": "PrototypeId",
+        "Value": 7132784530930736633
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[5].Item",
+        "Description": "Change Choices 5 to FC 6",
+        "ValueType": "PrototypeId",
+        "Value": 18095141954958532090
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[6].Item",
+        "Description": "Change Choices 6 to Age of Ultron FC",
+        "ValueType": "PrototypeId",
+        "Value": 15254461210072522943
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[7].Item",
+        "Description": "Change Choices 7 to Beach Party FC",
+        "ValueType": "PrototypeId",
+        "Value": 16566255714732875836
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[8].Item",
+        "Description": "Change Choices 8 to Cowpocalypse FC",
+        "ValueType": "PrototypeId",
+        "Value": 17622955599300993330
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[9].Item",
+        "Description": "Change Choices 9 to GotG FC",
+        "ValueType": "PrototypeId",
+        "Value": 17412548336846579190
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[10].Item",
+        "Description": "Change Choices 10 to Heroes for Hire FC",
+        "ValueType": "PrototypeId",
+        "Value": 17077694920195514766
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[11].Item",
+        "Description": "Change Choices 11 to HYDRA FC",
+        "ValueType": "PrototypeId",
+        "Value": 5447523880388599345
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[12].Item",
+        "Description": "Change Choices 12 to Logan FC",
+        "ValueType": "PrototypeId",
+        "Value": 11660572688292912682
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[13].Item",
+        "Description": "Change Choices 13 to Odins Bounty FC",
+        "ValueType": "PrototypeId",
+        "Value": 8652531632129843415
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[14].Item",
+        "Description": "Change Choices 14 to Secret Invasion FC",
+        "ValueType": "PrototypeId",
+        "Value": 7215523412926079494
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[15].Item",
+        "Description": "Change Choices 15 to SHIELD FC",
+        "ValueType": "PrototypeId",
+        "Value": 17117190722675416722
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[16].Item",
+        "Description": "Change Choices 16 to Spiderman Homecoming FC",
+        "ValueType": "PrototypeId",
+        "Value": 8669962911793554434
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[17].Item",
+        "Description": "Change Choices 17 to ICP FC",
+        "ValueType": "PrototypeId",
+        "Value": 13614484023278574933
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[18].Item",
+        "Description": "Change Choices 18 to Midtown FC",
+        "ValueType": "PrototypeId",
+        "Value": 13888546326582206235
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[19].Item",
+        "Description": "Change Choices 19 to St Patricks Day FC",
+        "ValueType": "PrototypeId",
+        "Value": 77989783120191903
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[20].Item",
+        "Description": "Change Choices 20 to Summer Fortune FC",
+        "ValueType": "PrototypeId",
+        "Value": 9623878311681793882
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[21].Item",
+        "Description": "Change Choices 21 to Uncanny MKII FC",
+        "ValueType": "PrototypeId",
+        "Value": 17369422094381293716
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[22].Item",
+        "Description": "Change Choices 22 to Winters Fortune FC",
+        "ValueType": "PrototypeId",
+        "Value": 1946373172390272690
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[23].Item",
+        "Description": "Change Choices 23 to X-Men FC",
+        "ValueType": "PrototypeId",
+        "Value": 13360552517740469713
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[24].Item",
+        "Description": "Change Choices 24 to Ghost Box",
+        "ValueType": "PrototypeId",
+        "Value": 372030337469652121
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[25].Item",
+        "Description": "Change Choices 25 to Ghost Box",
+        "ValueType": "PrototypeId",
+        "Value": 372030337469652121
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/BIFBuxGiverTable.prototype",
+        "Path": "Choices[26].Item",
+        "Description": "Change Choices 26 to Ghost Box",
+        "ValueType": "PrototypeId",
+        "Value": 372030337469652121
+    }
+]

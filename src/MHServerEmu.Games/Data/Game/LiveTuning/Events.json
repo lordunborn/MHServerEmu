@@ -8,7 +8,8 @@
   },
   "CosmicChaos": {
     "DisplayName": "Cosmic Chaos",
-    "FilePath": "Events/Weekly/LiveTuningDataCosmicChaos.json"
+    "FilePath": "Events/Weekly/LiveTuningDataCosmicChaos.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/WorldstoneGiftbox.prototype"
   },
   "MysticMayhem": {
     "DisplayName": "Mystic Mayhem",
@@ -16,12 +17,16 @@
   },
   "OdinsBounty": {
     "DisplayName": "Odin's Bounty",
-    "FilePath": "Events/Weekly/LiveTuningDataOdinsBounty.json"
+    "FilePath": "Events/Weekly/LiveTuningDataOdinsBounty.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/DailyGiftOdinMarks.prototype"
   },
   "OperationOmega": {
-    "DisplayName": "Operation Omega",
+    "DisplayName": "Agents of S.H.I.E.L.D.",
     "FilePath": "Events/Weekly/LiveTuningDataOperationOmega.json",
-    "DailyGift": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/OmegaFileBox.prototype"
+    "DailyGift": "Entity/Items/Consumables/Prototypes/RandomGiftboxes/OmegaFileBox.prototype",
+    "Leaderboards": [
+      "Leaderboards/Prototypes/Leaderboards/Events/AgentsOfSHIELDEvent.prototype"
+    ]
   },
   "AprilFoolsDay": {
     "DisplayName": "April Fools' Day",
@@ -29,9 +34,12 @@
     "FilePath": "Events/LiveTuningDataAprilFoolsDay.json"
   },
   "Anniversary": {
-    "DisplayName": "Anniversary",
+    "DisplayName": "Marvel Heroes Anniversary",
     "FilePath": "Events/LiveTuningDataAnniversary.json",
-    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/ThirdAnniversaryDailyGift.prototype"
+    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/ThirdAnniversaryDailyGift.prototype",
+    "Leaderboards": [
+      "Leaderboards/Prototypes/Leaderboards/Events/Anniversary2017.prototype"
+    ]
   },
   "AustraliaDay": {
     "DisplayName": "Australia Day",
@@ -50,7 +58,10 @@
   "EndOfSummer": {
     "DisplayName": "End of Summer",
     "FilePath": "Events/LiveTuningDataEndOfSummer.json",
-    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/SummerEventDailyGift.prototype"
+    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/SummerEventDailyGift.prototype",
+    "Leaderboards": [
+      "Leaderboards/Prototypes/Leaderboards/Events/SummerEvent.prototype"
+    ]
   },
   "GuardiansOfTheGalaxy": {
     "DisplayName": "Guardians of the Galaxy",
@@ -64,7 +75,19 @@
   "HeroesForHire": {
     "DisplayName": "Heroes for Hire",
     "FilePath": "Events/LiveTuningDataHeroesForHire.json",
-    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/LukeCageDailyGift.prototype"
+    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/LukeCageDailyGift.prototype",
+    "Leaderboards": [
+      "Leaderboards/Prototypes/Leaderboards/Events/LukeCageEvent.prototype"
+    ]
+  },
+  "CivilWar": {
+    "DisplayName": "Civil War",
+    "FilePath": "Events/LiveTuningDataCivilWar.json",
+    "Leaderboards": [
+      "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWar.prototype",
+      "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+      "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype"
+    ]
   },
   "LunarNewYear": {
     "DisplayName": "Lunar New Year",
@@ -74,12 +97,19 @@
   "MidtownMadness": {
     "DisplayName": "Midtown Madness",
     "FilePath": "Events/LiveTuningDataMidtownMadness.json",
-    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/DailyGiftMidtownMadness.prototype"
+    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/DailyGiftMidtownMadness.prototype",
+    "Leaderboards": [
+      "Leaderboards/Prototypes/Leaderboards/GameModes/MidtownPatrol/PatrolMidtownMobs.prototype",
+      "Leaderboards/Prototypes/Leaderboards/GameModes/MidtownPatrol/PatrolMidtownMobsCosmic.prototype"
+    ]
   },
   "OrdersFromTheHand": {
     "DisplayName": "Orders From The Hand",
     "FilePath": "Events/LiveTuningDataOrdersFromTheHand.json",
-    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/OrdersfromtheHandDailyGift.prototype"
+    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/OrdersfromtheHandDailyGift.prototype",
+    "Leaderboards": [
+      "Leaderboards/Prototypes/Leaderboards/Events/DaredevilVsHand.prototype"
+    ]
   },
   "StPatricksDay": {
     "DisplayName": "St. Patrick's Day",
@@ -93,11 +123,90 @@
   },
   "WealthOfKingsCounty": {
     "DisplayName": "The Wealth of Kings County",
-    "FilePath": "Events/LiveTuningDataWealthOfKingsCounty.json"
+    "FilePath": "Events/LiveTuningDataWealthOfKingsCounty.json",
+    "Leaderboards": [
+      "Leaderboards/Prototypes/Leaderboards/GameModes/IndustryCityPatrol/PatrolIndustryCity.prototype",
+      "Leaderboards/Prototypes/Leaderboards/GameModes/IndustryCityPatrol/PatrolIndustryCityCosmic.prototype"
+    ]
   },
   "WinterHoliday": {
     "DisplayName": "Winter Holiday",
     "FilePath": "Events/LiveTuningDataWinterHoliday.json",
     "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/XMasDailyGift.prototype"
+  },
+  "BrooklynBeatdown": {
+    "DisplayName": "Brooklyn Beatdown",
+    "FilePath": "Events/Weekly/LiveTuningDataBrooklynBeatdown.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/FortuneCard/FortuneCardICP.prototype"
+  },
+  "TerminalWeek1": {
+    "DisplayName": "Terminal Bonus: Underground",
+    "FilePath": "Events/Weekly/LiveTuningDataTerminalWeek1.json"
+  },
+  "TerminalWeek2": {
+    "DisplayName": "Terminal Bonus: Villains",
+    "FilePath": "Events/Weekly/LiveTuningDataTerminalWeek2.json"
+  },
+  "TerminalWeek3": {
+    "DisplayName": "Terminal Bonus: Crime Lords",
+    "FilePath": "Events/Weekly/LiveTuningDataTerminalWeek3.json"
+  },
+  "TerminalWeek4": {
+    "DisplayName": "Terminal Bonus: Endgame",
+    "FilePath": "Events/Weekly/LiveTuningDataTerminalWeek4.json"
+  },
+  "TerminalWeek5": {
+    "DisplayName": "Terminal Bonus: All Terminals",
+    "FilePath": "Events/Weekly/LiveTuningDataTerminalWeek5.json"
+  },
+  "FridayPatrol": {
+    "DisplayName": "Friday Nights On the Town",
+    "FilePath": "Events/Weekly/LiveTuningDataHightownPatrol.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/FortuneCard/SecretInvasionFortuneCard.prototype"
+  },
+  "SaturdayPatrol": {
+    "DisplayName": "Saturday Crime Wave",
+    "FilePath": "Events/Weekly/LiveTuningDataSaturdayPatrol.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/GShop/SHIELDSupplyBoost/SHIELDSupplyBoost.prototype"
+  },
+  "AvengersXP": {
+    "DisplayName": "Avengers XP Bonus",
+    "FilePath": "Events/XP_Events/LiveTuningData_AvengersXP.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/VeteranRewards/MHWelcomeXPBoostKit.prototype"
+  },
+  "HeroesForHireXP": {
+    "DisplayName": "Heroes For Hire XP Bonus",
+    "FilePath": "Events/XP_Events/LiveTuningData_HeroesForHireXP.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/VeteranRewards/MHWelcomeXPBoostKit.prototype"
+  },
+  "Fantastic4XP": {
+    "DisplayName": "Fantastic Four XP Bonus",
+    "FilePath": "Events/XP_Events/LiveTuningData_Fantastic4XP.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/VeteranRewards/MHWelcomeXPBoostKit.prototype"
+  },
+  "GuardiansXP": {
+    "DisplayName": "Guardians & Cosmic XP Bonus",
+    "FilePath": "Events/XP_Events/LiveTuningData_Guardians&CosmicXP.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/VeteranRewards/MHWelcomeXPBoostKit.prototype"
+  },
+  "VillainsXP": {
+    "DisplayName": "Villains and Thunderbolts XP Bonus",
+    "FilePath": "Events/XP_Events/LiveTuningData_Scoundrels&VillainsXP.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/VeteranRewards/MHWelcomeXPBoostKit.prototype"
+  },
+  "XmenXP": {
+    "DisplayName": "X-Men XP Bonus",
+    "FilePath": "Events/XP_Events/LiveTuningData_XMenXP.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/VeteranRewards/MHWelcomeXPBoostKit.prototype"
+  },
+  "StanLeeBDay": {
+    "DisplayName": "Stan Lee's Birthday",
+    "FilePath": "Events/LiveTuningData_StandardBDay.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/DailyGiftBig10.prototype"
+  },
+  "JackKirbyBDay": {
+    "DisplayName": "Jack Kirby's Birthday",
+    "FilePath": "Events/LiveTuningData_StandardBDay.json",
+    "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/DailyGiftBig10.prototype"
   }
 }

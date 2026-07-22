@@ -1,0 +1,10 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/LoginRewards/Day25.prototype",
+    "Path": "Item",
+    "Description": "Change Day 25 Login to H.E.R.B.I.E.",
+    "ValueType": "PrototypeId",
+    "Value": 2488815647894081414
+  }
+]
