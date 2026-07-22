@@ -7,6 +7,8 @@ using MHServerEmu.Games.GameData.Prototypes.Markers;
 using MHServerEmu.Games.Locales;
 using MHServerEmu.Games.Properties;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace LootTableDumper
 {
@@ -134,6 +136,13 @@ namespace LootTableDumper
             {
                 string path = args.Length > 1 ? args[1] : "";
                 DumpAllProps(path);
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--convertbisjson")
+            {
+                string path = args.Length > 1 ? args[1] : "";
+                ConvertBisJsonRefsToPaths(path);
                 return;
             }
 
@@ -689,6 +698,80 @@ namespace LootTableDumper
                 count++;
             }
             Console.WriteLine($"  -- {count} matches --");
+        }
+
+        /// <summary>
+        /// Rewrites PhantomBiSGear.json in place so every slot entry carries a human-readable
+        /// full prototype "path" (e.g. "Armor/UniquePrototypes/Avatars/WinterSoldier/Unique385.prototype")
+        /// resolved from its hex "ref", instead of only the hex ref + short display name. The hex
+        /// form is opaque to hand-editing - the path is exactly what community build guides and our
+        /// own data files already use, so this makes the file directly manually-editable without
+        /// needing a hex lookup for every change. "ref" is kept alongside "path" (re-resolved from
+        /// path, not copied) as a cheap load-time integrity check in PhantomBiSData.cs.
+        /// </summary>
+        private static void ConvertBisJsonRefsToPaths(string path)
+        {
+            if (string.IsNullOrEmpty(path) || File.Exists(path) == false)
+            {
+                Console.WriteLine("Usage: --convertbisjson <path to PhantomBiSGear.json>");
+                return;
+            }
+
+            JsonNode root = JsonNode.Parse(File.ReadAllText(path));
+            if (root is not JsonObject rootObj)
+            {
+                Console.WriteLine("Root of the file is not a JSON object.");
+                return;
+            }
+
+            int converted = 0, unresolved = 0, heroes = 0;
+            var unresolvedDetails = new List<string>();
+
+            foreach (var heroKvp in rootObj)
+            {
+                if (heroKvp.Key.StartsWith("_", StringComparison.Ordinal)) continue;
+                if (heroKvp.Value is not JsonObject heroObj) continue;
+                if (heroObj["slots"] is not JsonObject slotsObj) continue;
+
+                heroes++;
+                foreach (var slotKvp in slotsObj)
+                {
+                    if (slotKvp.Value is not JsonObject slotObj) continue;
+
+                    string hex = slotObj["ref"]?.GetValue<string>();
+                    if (string.IsNullOrEmpty(hex)) continue;
+
+                    string hexDigits = hex.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? hex[2..] : hex;
+                    if (ulong.TryParse(hexDigits, System.Globalization.NumberStyles.HexNumber, null, out ulong refVal) == false)
+                    {
+                        unresolved++;
+                        unresolvedDetails.Add($"{heroKvp.Key}.{slotKvp.Key}: ref '{hex}' is not valid hex");
+                        continue;
+                    }
+
+                    PrototypeId protoRef = (PrototypeId)refVal;
+                    string fullPath = SafeGetName(protoRef);
+                    if (fullPath == "(unnamed)")
+                    {
+                        unresolved++;
+                        unresolvedDetails.Add($"{heroKvp.Key}.{slotKvp.Key}: ref 0x{refVal:X16} does not resolve to any current prototype");
+                        continue;
+                    }
+
+                    slotObj["path"] = fullPath;
+                    converted++;
+                }
+            }
+
+            File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+
+            Console.WriteLine($"Converted {converted} slot refs to paths across {heroes} heroes. Rewrote: {path}");
+            if (unresolved > 0)
+            {
+                Console.WriteLine($"-- {unresolved} refs could NOT be resolved (left without a 'path' field, still have their original 'ref'): --");
+                foreach (string detail in unresolvedDetails)
+                    Console.WriteLine($"  {detail}");
+            }
         }
 
         /// <summary>

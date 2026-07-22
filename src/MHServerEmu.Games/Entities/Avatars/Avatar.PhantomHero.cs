@@ -348,28 +348,55 @@ namespace MHServerEmu.Games.Entities.Avatars
                     catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Down] revive refresh failed: {ex.Message}"); }
                 }
 
-                // Level sync: if the human has levelled since the last tick,
-                // bring phantoms up to match so a lvl-15 hero doesn't drag
-                // lvl-15 phantoms into a lvl-60 mission. Runs every 500ms;
-                // InitializeLevel is a no-op internally when the new level
-                // equals the current level, so this is cheap on stable
-                // ticks. Only levels UP — we don't downlevel phantoms when
-                // the human hero-swaps to a lower-level character.
-                //
-                // Phantoms spawned with an explicit level lock
-                // (`!phantom spawn N L`) are skipped — the user asked for
-                // a specific level and we honour it forever.
-                if (callerLevel > 0 && phantom.CharacterLevel < callerLevel && host.IsPhantomLevelLocked(phantom.Id) == false)
+                // Level sync: phantoms always match the caller's CURRENT
+                // level exactly, both up and down — closes a real exploit
+                // where a low-level player could spawn (or restore a saved
+                // squad of) permanently over-levelled phantoms. Runs every
+                // 500ms; InitializeLevel is a no-op internally when the new
+                // level already matches, so this is cheap on stable ticks.
+                // IsPhantomLevelLocked is now permanently neutered (always
+                // false) rather than removed outright, so this check stays
+                // for documentation/future-proofing but never actually
+                // exempts anything.
+                if (callerLevel > 0 && phantom.CharacterLevel != callerLevel && host.IsPhantomLevelLocked(phantom.Id) == false)
                 {
                     try
                     {
                         phantom.InitializeLevel(callerLevel);
                         phantom.CombatLevel = callerLevel;
-                        // Rescale damage buffs so a level-1 phantom that
-                        // just autolevelled to lvl-15 stops hitting like
-                        // lvl-1 (or overshoots — the anchor curve tracks
+                        // Rescale damage buffs so a phantom that just
+                        // synced to a new level stops hitting like its old
+                        // one (or overshoots — the anchor curve tracks
                         // level, not spawn-time snapshot).
                         ApplyPhantomDamageScaling(phantom, callerLevel);
+                        // Re-roll gear for the new level too — otherwise a
+                        // phantom that syncs UP into 60 never receives BiS
+                        // gear without a manual respawn, and one that syncs
+                        // DOWN from 60 keeps wearing gear it can no longer
+                        // support. ApplyPhantomGear only ever fills EMPTY
+                        // slots (ChangeInventoryLocation fails silently into
+                        // an occupied single-slot equip inventory), so an
+                        // already-geared slot must be stripped first — same
+                        // as RerollPhantomGear does — or the old item just
+                        // sits there forever and only genuinely-blank slots
+                        // (e.g. Legendary/UruForged on first reaching 60)
+                        // ever pick anything up.
+                        Player phantomPlayerObj = phantom.GetOwnerOfType<Player>();
+                        if (phantomPlayerObj != null)
+                        {
+                            AvatarPrototype phantomAvatarProto = phantom.AvatarPrototype;
+                            if (phantomAvatarProto?.EquipmentInventories != null)
+                            {
+                                foreach (var assignment in phantomAvatarProto.EquipmentInventories)
+                                {
+                                    var invProto = assignment.Inventory.As<InventoryPrototype>();
+                                    if (invProto == null || invProto.ConvenienceLabel == InventoryConvenienceLabel.Costume) continue;
+                                    phantom.GetInventoryByRef(assignment.Inventory)?.DestroyContained();
+                                }
+                            }
+                            List<ulong> resynced = ApplyPhantomGear(phantomPlayerObj, phantom, callerLevel, null);
+                            host.UpdatePhantomGear(phantom.Id, resynced);
+                        }
                         // Refresh the stored descriptor so cross-region
                         // migration re-spawns at the new level, not the
                         // stale spawn-time value.
@@ -1148,6 +1175,11 @@ namespace MHServerEmu.Games.Entities.Avatars
         // outright, so a single roll at level 1 is nearly worthless. Scale
         // the rolled stack size with the phantom's level instead.
         private const int PhantomRelicStackPerLevel = 5;
+        // Level-60 BiS phantoms get a flat stack instead of the per-level
+        // formula (5 * 60 = 300) — a real level-60 player's relic stack
+        // isn't level-derived, it's just "as many as you've farmed", and
+        // 300 reads as undertuned compared to the rest of the BiS loadout.
+        private const int PhantomBiSRelicStackFlat = 1000;
 
         // Follow-stop bounds. 50u = "on top of the target" (old behaviour),
         // 1000u = a comfortable ranged-cast distance well inside the widest
@@ -1334,6 +1366,15 @@ namespace MHServerEmu.Games.Entities.Avatars
             EnsureRarityTiers();
             s_rarityByTier.TryGetValue(5, out PrototypeId bannedUltimateRef);
 
+            // Level-60 curated Best-in-Slot loadout (see PhantomBiSData for
+            // attribution and why heroes/slots missing from the curated
+            // file fall through to the normal restricted random-roll path
+            // below instead of an unfiltered generator). Looked up once per
+            // pass, not per slot.
+            Dictionary<EquipmentInvUISlot, PrototypeId> bisLoadout = null;
+            if (level >= 60)
+                PhantomBiSData.TryGetLoadout(avatarProto.DataRef, out bisLoadout);
+
             foreach (AvatarEquipInventoryAssignmentPrototype assignment in avatarProto.EquipmentInventories)
             {
                 if (assignment.UnlocksAtCharacterLevel > level) continue;
@@ -1346,10 +1387,18 @@ namespace MHServerEmu.Games.Entities.Avatars
                 // Pet and interactive-visual ("flourish") slots have no
                 // combat value for an AI companion — they're pure cosmetics
                 // that would otherwise burn a roll and clutter the phantom's
-                // inventory for nothing. Legendary and UruForged are also
-                // excluded per server-op direction (2026-07-13).
-                if (assignment.UISlot is EquipmentInvUISlot.Pet or EquipmentInvUISlot.InteractiveVisual
-                    or EquipmentInvUISlot.Legendary or EquipmentInvUISlot.UruForged) continue;
+                // inventory for nothing. Always skipped, at any level.
+                if (assignment.UISlot is EquipmentInvUISlot.Pet or EquipmentInvUISlot.InteractiveVisual) continue;
+
+                // Legendary and UruForged (excluded per server-op direction,
+                // 2026-07-13 — a randomly-rolled Legendary silently stayed
+                // Unranked/statless) only ever fill via a curated BiS pick
+                // now that the Legendary rank-up fix below makes that
+                // meaningful. No BiS entry for this exact slot = still
+                // skipped, same as before.
+                bool hasBiSForThisSlot = bisLoadout != null && bisLoadout.ContainsKey(assignment.UISlot);
+                if (assignment.UISlot is EquipmentInvUISlot.Legendary or EquipmentInvUISlot.UruForged
+                    && hasBiSForThisSlot == false) continue;
 
                 Inventory equipInventory = phantomAvatar.GetInventoryByRef(assignment.Inventory);
                 if (equipInventory == null) continue;
@@ -1362,6 +1411,9 @@ namespace MHServerEmu.Games.Entities.Avatars
                 PrototypeId overrideItemRef = PrototypeId.Invalid;
                 if (useOverride && overrideIdx < gearOverride.Count)
                     overrideItemRef = (PrototypeId)gearOverride[overrideIdx++];
+
+                PrototypeId bisItemRef = PrototypeId.Invalid;
+                bisLoadout?.TryGetValue(uiSlot, out bisItemRef);
 
                 var picker = BuildFilteredPhantomGearPicker(rng, avatarProto.DataRef, uiSlot, game.CustomGameOptions.PhantomGearItemBlacklist);
 
@@ -1433,9 +1485,12 @@ namespace MHServerEmu.Games.Entities.Avatars
                         // Relics are a stack-size passive, not a single
                         // equippable item — roll the stack scaled to level
                         // so it's actually meaningful (5x level, clamped to
-                        // the relic's own max stack size).
+                        // the relic's own max stack size). Level-60 BiS
+                        // phantoms get a flat stack instead of the formula's
+                        // 300 (60*5) — a real level-60 loadout isn't
+                        // level-derived, it's "as many as you've farmed".
                         if (uiSlot == EquipmentInvUISlot.Relic)
-                            spec.StackCount = Math.Max(1, level * PhantomRelicStackPerLevel);
+                            spec.StackCount = level >= 60 ? PhantomBiSRelicStackFlat : Math.Max(1, level * PhantomRelicStackPerLevel);
 
                         Item item;
                         using (var itemSettings = ObjectPoolManager.Instance.Get<EntitySettings>())
@@ -1480,8 +1535,17 @@ namespace MHServerEmu.Games.Entities.Avatars
                         return true;
                     }
 
-                    // Stored override item first (squad/migration restore)...
-                    if (overrideItemRef != PrototypeId.Invalid)
+                    // Curated BiS pick wins first when available (level 60
+                    // only) — a known-good real item beats both a saved
+                    // override and a random roll. Falls through to override
+                    // then random if this specific BiS item somehow fails
+                    // to equip, so a slot never ends up empty just because
+                    // one curated pick didn't validate.
+                    if (bisItemRef != PrototypeId.Invalid)
+                        TryEquipCandidate(bisItemRef);
+
+                    // Stored override item next (squad/migration restore)...
+                    if (acceptedItem == null && overrideItemRef != PrototypeId.Invalid)
                         TryEquipCandidate(overrideItemRef);
 
                     // ...then drain the slot pool until something equips.
@@ -1489,6 +1553,24 @@ namespace MHServerEmu.Games.Entities.Avatars
                     {
                         if (picker.PickRemove(out Prototype pickedProto) == false || pickedProto == null) break;
                         TryEquipCandidate(pickedProto.DataRef);
+                    }
+
+                    // Legendary rank-up: the affix-rank grind is real XP
+                    // (confirmed live: rank 3->4 alone needed 240,000,000)
+                    // gated behind Item.AwardAffixXP, which internally casts
+                    // its long parameter to int before applying — one huge
+                    // grant silently overflows into nothing. Loop bounded
+                    // calls instead of assuming one call reaches the cap;
+                    // each call self-caps via AwardAffixXP's own >= check.
+                    // This is why Legendary was skipped entirely before —
+                    // an equipped-but-unranked Legendary has no stats at
+                    // all. Only reachable via the BiS path above (Legendary
+                    // is otherwise skipped for this slot, see above).
+                    if (acceptedItem != null && acceptedItem.Prototype is LegendaryPrototype)
+                    {
+                        int affixLevelCap = acceptedItem.GetAffixLevelCap();
+                        for (int guard = 0; guard < 10 && acceptedItem.Properties[PropertyEnum.ItemAffixLevel] < affixLevelCap; guard++)
+                            acceptedItem.AwardAffixXP(2_000_000_000L);
                     }
 
                     // The UniqueAvatarArmor pool is fixed-rarity (RarityUnique

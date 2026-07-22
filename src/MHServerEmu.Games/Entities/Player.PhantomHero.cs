@@ -84,16 +84,17 @@ namespace MHServerEmu.Games.Entities
         }
 
         /// <summary>
-        /// True if the phantom with this avatar id was spawned with an
-        /// explicit level lock (`!phantom spawn N L`) and should NOT be
-        /// auto-levelled by the tick loop.
+        /// Always false - phantoms now always match the caller's current
+        /// level, no exceptions. The underlying LockLevel field (still
+        /// serialized in saved squads / migration data) is intentionally
+        /// left wired but permanently inert here rather than ripped out,
+        /// so old squad files keep loading without a schema change; they
+        /// just no longer get honored. Previously this let a player spawn
+        /// a phantom pinned at an explicit level forever (`!phantom spawn
+        /// N L`) - closed because it let a low-level player call in a
+        /// permanently over-levelled squad.
         /// </summary>
-        internal bool IsPhantomLevelLocked(ulong avatarId)
-        {
-            int idx = _phantomAvatarIds.IndexOf(avatarId);
-            if (idx < 0) return false;
-            return _phantomDescriptors[idx].LockLevel;
-        }
+        internal bool IsPhantomLevelLocked(ulong avatarId) => false;
 
         /// <summary>
         /// Update the stored spawn-level for a live phantom so a subsequent

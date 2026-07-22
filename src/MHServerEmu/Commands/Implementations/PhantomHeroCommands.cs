@@ -8,7 +8,7 @@ namespace MHServerEmu.Commands.Implementations
 {
     /// <summary>
     /// Phantom Heroes — chat commands.
-    ///   !phantom spawn [count] [level]   — spawn N phantom-hero NPCs near you
+    ///   !phantom spawn [count|heroname]  — spawn N phantom-hero NPCs near you, always at your own level
     ///   !phantom squad save/spawn/list/delete [name] — manage saved squads
     ///   !phantom costume ...             — manage phantom costumes
     ///   !phantom clear                   — despawn every phantom you've spawned
@@ -28,7 +28,7 @@ namespace MHServerEmu.Commands.Implementations
         }
 
         [Command("spawn")]
-        [CommandDescription("Spawn phantom-hero NPCs near you. Args: [count=4] [level=your level], or [heroname] [level] to spawn a specific hero. Phantoms auto-level with you unless an explicit level is given.")]
+        [CommandDescription("Spawn phantom-hero NPCs near you. Args: [count=4], or [heroname] to spawn a specific hero. Phantoms always match your own current level - no explicit level override.")]
         [CommandInvokerType(CommandInvokerType.Client)]
         public string Spawn(string[] @params, NetClient client)
         {
@@ -42,11 +42,13 @@ namespace MHServerEmu.Commands.Implementations
             if (IsCallerInCombat(avatar))
                 return "Cannot use !phantom commands while in combat.";
 
-            // 0 = "match caller's CharacterLevel" (handled inside
-            // SpawnPhantomHeroCore). The tick loop then keeps them in sync
-            // if the human levels up — see OnPhantomTick's level-sync block.
-            int level = 0;
-            if (@params.Length >= 2 && int.TryParse(@params[1], out int l)) level = System.Math.Clamp(l, 1, 60);
+            // Always 0 = "match caller's CharacterLevel" (handled inside
+            // SpawnPhantomHeroCore). No explicit-level override anymore -
+            // phantoms always match the caller's own level, kept in sync
+            // (both up and down) by OnPhantomTick's level-sync block, which
+            // closes an old exploit where a low-level player could spawn a
+            // permanently over-levelled phantom via a second argument here.
+            const int level = 0;
 
             // Non-numeric first arg = spawn a specific hero by name. The
             // name is matched at runtime against the playable-avatar pool
@@ -70,7 +72,7 @@ namespace MHServerEmu.Commands.Implementations
                     return $"Multiple matches: {names}. Be more specific.";
                 }
 
-                ulong heroId = avatar.SpawnPhantomHeroFromIntent(matches[0].AvatarRef, level, null, level > 0, 0, out string heroError);
+                ulong heroId = avatar.SpawnPhantomHeroFromIntent(matches[0].AvatarRef, level, null, false, 0, out string heroError);
                 return heroId != 0
                     ? $"Spawned {matches[0].ShortName}."
                     : $"Failed to spawn {matches[0].ShortName}: {heroError}";

@@ -1938,6 +1938,19 @@ namespace MHServerEmu.Games.Entities
 
             IsSwitchingAvatar = false;
 
+            // Phantom Heroes are owned at the Player level, not per-avatar,
+            // so switching characters mid-session would otherwise leave the
+            // old character's squad running alongside the new one, still
+            // tuned for the old character's level. Purge here (switch is
+            // now fully confirmed complete, not just requested - the swap
+            // is a channeled power that could still be interrupted earlier)
+            // so the player re-summons deliberately on the new character,
+            // which spawns correctly matched to it from the start.
+            // announceLeave: false matches the existing convention for
+            // non-manual clears (region-transfer suppresses it the same
+            // way) - a hero swap isn't the player typing !phantom clear.
+            PurgePhantoms(false);
+
             // Unreserve private story regions so that the avatar we switched to can do the story without fiddling with region instances.
             ServiceMessage.ClearPrivateStoryRegions clearPrivateStoryRegions = new(DatabaseUniqueId);
             ServerManager.Instance.SendMessageToService(GameServiceType.PlayerManager, clearPrivateStoryRegions);
