@@ -58,6 +58,24 @@ This repository's lineage is [Crypto137/MHServerEmu](https://github.com/Crypto13
 
 See [CREDITS.md](./CREDITS.md) for full attribution.
 
+### New Game Mode: Shanna and the Dinos Invade Manhattan
+
+**What it is:** A 7-wave survival event region — dinosaurs (raptors, pterosaurs, cliffwalkers) invade a slice of Manhattan, escalating in intensity, capped off with a boss fight against a randomly-picked King Lizard or King Lizard Rider in a purpose-built arena. A threat meter rises automatically over time (scaling with player count) and falls when you kill wave mobs or grab a periodic power-up orb (the orb is the main lever — a single grab offsets far more threat than kills alone). Let threat hit its cap and the run ends early instead of continuing to the boss.
+
+**How to access:** Talk to Shanna, an NPC placed in Avengers Tower, and confirm the travel prompt she offers. The region is hard-locked to Tier 2 Heroic difficulty regardless of each player's own difficulty preference, so a party can't accidentally split across different tier instances on entry.
+
+**Basic rules:**
+- 7 wave phases, each with an opening burst plus a ramping spawn rate, followed by a boss phase with a 6-minute timer.
+- Phantom Heroes and Rogue Nemesis are both excluded from this region — the wave-spawn pacing is tuned around real in-world player count, and summoned companions or ambush portals would throw that off.
+- Boss loot is a dedicated 15-slot table: guaranteed Cosmic Artifact, XP orbs, Eternity Splinters, Hero/Protector Commendation boxes, a Six-Infinity-Orb chest, Relics, and armor, plus smaller independent chances at Costume Core, Team-Up gear, and a rare Costume/Card/Pet drop. The account-limited slots (Cosmic Artifact, Commendation boxes, Costume/Card/Pet) share one combined once-per-day clock per boss variant.
+
+**How to edit the settings:**
+- `Data/Game/Patches/PatchDataMod_Event_DinosInvadeManhattan.json` — region/portal/boss-timer/threat-pacing patches.
+- `Data/Game/Patches/PatchDataMod_Loot_CustomPrizeTable.json` — the full boss loot table.
+- `Data/Game/LiveTuning/LiveTuningData.json` — `Entity/Characters/NPCs/ShannaA.prototype` → `eWETV_Visible` controls whether Shanna is spawned at all.
+- Wave-spawn density, threat rise/fall rates, and burst sizes are tuning constants in `src/MHServerEmu.Games/MetaGames/GameModes/PvEScaleGameMode.cs` — these need a rebuild to change, unlike the JSON patches above.
+- `Config.ini` → `PhantomHeroesExcludedRegions` / `RogueNemesisExcludedRegions` — add or remove `DinosInvadeManhattan` here to control the companion/ambush blackout for this region specifically.
+
 ## Download
 
 We provide two kinds of builds: stable and nightly.

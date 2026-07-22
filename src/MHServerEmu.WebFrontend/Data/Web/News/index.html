@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Server Systems Guide</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #14161a;
+    color: #d8d8d8;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  h1 {
+    color: #e6c35c;
+    font-size: 22px;
+    margin: 0 0 4px 0;
+    border-bottom: 2px solid #7a1f1f;
+    padding-bottom: 10px;
+  }
+  .subtitle {
+    color: #9a9a9a;
+    margin: 0 0 24px 0;
+    font-size: 13px;
+  }
+  .system {
+    background: #1e2126;
+    border-left: 4px solid #7a1f1f;
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+  .system h2 {
+    color: #e6c35c;
+    font-size: 16px;
+    margin: 0 0 6px 0;
+  }
+  .system p {
+    margin: 0 0 10px 0;
+  }
+  .commands {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .commands li {
+    margin-bottom: 6px;
+  }
+  code {
+    background: #2a2e35;
+    color: #7ec0e8;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+  }
+  .desc {
+    color: #b8b8b8;
+  }
+  .note {
+    color: #9a9a9a;
+    font-style: italic;
+    font-size: 13px;
+  }
+  .passive-tag {
+    display: inline-block;
+    background: #3a2e14;
+    color: #e6c35c;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .event-tag {
+    display: inline-block;
+    background: #3a1414;
+    color: #e88;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .new-tag {
+    display: inline-block;
+    background: #143a2e;
+    color: #6fe6a0;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .rank-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  .rank-table th, .rank-table td {
+    text-align: left;
+    padding: 5px 10px;
+    border-bottom: 1px solid #2a2e35;
+  }
+  .rank-table th {
+    color: #e6c35c;
+    font-weight: normal;
+  }
+</style>
+</head>
+<body>
+
+<h1>Server Systems Guide</h1>
+<p class="subtitle">Custom features on this server and how to use them. Type <code>!commands</code> in game for the full command list.</p>
+
+<div class="system">
+  <h2>Dinos Invade Manhattan <span class="new-tag">new game mode</span></h2>
+  <p>Talk to Shanna in Avengers Tower to head into a wave-survival fight against a dinosaur invasion — seven escalating waves of raptors, pterosaurs, and cliffwalkers, capped off with a boss fight against King Lizard (or his Rider, picked at random) in a purpose-built arena.</p>
+  <p>Watch the threat meter on screen — it climbs automatically the longer you're in there, and maxing it out ends the run early. Killing wave mobs chips it down a little; grabbing the power-up orb that spawns periodically is the real way to keep it under control.</p>
+  <p class="note">Locked to Heroic difficulty so parties always land in the same instance together. Phantom Heroes and Rogue Nemesis won't show up in this region, so the fight stays balanced around your actual group size.</p>
+</div>
+
+<div class="system">
+  <h2>Rogue Encounters <span class="passive-tag">opt-in, then automatic</span></h2>
+  <p>Once you opt in, villains from your hero's Rogues Gallery will periodically ambush you out in the world. Every time you defeat one, their obsession with you grows — their Nemesis Rank climbs, and they come back tougher and more rewarding next time. Lose to one and they only back off by a single rank, not all the way to zero, so a rank you're not quite ready for yet is a setback, not a full restart.</p>
+  <table class="rank-table">
+    <tr><th>Rank</th><th>What to expect</th></tr>
+    <tr><td>0 – 1</td><td>Easy — a warm-up fight, shouldn't feel threatening.</td></tr>
+    <tr><td>2 – 3</td><td>A real step up — pay attention.</td></tr>
+    <tr><td>4</td><td>Genuinely dangerous if you're undergeared.</td></tr>
+    <tr><td>5</td><td>Can be lethal if you don't know your kit or aren't geared for it. Not raid-boss hard, but not a fight to walk into blind.</td></tr>
+  </table>
+  <ul class="commands">
+    <li><code>!rogue enable</code> / <code>!rogue disable</code> <span class="desc">— opt in or out of Rogue Encounter ambushes.</span></li>
+    <li><code>!rogue status</code> <span class="desc">— see your current opt-in state, any active encounter, and your Nemesis Rank against every villain you've fought.</span></li>
+  </ul>
+  <p class="note">Your character needs to be level 30+ to be targeted. A villain you've beaten to Rank 5 goes on cooldown against you for the rest of the day after that win, so it can't just be farmed back-to-back — it'll be available again the next day.</p>
+</div>
+
+<div class="system">
+  <h2>Incursion Events <span class="event-tag">admin-triggered</span></h2>
+  <p>From time to time, an admin may trigger an Incursion — a wave of hostile invaders (each one a familiar hero or villain's face, but not the real deal) that appear and hunt players down in patrol zones. This isn't a bug or a scripting glitch if you see it happening — it's a deliberate, temporary event. Defeating an invader drops loot just like any other tough enemy.</p>
+  <p class="note">There's no opt-in for this one — if it's running, it's running server-wide. It's not always on; admins turn it on and off as an event.</p>
+</div>
+
+<div class="system">
+  <h2>Phantom Heroes</h2>
+  <p>Spawn server-side AI-controlled hero companions that fight alongside you as a synthetic party. Great for playing solo without actually playing alone.</p>
+  <ul class="commands">
+    <li><code>!phantom spawn [count|heroname] [level]</code> <span class="desc">— spawn phantoms (default 4, up to 9 active at once). They auto-level with you unless you set a level.</span></li>
+    <li><code>!phantom squad save/spawn/list/delete [name]</code> <span class="desc">— save and reload favorite phantom lineups.</span></li>
+    <li><code>!phantom costume [hero] [random|costumename]</code> <span class="desc">— change how a phantom looks.</span></li>
+    <li><code>!phantom gear [hero]</code> <span class="desc">— re-roll a phantom's gear.</span></li>
+    <li><code>!phantom clear</code> <span class="desc">— despawn all your phantoms.</span></li>
+  </ul>
+  <p class="note">Can't be used while you're in combat.</p>
+</div>
+
+<div class="system">
+  <h2>Server-Side Loot Filter</h2>
+  <p>Tell the server not to bother dropping loot you don't want — cleaner drops, less inventory clutter. Covers Rings, Medals, Insignias, Team-Up Gear, Catalysts, and Uru-Forged items.</p>
+  <ul class="commands">
+    <li><code>!filter set &lt;type&gt; &lt;rarity|on/off&gt; [global|me|charactername]</code> <span class="desc">— set a rarity floor (e.g. no Rings below Rare) or turn a category off, scoped globally, to your current character, or a named one.</span></li>
+    <li><code>!filter list</code> <span class="desc">— see your current filters.</span></li>
+    <li><code>!filter clear &lt;type&gt; [scope]</code> / <code>!filter clearall</code> <span class="desc">— remove filters.</span></li>
+    <li><code>!filter rarities</code> <span class="desc">— list valid rarity names.</span></li>
+  </ul>
+</div>
+
+<div class="system">
+  <h2>Item Auto-Pickup</h2>
+  <p>Automatically picks up currency, crafting ingredients, Runeword Glyphs, and Relics within a radius so you're not manually clicking every drop. Also works together with Stash Affinity below — auto-picked-up items get routed to the right stash tab automatically.</p>
+  <ul class="commands">
+    <li><code>!autopickup list</code> <span class="desc">— see your effective settings per category.</span></li>
+    <li><code>!autopickup set &lt;currency|crafting|glyph|relic&gt; &lt;on|off|stash|inventory&gt;</code> <span class="desc">— opt out of a category, or choose stash vs. inventory as the destination.</span></li>
+    <li><code>!autopickup clear &lt;category&gt;</code> <span class="desc">— revert to the server default.</span></li>
+  </ul>
+</div>
+
+<div class="system">
+  <h2>Stash Affinity <span class="passive-tag">automatic — no commands</span></h2>
+  <p>When you right-click an item and choose "Send to Stash" (the quick-move action), it automatically redirects to the best-matching tab instead of your default stash: a character-specific stash for bound items, or a tab whose name matches the item's type, with a "Catch All" tab as the fallback. It also applies when Auto-Pickup routes an item into a stash. Manually dragging an item to a tab you chose yourself is always respected as-is and never overridden.</p>
+  <p class="note">Nothing to configure — this is just why a quick-stashed or auto-picked-up item sometimes lands in a different tab than expected.</p>
+</div>
+
+</body>
+</html>
