@@ -151,6 +151,48 @@ namespace MHServerEmu.Games.Entities.Avatars
         // Phantom-to-phantom revives never touch this.
         private static readonly Dictionary<ulong, long> s_phantomHumanReviveCooldown = new();
 
+        // Revive-claim exclusivity: keyed by the DOWNED target's entity id,
+        // so only one phantom at a time commits to reviving a given corpse.
+        // Without this, every idle phantom independently finds the same
+        // downed target and all abandon their fights to rush it —
+        // TruSkillzzRuns' "whole squad piling onto one revive." A hard
+        // timeout (not refreshed while the claim holds) lets the claim
+        // release to someone else if the claimant dies, gets stuck, or
+        // otherwise never finishes — same shape as their own fix.
+        private const long PhantomReviveClaimTimeoutMs = 20000;
+        private static readonly Dictionary<ulong, (ulong phantomId, long claimedAtMs)> s_phantomReviveClaim = new();
+
+        private static bool TryClaimRevive(ulong targetId, ulong phantomId, long nowMs)
+        {
+            if (s_phantomReviveClaim.TryGetValue(targetId, out var claim))
+            {
+                if (claim.phantomId == phantomId) return true;
+                if (nowMs - claim.claimedAtMs < PhantomReviveClaimTimeoutMs) return false;
+                // Claim expired without the original claimant finishing — free for anyone.
+            }
+            s_phantomReviveClaim[targetId] = (phantomId, nowMs);
+            return true;
+        }
+
+        private static void ReleaseReviveClaim(ulong targetId, ulong phantomId)
+        {
+            if (s_phantomReviveClaim.TryGetValue(targetId, out var claim) && claim.phantomId == phantomId)
+                s_phantomReviveClaim.Remove(targetId);
+        }
+
+        // Drops every claim where phantomId is either the CLAIMANT (it
+        // despawned mid-approach, freeing whoever it was reviving) or the
+        // TARGET (it was itself the downed one and is now gone for good —
+        // destroyed outright rather than revived, e.g. squad cleared).
+        private static void PruneReviveClaimsFor(ulong phantomId)
+        {
+            List<ulong> toRemove = null;
+            foreach (var kvp in s_phantomReviveClaim)
+                if (kvp.Key == phantomId || kvp.Value.phantomId == phantomId) (toRemove ??= new()).Add(kvp.Key);
+            if (toRemove != null)
+                foreach (ulong key in toRemove) s_phantomReviveClaim.Remove(key);
+        }
+
         private const float PhantomAttackRange = 1200f;
         private const float PhantomAttackRangeSq = PhantomAttackRange * PhantomAttackRange;
         // Wider search — phantom will walk to any hostile in this radius.
@@ -282,6 +324,13 @@ namespace MHServerEmu.Games.Entities.Avatars
                 // the downed pose (same primitives the leash below uses).
                 if (s_phantomDownedSinceMs.Remove(phantom.Id))
                 {
+                    // Revived via any path (a teammate phantom, or the human's
+                    // own manual revive click) — the claim on this target no
+                    // longer means anything, whoever holds it. Clear it
+                    // outright instead of relying only on the phantom-driven
+                    // revive path's own release (that path already double-
+                    // releases the same entry harmlessly).
+                    s_phantomReviveClaim.Remove(phantom.Id);
                     try
                     {
                         if (phantom.ActivePowerRef != PrototypeId.Invalid)
@@ -432,6 +481,11 @@ namespace MHServerEmu.Games.Entities.Avatars
                 return;
             }
 
+            // Self-heal at low HP, like a real player reaching for their
+            // medkit, takes priority over both revive-triage and combat —
+            // a phantom about to die is more useful topping off first.
+            if (TryPhantomSelfHeal(phantom, rng)) return;
+
             Vector3 phantomPos = phantom.RegionLocation.Position;
 
             // Priority 1: revive any downed real player OR friendly teammate
@@ -507,6 +561,16 @@ namespace MHServerEmu.Games.Entities.Avatars
                     if (d < downedDistSq) { downedDistSq = d; downed = candidate; }
                 }
             }
+            // Claim exclusivity: without this every idle phantom independently
+            // finds the same downed target and all pile on it, abandoning
+            // whatever they were fighting — "whole squad piling onto one
+            // revive." Only the phantom already holding (or newly winning)
+            // the claim commits; everyone else falls through to normal
+            // combat instead. A hard timeout lets the claim release to
+            // someone else if the claimant gets stuck/dies mid-approach.
+            if (downed != null && TryClaimRevive(downed.Id, phantom.Id, nowMsRevive) == false)
+                downed = null;
+
             if (downed != null)
             {
                 PrototypeId reviveCastPowerRef = phantom.AvatarPrototype?.ResurrectOtherEntityPower ?? PrototypeId.Invalid;
@@ -565,11 +629,23 @@ namespace MHServerEmu.Games.Entities.Avatars
                         PhantomLogger.Info($"[PhantomHero:Revive] {phantom} -> {downedKindDiag} {downed} dist={MathF.Sqrt(downedDistSq):F0} castRange={MathF.Sqrt(castRangeSq):F0} result={reviveResult}");
                         if (revivingHumanDiag && reviveResult == PowerUseResult.Success && downedOwnerDiag != null)
                             s_phantomHumanReviveCooldown[downedOwnerDiag.Id] = nowMsRevive;
+                        if (reviveResult == PowerUseResult.Success)
+                            ReleaseReviveClaim(downed.Id, phantom.Id);
                     }
                     catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Revive] {phantom.Id:X} -> {downed.Id:X} failed: {ex.Message}"); }
                 }
                 return; // don't hunt while triaging a downed teammate
             }
+
+            // Support phantoms use their buffs: any phantom whose kit
+            // happens to include a friendly-targeting power (heal/buff, not
+            // just attacks) uses it on whichever ally needs it most, instead
+            // of that power just sitting unused because the AI only ever
+            // considered hostile targets. Runs after revive-triage (a downed
+            // teammate is more urgent than a buff) but before the combat
+            // sweep — a support hero should top someone off between attacks,
+            // not only when idle.
+            if (TryPhantomSupportBuff(phantom, rng)) return;
 
             // Widest sweep so we start advancing on enemies before they're in
             // attack range. IterateEntitiesInVolume walks the region spatial
@@ -586,10 +662,12 @@ namespace MHServerEmu.Games.Entities.Avatars
             // cooldown returning BadTarget, and the phantom stands still for the
             // whole fight. With a list we fall through to the next-nearest until
             // one accepts the attack.
-            var candidates = new List<(WorldEntity we, float distSq)>();
+            var candidates = new List<(WorldEntity we, float distSq, float score)>();
             List<(WorldEntity we, float distSq, string reason)> diagRejected = null;
             bool diagWant = ShouldEmitPhantomDiag(phantom.Id);
             long nowMsSweep = Game.CurrentTime.Ticks / TimeSpan.TicksPerMillisecond;
+            ulong callerId = Id;
+            IReadOnlyList<ulong> squadIds = phantom.PhantomHost?.PhantomAvatarIds;
             foreach (WorldEntity we in region.IterateEntitiesInVolume(sweepSphere, ctx))
             {
                 if (we == null || we.Id == phantom.Id || we.Id == Id) continue;
@@ -628,9 +706,20 @@ namespace MHServerEmu.Games.Entities.Avatars
                     if (diagWant) (diagRejected ??= new()).Add((we, d, "blacklist"));
                     continue;
                 }
-                candidates.Add((we, d));
+                candidates.Add((we, d, ScoreHostileCandidate(phantom, we, d, callerId, squadIds)));
             }
-            candidates.Sort(static (a, b) => a.distSq.CompareTo(b.distSq));
+            // Rank by tactical priority instead of pure nearest-first: focus
+            // whoever's attacking us, finish off near-death enemies first so
+            // damage isn't spread thin across a pack that all survive, and
+            // converge with a squadmate that's already committed to a
+            // target. Distance still breaks ties, and PhantomHuntMaxCallerDist
+            // above is unaffected — this only reorders which of the already-
+            // in-range candidates gets tried first.
+            candidates.Sort(static (a, b) =>
+            {
+                int cmp = b.score.CompareTo(a.score);
+                return cmp != 0 ? cmp : a.distSq.CompareTo(b.distSq);
+            });
 
             if (diagWant && (candidates.Count == 0 || diagRejected != null))
                 DumpPhantomHuntDiag(phantom, phantomPos,
@@ -694,10 +783,28 @@ namespace MHServerEmu.Games.Entities.Avatars
                 // wrong for ranged kits, and left the phantom stuck at 50u
                 // firing projectiles the client had to render at melee.
                 float followStopDist = ComputePhantomFollowStopDist(phantom, nearest);
-                bool ok = loco.FollowEntity(nearest.Id, followStopDist, followStopDist, ref opts, false);
-                if (s_phantomLocoLogged.Add(phantom.Id))
+
+                // Ranged phantoms kite: a hero whose best usable power has
+                // real reach (followStopDist meaningfully past melee) should
+                // back off when something closes to point-blank instead of
+                // just standing there taking hits like a melee hero would.
+                // Edge-to-edge, matching the melee-reach fix above.
+                bool isRangedPhantom = followStopDist > PhantomKiteRangedThreshold;
+                float edgeDistToNearest = phantom.GetDistanceTo(nearest, true);
+                if (isRangedPhantom && edgeDistToNearest < PhantomKiteTooCloseDist)
                 {
-                    PhantomLogger.Info($"[PhantomHero:Loco] {phantom} authoritative={phantom.IsMovementAuthoritative} simulated={phantom.IsSimulated} inWorld={phantom.IsInWorld} target={nearest.Id:X} dist={MathF.Sqrt(nearestDistSq):F0} FollowEntity returned={ok} locoEnabled={loco.IsEnabled} isMoving={loco.IsMoving} method={loco.Method} baseSpeed={loco.DefaultRunSpeed} hasPath={loco.HasPath} pathResult={loco.LastGeneratedPathResult} canMove={phantom.CanMove()}");
+                    Vector3 awayDir = Vector3.SafeNormalize2D(phantomPos - nearest.RegionLocation.Position);
+                    Vector3 kitePos = phantomPos + awayDir * PhantomKiteStepDist;
+                    kitePos = RegionLocation.ProjectToFloor(region, kitePos);
+                    loco.PathTo(kitePos, ref opts);
+                }
+                else
+                {
+                    bool ok = loco.FollowEntity(nearest.Id, followStopDist, followStopDist, ref opts, false);
+                    if (s_phantomLocoLogged.Add(phantom.Id))
+                    {
+                        PhantomLogger.Info($"[PhantomHero:Loco] {phantom} authoritative={phantom.IsMovementAuthoritative} simulated={phantom.IsSimulated} inWorld={phantom.IsInWorld} target={nearest.Id:X} dist={MathF.Sqrt(nearestDistSq):F0} FollowEntity returned={ok} locoEnabled={loco.IsEnabled} isMoving={loco.IsMoving} method={loco.Method} baseSpeed={loco.DefaultRunSpeed} hasPath={loco.HasPath} pathResult={loco.LastGeneratedPathResult} canMove={phantom.CanMove()}");
+                    }
                 }
             }
 
@@ -707,9 +814,17 @@ namespace MHServerEmu.Games.Entities.Avatars
             // FollowEntity is mid-path produces the "skating" look: the
             // cast animation cancels walking mid-stride but position keeps
             // advancing, so the character glides without a walk cycle.
-            const float PhantomMeleeSq = 400f * 400f;
+            //
+            // Melee reach is measured edge-to-edge (GetDistanceTo(calcRadius:
+            // true), the same helper WorldEntity.cs itself uses for its own
+            // range math) rather than raw center-to-center distance — against
+            // a big-bounds target (a raid boss) center distance stays large
+            // long after the phantom is physically pressed against the
+            // model, so a center-only check left melee phantoms standing at
+            // the boss for several seconds before this ever read "in melee."
+            const float PhantomMeleeRange = 400f;
             bool arrived = loco == null || loco.IsMoving == false;
-            bool inMelee = nearestDistSq <= PhantomMeleeSq;
+            bool inMelee = phantom.GetDistanceTo(nearest, true) <= PhantomMeleeRange;
             if ((arrived || inMelee) && nearestDistSq <= PhantomAttackRangeSq)
             {
                 // Per-phantom attack cooldown — prevents the 2 Hz tick from
@@ -738,6 +853,11 @@ namespace MHServerEmu.Games.Entities.Avatars
                             // Successful hit — make sure this target isn't
                             // blacklisted from a stale prior tick.
                             ClearTargetBlacklist(phantom.Id, tryTarget.Id);
+                            // Remember this as our committed target so
+                            // squadmates' ScoreHostileCandidate can converge
+                            // on it too (focus-fire) instead of everyone
+                            // chipping a different target.
+                            s_phantomLastAttackTarget[phantom.Id] = tryTarget.Id;
                             break;
                         }
                         // BadTarget / InsufficientEndurance / TargetIsMissing /
@@ -759,6 +879,105 @@ namespace MHServerEmu.Games.Entities.Avatars
         // between casts so the tick doesn't spam-fire.
         private static readonly Dictionary<ulong, long> s_phantomNextAttackMs = new();
 
+        // Per-phantom "what did I last successfully hit" — read by
+        // ScoreHostileCandidate so a squad converges on one target (focus
+        // fire) instead of every phantom independently picking whoever's
+        // nearest to ITSELF.
+        private static readonly Dictionary<ulong, ulong> s_phantomLastAttackTarget = new();
+
+        // Tactical weights for re-ranking hunt candidates beyond pure
+        // nearest-first — see the Sort call above. Distance still
+        // contributes (closer is slightly favored) but the strategic
+        // bonuses dominate so the squad reads as coordinated rather than
+        // "whoever's standing closest to ME specifically."
+        private const float PhantomScoreNearDeathCritical = 3.0f;   // <=15% HP
+        private const float PhantomScoreNearDeathLow = 1.5f;        // <=35% HP
+        private const float PhantomScoreAttackingUs = 4.0f;         // AI's own target is the caller or a squadmate
+        private const float PhantomScoreSquadFocus = 2.0f;          // a squadmate already committed to this target
+
+        /// <summary>
+        /// Tactical priority score for a hostile hunt candidate — see the
+        /// re-rank Sort call in UpdatePhantomHunt for how this replaces pure
+        /// nearest-first targeting. Higher wins.
+        /// </summary>
+        private static float ScoreHostileCandidate(Avatar phantom, WorldEntity we, float distSq, ulong callerId, IReadOnlyList<ulong> squadIds)
+        {
+            float dist = MathF.Sqrt(distSq);
+            // Distance stays a soft, secondary signal (0..1) — the
+            // strategic bonuses below are what actually differentiate.
+            float score = MathF.Max(0f, PhantomSearchRange - dist) / PhantomSearchRange;
+
+            // Near-death priority: finish off enemies close to dying instead
+            // of spreading damage thin across a pack that all survive.
+            long hpMax = we.Properties[PropertyEnum.HealthMax];
+            if (hpMax > 0)
+            {
+                float hpFrac = (float)((long)we.Properties[PropertyEnum.Health]) / hpMax;
+                if (hpFrac <= 0.15f) score += PhantomScoreNearDeathCritical;
+                else if (hpFrac <= 0.35f) score += PhantomScoreNearDeathLow;
+            }
+
+            // Focus whoever's actively attacking the human or a squadmate —
+            // AIController.TargetEntity is the same "who is this NPC
+            // currently going after" the engine's own AI already tracks, no
+            // new threat system needed.
+            if (we is Agent agent)
+            {
+                ulong aiTargetId = agent.AIController?.TargetEntity?.Id ?? 0;
+                if (aiTargetId != 0 && (aiTargetId == callerId || ContainsId(squadIds, aiTargetId)))
+                    score += PhantomScoreAttackingUs;
+            }
+
+            // Squad focus-fire: converge on whatever another phantom already
+            // committed to instead of everyone chipping a different target.
+            if (squadIds != null)
+            {
+                for (int i = 0; i < squadIds.Count; i++)
+                {
+                    ulong mateId = squadIds[i];
+                    if (mateId == phantom.Id) continue;
+                    if (s_phantomLastAttackTarget.TryGetValue(mateId, out ulong mateTarget) && mateTarget == we.Id)
+                    {
+                        score += PhantomScoreSquadFocus;
+                        break;
+                    }
+                }
+            }
+
+            return score;
+        }
+
+        private static bool ContainsId(IReadOnlyList<ulong> list, ulong id)
+        {
+            if (list == null) return false;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i] == id) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// How many hostile, living Agents sit within radius of pos — used
+        /// to decide whether an AoE power is actually worth its cooldown
+        /// weight (see the AoE-awareness block in TryPhantomAttack).
+        /// </summary>
+        private static int CountHostilesNear(Avatar phantom, Vector3 pos, float radius)
+        {
+            if (radius <= 0f) radius = 1f;
+            Region region = phantom.Region;
+            if (region == null) return 1;
+            var sphere = new Sphere(pos, radius);
+            var ctx = new MHServerEmu.Games.Entities.EntityRegionSPContext(MHServerEmu.Games.Entities.EntityRegionSPContextFlags.PrimaryPartition);
+            int count = 0;
+            foreach (WorldEntity we in region.IterateEntitiesInVolume(sphere, ctx))
+            {
+                if (we == null || we.IsDead || we.IsInWorld == false) continue;
+                if (we is not Agent) continue;
+                if (phantom.IsHostileTo(we) == false) continue;
+                count++;
+            }
+            return count;
+        }
+
         // Per-phantom next-ultimate timestamp (ms). Ultimates fire on any
         // target once available, then rest for 20 minutes regardless of
         // what the power data's own cooldown says.
@@ -767,13 +986,25 @@ namespace MHServerEmu.Games.Entities.Avatars
 
         // Per-(phantom, power) blacklist. Some powers fail for reasons that
         // won't clear on their own — RestrictiveCondition (unmet condition
-        // requirement, e.g. transform-state powers), WeaponMissing (needs an
-        // equipped item the phantom doesn't have, before gear was added).
-        // Without this, a broken power with a big cooldown weight gets picked
-        // every tick against every target (per-TARGET blacklist doesn't
-        // help) and the phantom never lands a hit. 10-minute expiry in case
-        // the blocking state is situational.
-        private const long PhantomPowerBlacklistMs = 10 * 60 * 1000;
+        // requirement, e.g. transform-state powers, OR a short-lived state
+        // like being stunned/held/immobilized), WeaponMissing (needs an
+        // equipped item the phantom doesn't have). Without this, a broken
+        // power with a big cooldown weight gets picked every tick against
+        // every target (per-TARGET blacklist doesn't help) and the phantom
+        // never lands a hit.
+        //
+        // Two different expiries, not one flat ban for everything —
+        // RestrictiveCondition is frequently caused by a transient state
+        // (a stun clearing in a couple seconds), and a flat 10-minute ban
+        // for that shape is exactly the bug TruSkillzzRuns' own audit pass
+        // found in their equivalent system ("enemies getting passive over
+        // long fights": more and more powers got benched for the long
+        // timer as transient conditions kept re-triggering it, until the
+        // AI ran out of things to do). WeaponMissing is genuinely
+        // structural — a missing weapon slot doesn't fix itself — so it
+        // keeps the long timer.
+        private const long PhantomPowerBlacklistTransientMs = 15 * 1000;
+        private const long PhantomPowerBlacklistStructuralMs = 10 * 60 * 1000;
         private static readonly Dictionary<(ulong phantomId, PrototypeId powerRef), long> s_phantomPowerBlacklist = new();
         private static bool IsPhantomPowerBlacklisted(ulong phantomId, PrototypeId powerRef, long nowMs)
             => s_phantomPowerBlacklist.TryGetValue((phantomId, powerRef), out long expiresAt) && nowMs < expiresAt;
@@ -931,6 +1162,15 @@ namespace MHServerEmu.Games.Entities.Avatars
         // (where the target moving away one tick would kick the shot out).
         private const float PhantomFollowRangeMargin = 100f;
 
+        // Ranged-kite tuning. A phantom whose follow-stop distance clears
+        // this threshold has a genuine ranged option (not just melee with a
+        // 100u margin), so it's classified as "ranged" for kiting purposes.
+        // When something closes inside PhantomKiteTooCloseDist, step away by
+        // PhantomKiteStepDist instead of holding position or walking closer.
+        private const float PhantomKiteRangedThreshold = 300f;
+        private const float PhantomKiteTooCloseDist = 150f;
+        private const float PhantomKiteStepDist = 200f;
+
         private static float ComputePhantomFollowStopDist(Avatar phantom, WorldEntity target)
         {
             var pc = phantom.PowerCollection;
@@ -958,11 +1198,21 @@ namespace MHServerEmu.Games.Entities.Avatars
                 if (r > bestRange) bestRange = r;
             }
 
-            if (bestRange <= 0f) return PhantomFollowStopMin;
+            // FollowEntity's stop distance is measured center-to-center (see
+            // Locomotor.IsPathComplete), so the standoff we actually want
+            // from the target's SURFACE needs the target's own bounds radius
+            // added back on top — otherwise a phantom's "stop 50u from a
+            // melee target" reading meant 50u from a boss's CENTER, which for
+            // a big-bounds target (e.g. King Lizard, Magneto) is still deep
+            // inside the model and unreachable, so it just walked into the
+            // collision mesh and sat there short of its own stop distance.
+            float targetRadius = target?.Bounds.Radius ?? 0f;
+
+            if (bestRange <= 0f) return PhantomFollowStopMin + targetRadius;
 
             float dist = Math.Clamp(bestRange - PhantomFollowRangeMargin,
                 PhantomFollowStopMin, PhantomFollowStopMax);
-            return dist;
+            return dist + targetRadius;
         }
 
         // ================================================================
@@ -1538,6 +1788,171 @@ namespace MHServerEmu.Games.Entities.Avatars
             PhantomLogger.Info(sb.ToString());
         }
 
+        // Below this fraction of max HP, a phantom reaches for its own
+        // medkit instead of only ever waiting to be revived. Own cooldown
+        // (not the heal power's own cooldown data) because the heal only
+        // restores a percentage, not to full — without a floor a phantom
+        // sitting under the threshold would spend nearly every 500ms tick
+        // healing instead of fighting.
+        private const float PhantomSelfHealHpFraction = 0.35f;
+        private const long PhantomSelfHealCooldownMs = 8000;
+        private static readonly Dictionary<ulong, long> s_phantomNextSelfHealMs = new();
+
+        /// <summary>
+        /// Casts the same innate medkit power a real player uses on
+        /// themselves (GlobalsPrototype.AvatarHealPower, Self-shaped /
+        /// WillTargetCaster) when the phantom is its own caster AND target —
+        /// the exact mechanic a real player already exercises on themselves,
+        /// so no special hook is needed the way phantom-as-TARGET-of-the-
+        /// HUMAN's-medkit needed one (see WorldEntity.ApplyHealthPowerResults,
+        /// which fully heals a caller's phantoms when the HUMAN uses their
+        /// medkit — a different, separate mechanic from this one).
+        /// </summary>
+        private static bool TryPhantomSelfHeal(Avatar phantom, MHServerEmu.Core.System.Random.GRandom rng)
+        {
+            long healthMax = phantom.Properties[PropertyEnum.HealthMax];
+            if (healthMax <= 0) return false;
+            long health = phantom.Properties[PropertyEnum.Health];
+            if (health > (long)(healthMax * PhantomSelfHealHpFraction)) return false;
+
+            long nowMs = phantom.Game.CurrentTime.Ticks / TimeSpan.TicksPerMillisecond;
+            if (s_phantomNextSelfHealMs.TryGetValue(phantom.Id, out long nextAt) && nowMs < nextAt) return false;
+
+            PrototypeId healPowerRef = GameDatabase.GlobalsPrototype?.AvatarHealPower ?? PrototypeId.Invalid;
+            if (healPowerRef == PrototypeId.Invalid) return false;
+            Power healPower = phantom.GetPower(healPowerRef);
+            if (healPower == null || healPower.IsOnCooldown()) return false;
+
+            Vector3 selfPos = phantom.RegionLocation.Position;
+            int fxSeed = rng.Next(1, 10000);
+            var settings = new PowerActivationSettings(phantom.Id, selfPos, selfPos)
+            {
+                Flags = PowerActivationSettingsFlags.NotifyOwner,
+                FXRandomSeed = fxSeed,
+                PowerRandomSeed = fxSeed,
+            };
+            PowerUseResult result = phantom.ActivatePower(healPowerRef, ref settings);
+            // Set the cooldown even on a non-Success result — a rejection
+            // (e.g. HealingBlocked) won't clear on its own within the same
+            // tick either, and retrying every 500ms against a standing
+            // rejection is the same "spam a broken action" shape the power
+            // blacklist above exists to prevent.
+            s_phantomNextSelfHealMs[phantom.Id] = nowMs + PhantomSelfHealCooldownMs;
+            if (result == PowerUseResult.Success)
+                PhantomLogger.Info($"[PhantomHero:SelfHeal] {phantom} used medkit at {health}/{healthMax} HP");
+            return result == PowerUseResult.Success;
+        }
+
+        // Only bother looking for a support power at all if someone's below
+        // this fraction of max HP — otherwise a support-capable phantom
+        // would burn its buff on a squad that's already fine.
+        private const float PhantomSupportBuffNeedFraction = 0.7f;
+        private const float PhantomSupportBuffAllyRange = 2500f;
+        private const float PhantomSupportBuffAllyRangeSq = PhantomSupportBuffAllyRange * PhantomSupportBuffAllyRange;
+        // Own cooldown floor, independent of the chosen power's actual
+        // cooldown data — a rejected activation (out of range, LOS, etc.)
+        // shouldn't be retried every single 500ms tick.
+        private const long PhantomSupportBuffCooldownMs = 5000;
+        private static readonly Dictionary<ulong, long> s_phantomNextSupportBuffMs = new();
+
+        /// <summary>
+        /// Any phantom whose kit happens to include a friendly-targeting
+        /// power (TargetingReachPrototype.TargetsFriendly) — a heal or buff,
+        /// not an attack — uses it on whichever ally (the human, or a
+        /// squadmate) is hurt worst, instead of that power just never being
+        /// considered because the rest of the AI only ever looks at hostile
+        /// targets. Self-centered AOE heals target the phantom itself (the
+        /// AOE naturally reaches nearby allies); single-target reach powers
+        /// target the neediest ally directly.
+        /// </summary>
+        private static bool TryPhantomSupportBuff(Avatar phantom, MHServerEmu.Core.System.Random.GRandom rng)
+        {
+            long nowMs = phantom.Game.CurrentTime.Ticks / TimeSpan.TicksPerMillisecond;
+            if (s_phantomNextSupportBuffMs.TryGetValue(phantom.Id, out long nextAt) && nowMs < nextAt) return false;
+
+            var pc = phantom.PowerCollection;
+            if (pc == null) return false;
+
+            Player host = phantom.PhantomHost;
+            Region region = phantom.Region;
+            if (region == null) return false;
+            Vector3 phantomPos = phantom.RegionLocation.Position;
+
+            WorldEntity neediest = null;
+            float neediestFrac = PhantomSupportBuffNeedFraction;
+
+            void Consider(WorldEntity candidate)
+            {
+                if (candidate == null || candidate.IsDead || candidate.IsInWorld == false) return;
+                if (candidate.Region != region) return;
+                long hpMax = candidate.Properties[PropertyEnum.HealthMax];
+                if (hpMax <= 0) return;
+                float frac = (float)((long)candidate.Properties[PropertyEnum.Health]) / hpMax;
+                if (frac >= neediestFrac) return;
+                if (Vector3.DistanceSquared2D(candidate.RegionLocation.Position, phantomPos) > PhantomSupportBuffAllyRangeSq) return;
+                neediestFrac = frac;
+                neediest = candidate;
+            }
+
+            Consider(host?.CurrentAvatar);
+            if (host != null)
+            {
+                var squadIds = host.PhantomAvatarIds;
+                for (int i = 0; i < squadIds.Count; i++)
+                {
+                    if (squadIds[i] == phantom.Id) continue;
+                    Consider(phantom.Game.EntityManager.GetEntity<Avatar>(squadIds[i]));
+                }
+            }
+            Consider(phantom);
+
+            if (neediest == null) return false; // nobody needs help right now
+
+            foreach (var kvp in pc)
+            {
+                Power power = kvp.Value?.Power;
+                if (power == null) continue;
+                PowerPrototype pp = power.Prototype;
+                if (pp == null) continue;
+                if (pp is MovementPowerPrototype) continue;
+                if (pp.PowerCategory != PowerCategoryType.NormalPower) continue;
+                if (pp.Activation == PowerActivationType.Passive) continue;
+                if (pp.IsToggled) continue;
+                if (pp.IsTravelPower) continue;
+                if (pp.Activation == PowerActivationType.TwoStageTargeted) continue;
+                if (power.IsCancelledOnRelease()) continue;
+                if (power.IsOnCooldown()) continue;
+
+                var reach = pp.GetTargetingReach();
+                // Excludes powers that ALSO target enemies (ambiguous —
+                // could be an attack with an incidental friendly clause);
+                // only powers that are friendly-only count as "support."
+                if (reach == null || reach.TargetsFriendly == false || reach.TargetsEnemy) continue;
+
+                var style = pp.GetTargetingStyle();
+                bool selfCentered = style != null && (style.AOESelfCentered || style.TargetingShape == TargetingShapeType.Self);
+                WorldEntity effectiveTarget = selfCentered ? phantom : neediest;
+
+                float range = power.GetRange();
+                if (selfCentered == false && range > 0f && phantom.GetDistanceTo(effectiveTarget, true) > range) continue;
+
+                Vector3 tgtPos = effectiveTarget.RegionLocation.Position;
+                int fxSeed = rng.Next(1, 10000);
+                var settings = new PowerActivationSettings(effectiveTarget.Id, tgtPos, phantomPos)
+                {
+                    Flags = PowerActivationSettingsFlags.NotifyOwner,
+                    FXRandomSeed = fxSeed,
+                    PowerRandomSeed = fxSeed,
+                };
+                PowerUseResult result = phantom.ActivatePower(power.PrototypeDataRef, ref settings);
+                s_phantomNextSupportBuffMs[phantom.Id] = nowMs + PhantomSupportBuffCooldownMs;
+                if (result == PowerUseResult.Success)
+                    PhantomLogger.Info($"[PhantomHero:Support] {phantom} used {pp.DataRef.GetName()} on {effectiveTarget}");
+                return result == PowerUseResult.Success;
+            }
+            return false;
+        }
+
         private PowerUseResult TryPhantomAttack(Avatar phantom, WorldEntity target, float targetDistSq, MHServerEmu.Core.System.Random.GRandom rng)
         {
             if (target == null || phantom.PowerCollection == null) return PowerUseResult.GenericError;
@@ -1554,7 +1969,15 @@ namespace MHServerEmu.Games.Entities.Avatars
                 if (max > 0) phantom.Properties[PropertyEnum.Endurance, manaType] = max;
             }
 
-            float targetDist = MathF.Sqrt(targetDistSq);
+            // Edge-to-edge, not center-to-center — same helper WorldEntity.cs
+            // itself uses for its own range math (GetDistanceTo(calcRadius:
+            // true)). Against a big-bounds target (a raid boss) center
+            // distance stays large long after the phantom is standing at the
+            // model's surface, so a raw-center range gate below rejected
+            // every power whose real reach was actually sufficient — the
+            // same bug TruSkillzzRuns independently found and fixed ("range
+            // check measuring distance to center instead of edge").
+            float targetEdgeDist = phantom.GetDistanceTo(target, true);
 
             // Build the candidate list with real prioritization instead of pure
             // reservoir sampling.
@@ -1608,7 +2031,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     if (power.IsCancelledOnRelease()) continue;
 
                     float pRange = power.GetRange();
-                    if (pRange > 0f && pRange + 50f < targetDist) continue;
+                    if (pRange > 0f && pRange + 50f < targetEdgeDist) continue;
 
                     if (power.IsOnCooldown()) continue;
 
@@ -1632,6 +2055,23 @@ namespace MHServerEmu.Games.Entities.Avatars
                     }
 
                     long cdMs = (long)power.GetCooldownDuration().TotalMilliseconds;
+
+                    // AoE awareness: weigh area powers by how many hostiles
+                    // they'd actually hit around the target, instead of
+                    // scoring them purely by cooldown like every other
+                    // power. A lone target gets a heavy penalty (don't waste
+                    // a cone attack on one guy) and a real pack gets a
+                    // scaling bonus (favor the AoE over poking the group one
+                    // at a time), capped so a huge pack doesn't completely
+                    // drown out every single-target option.
+                    if (power.TargetsAOE())
+                    {
+                        int hitCount = CountHostilesNear(phantom, target.RegionLocation.Position, power.GetAOERadius());
+                        cdMs = hitCount >= 2
+                            ? (long)(cdMs * (1.0 + 0.5 * Math.Min(hitCount, 6)))
+                            : (long)(cdMs * 0.4);
+                    }
+
                     candidates.Add((rec.PowerPrototypeRef, cdMs));
                 }
 
@@ -1651,11 +2091,17 @@ namespace MHServerEmu.Games.Entities.Avatars
 
                     // Take top 5 (or fewer). Weighted-random pick — weight = 1 + cooldownMs/1000
                     // so a 5s power is ~6x more likely than a basic (0s) attack.
+                    //
+                    // NOTE: this used to read `(long)rng.NextDouble() * totalWeight * 1000L`,
+                    // which casts NextDouble()'s [0,1) result to long BEFORE multiplying —
+                    // that truncates to 0 every time, so `roll` was always 0 and candidates[0]
+                    // (the single highest-cooldown power) won unconditionally. Phantoms never
+                    // actually varied their attacks; cast the product, not the double.
                     int take = Math.Min(5, candidates.Count);
                     long totalWeight = 0;
                     for (int i = 0; i < take; i++) totalWeight += 1 + (candidates[i].Item2 / 1000);
-                    long roll = ((long)rng.NextDouble() * totalWeight * 1000L) % Math.Max(1, totalWeight);
-                    if (roll < 0) roll = -roll;
+                    long roll = (long)(rng.NextDouble() * totalWeight);
+                    if (roll >= totalWeight) roll = totalWeight - 1;
 
                     chosenPower = candidates[0].Item1;
                     long acc = 0;
@@ -1721,8 +2167,10 @@ namespace MHServerEmu.Games.Entities.Avatars
                 // Power-specific failures won't clear by retrying with a
                 // different target — park the power so the picker falls
                 // back to ones that actually work (see s_phantomPowerBlacklist).
-                if (result == PowerUseResult.RestrictiveCondition || result == PowerUseResult.WeaponMissing)
-                    s_phantomPowerBlacklist[(phantom.Id, chosenPower)] = nowMs + PhantomPowerBlacklistMs;
+                if (result == PowerUseResult.RestrictiveCondition)
+                    s_phantomPowerBlacklist[(phantom.Id, chosenPower)] = nowMs + PhantomPowerBlacklistTransientMs;
+                else if (result == PowerUseResult.WeaponMissing)
+                    s_phantomPowerBlacklist[(phantom.Id, chosenPower)] = nowMs + PhantomPowerBlacklistStructuralMs;
 
                 // Log every failed activation so we can see WHY a cutscene boss
                 // rejects the phantom's power (Dormant/Unaffectable/etc). Log
@@ -2287,7 +2735,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             // clears its own list, so we need the ids before it runs.
             var ids = new List<ulong>(host.PhantomAvatarIds);
             int removed = host.PurgePhantoms();
-            foreach (ulong id in ids) { s_phantomAttackLogged.Remove(id); s_phantomLocoLogged.Remove(id); s_phantomNextAttackMs.Remove(id); s_phantomStuckTrack.Remove(id); s_phantomPowerStuckTrack.Remove(id); s_phantomNextDiagMs.Remove(id); s_phantomNextUltimateMs.Remove(id); s_phantomDownedSinceMs.Remove(id); PruneBlacklistFor(id); PrunePowerBlacklistFor(id); }
+            foreach (ulong id in ids) { s_phantomAttackLogged.Remove(id); s_phantomLocoLogged.Remove(id); s_phantomNextAttackMs.Remove(id); s_phantomStuckTrack.Remove(id); s_phantomPowerStuckTrack.Remove(id); s_phantomNextDiagMs.Remove(id); s_phantomNextUltimateMs.Remove(id); s_phantomDownedSinceMs.Remove(id); s_phantomNextSelfHealMs.Remove(id); s_phantomNextSupportBuffMs.Remove(id); s_phantomLastAttackTarget.Remove(id); PruneBlacklistFor(id); PrunePowerBlacklistFor(id); PruneReviveClaimsFor(id); }
             return removed;
         }
 
@@ -2358,8 +2806,12 @@ namespace MHServerEmu.Games.Entities.Avatars
                     s_phantomNextDiagMs.Remove(id);
                     s_phantomNextUltimateMs.Remove(id);
                     s_phantomDownedSinceMs.Remove(id);
+                    s_phantomNextSelfHealMs.Remove(id);
+                    s_phantomNextSupportBuffMs.Remove(id);
+                    s_phantomLastAttackTarget.Remove(id);
                     PruneBlacklistFor(id);
                     PrunePowerBlacklistFor(id);
+                    PruneReviveClaimsFor(id);
                 }
                 PhantomLogger.Info($"[PhantomHero] {this} reattach: pruned {stale.Count} stale, {alive} alive");
             }
@@ -2436,8 +2888,12 @@ namespace MHServerEmu.Games.Entities.Avatars
             s_phantomNextDiagMs.Remove(myId);
             s_phantomNextUltimateMs.Remove(myId);
             s_phantomDownedSinceMs.Remove(myId);
+            s_phantomNextSelfHealMs.Remove(myId);
+            s_phantomNextSupportBuffMs.Remove(myId);
+            s_phantomLastAttackTarget.Remove(myId);
             PruneBlacklistFor(myId);
             PrunePowerBlacklistFor(myId);
+            PruneReviveClaimsFor(myId);
 
             PhantomLogger.Info($"[PhantomHero] {this} was defeated and has been despawned.");
 

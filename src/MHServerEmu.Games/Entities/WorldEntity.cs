@@ -2219,41 +2219,6 @@ namespace MHServerEmu.Games.Entities
             Region region = Region;
             if (!Verify.IsNotNull(region)) return false;
 
-            // Phantom Heroes: the innate self-heal ("medkit", keybind M —
-            // GameDatabase.GlobalsPrototype.AvatarHealPower /
-            // Powers/GameFunctionPowers/HealMediumPower.prototype) has a
-            // client-visible team-up bonus (fully heals your team-up if it
-            // has the right gear equipped) that isn't implemented via any
-            // targetable secondary power in the data — a full power dump
-            // showed HealMediumPower has zero ActionsTriggeredOnPowerEvent,
-            // so whatever heals the team-up lives in item-granted proc data
-            // we have no visibility into. Rather than reverse-engineer that,
-            // hook the same event directly: whenever a real player
-            // successfully uses their own heal-self power, also full-heal
-            // their active phantoms, mirroring what the team-up gear does.
-            if (powerResults.PowerPrototype?.DataRef == GameDatabase.GlobalsPrototype.AvatarHealPower)
-            {
-                Player humanCaster = GetOwnerOfType<Player>();
-                if (humanCaster != null && humanCaster.PhantomCreatorId == 0 && humanCaster.PhantomHeroCount > 0
-                    && Game.CustomGameOptions.PhantomHeroesEnable)
-                {
-                    EntityManager entityManager = Game.EntityManager;
-                    foreach (ulong phantomAvatarId in humanCaster.PhantomAvatarIds)
-                    {
-                        Avatar phantomAvatar = entityManager.GetEntity<Avatar>(phantomAvatarId);
-
-                        // A downed phantom must only come back via a real revive
-                        // (Avatar.ResurrectOtherAvatar) - that path activates an actual
-                        // resurrect power, which is what drives the client-side downed
-                        // pose/icon cleanup correctly. Healing Health back up directly
-                        // here bypasses that entirely, leaving stale downed visuals
-                        // (stuck animation, death's-head icon) that only clear on zone.
-                        if (phantomAvatar != null && phantomAvatar.IsInWorld && phantomAvatar.IsDead == false)
-                            phantomAvatar.Properties[PropertyEnum.Health] = phantomAvatar.Properties[PropertyEnum.HealthMax];
-                    }
-                }
-            }
-
             // Calculate health difference based on all damage types and healing
             // NOTE: Health can be > 2147483647, so we have to use 64-bit integers here to avoid overflows
             long health = Properties[PropertyEnum.Health];
