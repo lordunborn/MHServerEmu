@@ -258,6 +258,54 @@ namespace MHServerEmu.Commands.Implementations
             }
         }
 
+        [CommandGroup("patrol")]
+        [CommandGroupDescription("Teleports to a patrol zone's Cosmic instance at a forced T4/T5 difficulty tier, bypassing the normal difficulty slider (which only supports T1-T3).")]
+        [CommandGroupFlags(CommandGroupFlags.SingleCommand)]
+        public class PatrolCommand : CommandGroup
+        {
+            [DefaultCommand]
+            [CommandUsage("patrol [hightown|midtown|icp] [t4|t5]")]
+            [CommandInvokerType(CommandInvokerType.Client)]
+            public string Patrol(string[] @params, NetClient client)
+            {
+                if (@params.Length < 2)
+                    return "Usage: !patrol [hightown|midtown|icp] [t4|t5]";
+
+                Player player = ((PlayerConnection)client).Player;
+
+                PrototypeId targetProtoRef = @params[0].ToLower() switch
+                {
+                    "hightown"  => (PrototypeId)10783787859937667646,  // Regions/EndGame/TierX/PatrolHightown/ConnectionTargets/WaypointTargets/HightownPatrolWPTarget.prototype (UpperMadripoorRegionL60Cosmic)
+                    "midtown"   => (PrototypeId)549317465236120347,    // Regions/EndGame/TierX/PatrolMidtown/ConnectionTargets/XManhattanEntryTarget01.prototype (XManhattanRegion60Cosmic)
+                    "icp"       => (PrototypeId)3167345368996519883,   // Regions/EndGame/TierX/PatrolBrooklyn/Targets/DocksPatrolEntryTarget01.prototype (BrooklynPatrolRegionL60Cosmic)
+                    _ => PrototypeId.Invalid
+                };
+
+                if (targetProtoRef == PrototypeId.Invalid)
+                    return "Unknown zone. Valid zones: hightown, midtown, icp";
+
+                PrototypeId difficultyTierRef = @params[1].ToLower() switch
+                {
+                    "t4" => (PrototypeId)1087474643293441873,  // Difficulty/Tiers/Tier4Cosmic.prototype
+                    "t5" => (PrototypeId)424700179461639950,   // Difficulty/Tiers/Tier5Omega1.prototype
+                    _ => PrototypeId.Invalid
+                };
+
+                if (difficultyTierRef == PrototypeId.Invalid)
+                    return "Unknown difficulty. Valid difficulties: t4, t5";
+
+                using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+                teleporter.Initialize(player, TeleportContextEnum.TeleportContext_Debug);
+                teleporter.DifficultyTierRef = difficultyTierRef;
+
+                if (teleporter.TeleportToTarget(targetProtoRef) == false)
+                {
+                    return "Teleport failed. Check server logs for details.";
+                }
+                return $"Teleporting to {@params[0]} ({@params[1].ToUpper()})...";
+            }
+        }
+
     }
 }
 

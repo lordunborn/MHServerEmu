@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using MHServerEmu.Commands.Attributes;
 using MHServerEmu.Core.Collisions;
+using MHServerEmu.Core.Memory;
 using MHServerEmu.Core.Network;
 using MHServerEmu.Core.VectorMath;
 using MHServerEmu.DatabaseAccess.Models;
@@ -257,6 +258,66 @@ namespace MHServerEmu.Commands.Implementations
             }
 
             return $"Created!";
+        }
+
+        [Command("spawn")]
+        [CommandDescription("Create any WorldEntity (not just Agents) near the avatar based on a name pattern (ignore the case).")]
+        [CommandUsage("entity spawn [pattern]")]
+        [CommandUserLevel(AccountUserLevel.Admin)]
+        [CommandInvokerType(CommandInvokerType.Client)]
+        [CommandParamCount(1)]
+        public string Spawn(string[] @params, NetClient client)
+        {
+            PlayerConnection playerConnection = (PlayerConnection)client;
+            Game game = playerConnection.Game;
+            if (game == null) return "Game not found.";
+
+            Avatar avatar = playerConnection.Player.CurrentAvatar;
+            if (avatar == null || avatar.IsInWorld == false) return "Avatar not found.";
+
+            Region region = avatar.Region;
+            if (region == null) return "No region found.";
+
+            // "create"/"dummy" are restricted to the Agent blueprint via CommandHelper.FindPrototype(),
+            // which can't resolve Transition/Item/etc. prototypes - iterate everything directly instead,
+            // mirroring LootTableDumper's --namesearch approach (SearchPrototypes(BlueprintId.Invalid, ...)
+            // is a known no-op).
+            string pattern = @params[0];
+            const int maxMatches = 10;
+            List<PrototypeId> matches = new();
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                if (GameDatabase.GetPrototype<Prototype>(protoRef) is not WorldEntityPrototype) continue;
+                if (GameDatabase.GetPrototypeName(protoRef).Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                    matches.Add(protoRef);
+            }
+
+            if (matches.Count == 0)
+                return $"Failed to find any WorldEntity prototypes containing {pattern}.";
+
+            if (matches.Count > 1)
+            {
+                var matchNames = matches.Select(GameDatabase.GetPrototypeName);
+                CommandHelper.SendMessage(client, $"Found multiple matches for {pattern}:");
+                CommandHelper.SendMessages(client, matchNames.Take(maxMatches), false);
+                return string.Empty;
+            }
+
+            var entityProto = GameDatabase.GetPrototype<WorldEntityPrototype>(matches[0]);
+
+            if (EntityHelper.GetSpawnPositionNearAvatar(avatar, region, entityProto.Bounds, 250, out Vector3 position) == false)
+                return "No space found to spawn the entity";
+
+            using EntitySettings settings = ObjectPoolManager.Instance.Get<EntitySettings>();
+            settings.EntityRef = entityProto.DataRef;
+            settings.Position = position;
+            settings.Orientation = Orientation.FromDeltaVector(avatar.RegionLocation.Position - position);
+            settings.RegionId = region.Id;
+
+            var entity = game.EntityManager.CreateEntity(settings);
+            if (entity == null) return "Failed to create entity.";
+
+            return $"Created {GameDatabase.GetFormattedPrototypeName(entityProto.DataRef)} [Id={entity.Id}].";
         }
 
         [Command("selector")]

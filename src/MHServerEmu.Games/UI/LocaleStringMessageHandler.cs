@@ -1,4 +1,4 @@
-﻿
+
 using Gazillion;
 using MHServerEmu.Games.GameData;
 
