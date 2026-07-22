@@ -265,7 +265,26 @@ namespace MHServerEmu.Games.Regions
             RegionConnectionTargetPrototype targetProto = waypointProto.Destination.As<RegionConnectionTargetPrototype>();
             if (targetProto == null) return Logger.WarnReturn(false, "TeleportToWaypoint(): targetProto == null");
 
-            DifficultyTierRef = difficultyProtoRef;
+            // Keep the whole party on the leader's tier. Without this, each
+            // player's own client sends whatever difficulty THEIR waypoint bar
+            // happens to have selected - a non-leader's own last-remembered
+            // choice would silently split the group into separate instances.
+            // A non-leader ignores their own selection entirely and follows
+            // the party's shared tier instead; the leader's selection becomes
+            // the party's new shared tier going forward (not just when they
+            // use an explicit difficulty-change action), so a later NPC/
+            // mission-driven travel by anyone in the party also stays synced.
+            Party party = Player.GetParty();
+            if (party != null && Player.IsPartyLeader() == false)
+            {
+                DifficultyTierRef = Player.GetDifficultyTierPreference();
+            }
+            else
+            {
+                DifficultyTierRef = difficultyProtoRef;
+                if (party != null)
+                    Player.UpdatePartyDifficulty(difficultyProtoRef);
+            }
 
             PrototypeId regionProtoRef = regionOverrideProtoRef != PrototypeId.Invalid ? regionOverrideProtoRef : targetProto.Region;
             PrototypeId areaProtoRef = targetProto.Area;
