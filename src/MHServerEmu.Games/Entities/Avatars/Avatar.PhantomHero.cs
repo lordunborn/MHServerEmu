@@ -218,6 +218,18 @@ namespace MHServerEmu.Games.Entities.Avatars
             Player host = PhantomHost;
             if (host == null || host.PhantomHeroCount == 0 || IsInWorld == false) return;
 
+            // Mirror of the phantom-side alive-path cleanup below, but for
+            // the HUMAN caller as a revive TARGET: a phantom reviving the
+            // human deliberately no longer releases the claim the moment
+            // ResurrectOtherAvatar returns Success (see UpdatePhantomHunt -
+            // IsDead doesn't flip immediately, so an eager release let a
+            // second phantom "re-revive" the same already-alive target a
+            // few hundred ms later). Once the caller's own tick confirms
+            // IsDead is actually false, the claim on the caller's id is
+            // stale and safe to drop - a no-op if nothing's holding it.
+            if (IsDead == false)
+                s_phantomReviveClaim.Remove(Id);
+
             Vector3 callerPos = RegionLocation.Position;
             var rng = Game.Random;
             List<ulong> stale = null;
@@ -656,8 +668,18 @@ namespace MHServerEmu.Games.Entities.Avatars
                         PhantomLogger.Info($"[PhantomHero:Revive] {phantom} -> {downedKindDiag} {downed} dist={MathF.Sqrt(downedDistSq):F0} castRange={MathF.Sqrt(castRangeSq):F0} result={reviveResult}");
                         if (revivingHumanDiag && reviveResult == PowerUseResult.Success && downedOwnerDiag != null)
                             s_phantomHumanReviveCooldown[downedOwnerDiag.Id] = nowMsRevive;
-                        if (reviveResult == PowerUseResult.Success)
-                            ReleaseReviveClaim(downed.Id, phantom.Id);
+                        // Deliberately NOT releasing the claim here on Success.
+                        // Confirmed live (server log): ResurrectOtherAvatar
+                        // returning Success does not mean downed.IsDead has
+                        // flipped false yet - a squadmate's phantom searching
+                        // ~1ms later still saw the same target as downed,
+                        // and since the claim had already been freed here, it
+                        // re-claimed and "re-revived" the same teammate a
+                        // second time. Leave the claim held; it's cleared for
+                        // real once the alive-path in OnPhantomTick confirms
+                        // IsDead is actually false (see s_phantomReviveClaim
+                        // .Remove near "revived - pose refreshed" below), and
+                        // the hard timeout is the backstop if that never runs.
                     }
                     catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Revive] {phantom.Id:X} -> {downed.Id:X} failed: {ex.Message}"); }
                 }

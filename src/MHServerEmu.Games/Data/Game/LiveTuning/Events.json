@@ -83,11 +83,7 @@
   "CivilWar": {
     "DisplayName": "Civil War",
     "FilePath": "Events/LiveTuningDataCivilWar.json",
-    "Leaderboards": [
-      "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWar.prototype",
-      "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
-      "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype"
-    ]
+    "Leaderboards": []
   },
   "LunarNewYear": {
     "DisplayName": "Lunar New Year",

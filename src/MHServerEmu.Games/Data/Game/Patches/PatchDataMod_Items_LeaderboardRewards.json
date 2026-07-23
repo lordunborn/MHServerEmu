@@ -1,0 +1,30 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "Rewards[]",
+    "Description": "[Dino Wave Battles reward tiers] Deliberately kept in its OWN file, separate from the scoring/rule patches in PatchDataMod_Event_DinosInvadeManhattan.json, so the reward ITEMS can be swapped later without touching event logic. Same tier structure as LukeCageEvent.prototype (Position=1, Within10/50/90Percent, Over90Percent) but with the operator's own item choices: 1st=AvengersMysteryBox, Top10%=RandomCostumeBox (MissionItems/SpecialRewards variant), Top50%=LoginFortuneCardBox, Top90%/Over90%=AvengersDailyGift (mirrors LukeCageEvent's own pattern of reusing the same item for both the Within90Percent and Over90Percent tiers). ParentDataRef values are the LeaderboardRewardEntryPosition.defaults (13336755512767289921) and LeaderboardRewardEntryPercentile.defaults (619897566873983735) blueprint refs - required by PatchEntryConverter.ParseJsonPrototype to know which reward-entry subtype to allocate",
+    "ValueType": "PrototypeArray",
+    "Value": [
+      { "ParentDataRef": 13336755512767289921, "RewardItem": 1528482404631913425, "Position": 1 },
+      { "ParentDataRef": 619897566873983735, "RewardItem": 18074377730390301555, "PercentileBucket": "Within10Percent" },
+      { "ParentDataRef": 619897566873983735, "RewardItem": 4265203178090274256, "PercentileBucket": "Within50Percent" },
+      { "ParentDataRef": 619897566873983735, "RewardItem": 477115522745572788, "PercentileBucket": "Within90Percent" },
+      { "ParentDataRef": 619897566873983735, "RewardItem": 477115522745572788, "PercentileBucket": "Over90Percent" }
+    ]
+  },
+  {
+    "Enabled": false,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "Rewards[]",
+    "Description": "[Dino Wave Battles reward tiers] DISABLED deliberately - CivilWarProReg and CivilWarAntiReg score identically (every kill fires on both, see PatchDataMod_Event_DinosInvadeManhattan.json), so a player finishing e.g. #1 would rank #1 on BOTH boards. Rewarding both would double-pay the same performance. Only CivilWarProReg's Rewards entry above is enabled - this one stays disabled unless the operator wants a genuine two-way split later",
+    "ValueType": "PrototypeArray",
+    "Value": [
+      { "ParentDataRef": 13336755512767289921, "RewardItem": 1528482404631913425, "Position": 1 },
+      { "ParentDataRef": 619897566873983735, "RewardItem": 18074377730390301555, "PercentileBucket": "Within10Percent" },
+      { "ParentDataRef": 619897566873983735, "RewardItem": 4265203178090274256, "PercentileBucket": "Within50Percent" },
+      { "ParentDataRef": 619897566873983735, "RewardItem": 477115522745572788, "PercentileBucket": "Within90Percent" },
+      { "ParentDataRef": 619897566873983735, "RewardItem": 477115522745572788, "PercentileBucket": "Over90Percent" }
+    ]
+  }
+]

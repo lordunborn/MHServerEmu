@@ -4310,20 +4310,19 @@ namespace MHServerEmu.Games.Entities.Avatars
             return true;
         }
 
-        // Same button-text convention as Transition.ShowDestinationDialog() for a real multi-destination portal -
-        // the button is labeled with the destination region's own RegionName, not a generic reused phrase.
-        // (Tried "Travel to $LocationName$?" with a LocaleStringId arg via NetStructFormatStringArg - the base
-        // dialog text/button mechanism is confirmed live/server-driven, but the client rendered the template
-        // literally instead of substituting the arg. Reverted rather than guess blindly at the other 4 possible
-        // arg field types with no way to test client behavior directly.)
-        private static readonly LocaleStringId UESvsDinosRegionNameRef = (LocaleStringId)5987416554218259715;
-
         // Found via a real client eng.all *.string dump (LootTableDumper --dumpstrings) - an existing Savage Land
         // flavor line about Sauron's dinosaurs ravaging the land. GameDialogInstance.Message is transmitted live
         // as a NetStructFormatString every time the dialog opens (unlike ShannaA.prototype's own DialogTextList,
-        // which the client resolves entirely from its own local copy and never asks the server about), so this
-        // renders correctly as long as the id is a real, existing client string - confirmed it is.
+        // which the client resolves entirely from its own local copy and never asks the server about). Its text is
+        // overridden via AchievementStringMap_99_DinosInvadeManhattan.json (see [[achievement-string-override-global-text-fix]])
+        // to actually mention Manhattan instead of the generic native line.
         private static readonly LocaleStringId ShannaDinosaurFlavorTextRef = (LocaleStringId)423133379684795656;
+
+        // Localization/Translations/Dialogs/Yes.prototype and No.prototype - dedicated generic Yes/No button text,
+        // each referenced by nothing else in the game's data, so reusing them here can't collide with any other
+        // dialog's wording. Matches the real "Travel to X? Yes/No" pattern used by native portal NPCs.
+        private static readonly LocaleStringId YesButtonRef = (LocaleStringId)14959079863731815684;
+        private static readonly LocaleStringId NoButtonRef = (LocaleStringId)16244338063872951558;
 
         private static void UseShannaPortalGuide(Player player, WorldEntity shanna)
         {
@@ -4332,14 +4331,11 @@ namespace MHServerEmu.Games.Entities.Avatars
             GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
             dialog.OnResponse = OnShannaPortalGuideDialogResponse;
             dialog.Message.LocaleString = ShannaDinosaurFlavorTextRef;
-            // WorldClick matches Transition.ShowDestinationDialog() - lets the player dismiss by clicking elsewhere
-            // in the world instead of being forced to pick a button. There's no legitimate existing "No"/Cancel
-            // LocaleStringId anywhere in the game's data to label a second button with (checked every DialogPrototype
-            // field in the schema - the one populated real example is single-button only).
             dialog.Options = DialogOptionEnum.ScreenBottom | DialogOptionEnum.WorldClick;
             dialog.TargetId = shanna.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, UESvsDinosRegionNameRef, ButtonStyle.SecondaryPositive);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, YesButtonRef, ButtonStyle.SecondaryPositive);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, NoButtonRef, ButtonStyle.SecondaryNegative);
 
             game.GameDialogManager.ShowDialog(dialog);
 

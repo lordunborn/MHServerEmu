@@ -3,7 +3,7 @@
     "Enabled": true,
     "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosArea1.prototype",
     "Path": "AreaName",
-    "Description": "[Dinos Invade Manhattan] CONFIRMED INERT 2026-07-21 - user tested live, banner still reads 'Dinos Invade Manhattan: PvE Test Environment' unchanged. Traced via LootTableDumper --findlocalestringref to this area's own AreaName field (12798526419926254962 = 'PvE Test Environment', a leftover dev/QA label) and confirmed UESvsDinosArea1.prototype IS the only area this region's generator actually uses, so it's not a wrong-area issue. Same architecture wall as UnrealClass/Icons/DialogTextList: the client resolves Area/Region display names entirely from its own local prototype copy and never asks the server, so this patch (verified correctly applied in data) has zero visible effect. Left in place as a marker of intent, same convention as the ShannaA DialogTextList Weight patches",
+    "Description": "[Dinos Invade Manhattan] SUPERSEDED 2026-07-23 - originally CONFIRMED INERT 2026-07-21 via this direct prototype-field patch (client resolves AreaName entirely from its own local prototype copy, this ValueType:LocaleStringId patch to the field itself never reaches it). The REAL working fix was found via a private-server veteran's tip: override LocaleStringId 12798526419926254962 ('PvE Test Environment') itself inside Data/Game/Achievements/AchievementStringMap_99_DinosInvadeManhattan.json - the server pushes real string TEXT (not just an ID) to the client at login via NetMessageAchievementDatabaseDump, and this override table turned out to be a GLOBAL client-side string override, not scoped to the Achievements/Leaderboards panel - confirmed live, banner now correctly reads 'Dinos Invade Manhattan'. This entry (Value:0, a no-op clearing an already-Invalid field) is left in place only as a historical marker of the dead end that led to the real discovery",
     "ValueType": "LocaleStringId",
     "Value": 0
   },
@@ -364,5 +364,517 @@
     "Description": "[Dinos Invade Manhattan] REVERTED 2026-07-21 - disabled the costume/card/pet slot (Choices[4].Choices[0] -> SpecialsCostumeCardPet.prototype) based on an early '15 costumes dropping' report, but that turned out to be an unrelated patch/LiveTuning issue elsewhere (confirmed by the user via isolation testing - disabling other events/patches stopped it), not this table. SpecialsCostumeCardPet is tagged MarkSpecial/OnceDaily(PerAccount), so it was never actually spam-prone to begin with. Restoring the natural drop chance - a hard ~20 min boss fight rewarding a rare, once-daily-gated costume chance fits the intended design (user's own framing: 'this being a hard fight and the end MAY reward the player with a costume'). Left in the file disabled rather than deleted, in case the boss-loot redesign this unblocks needs to reference the original find",
     "ValueType": "Float",
     "Value": 1.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "DesignState",
+    "Description": "[Dinos Invade Manhattan] Leaderboard repurpose - user asked to reuse one of the unused test leaderboards for a 'Dino Wave Battles' board rather than author one from scratch. This is the 3-rule EntityDeath test leaderboard (native rules: HYDRA/StoryMode, AIM/no-context, Maggia/IndustryCityPatrol) - flipping DevelopmentOnly -> Live so it's actually loaded/active",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "Public",
+    "Description": "[Dinos Invade Manhattan] Native false (test-only) - must be true for players to see/opt into this board at all",
+    "ValueType": "Boolean",
+    "Value": true
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "Category",
+    "Description": "[Dinos Invade Manhattan] User confirmed live: leaderboard screen only shows Achievements/Danger Room/Heroes for Hire (LukeCageEvent's Events category)/Progression tabs. Initially read PatrolMidtownMobs' absence (Category=its own dedicated PatrolMidtown.prototype) as proof the client only renders a fixed whitelist of category tabs, but that's unconfirmed - PatrolMidtownMobs is tied to the 'Midtown Madness' DayOfWeek LiveTuning event (Data/Game/LiveTuning/EventSchedule.json, StartDayOfWeek=Monday) and today isn't Monday, which is a simpler, unrelated explanation for why IT specifically is missing. Repointing our Category to Leaderboards/Prototypes/Categories/Events/Events.prototype (Ref=3444720008110610318) - the exact category LukeCageEvent uses, proven to render as 'Heroes for Hire (Current Event)' right now with no day-of-week tie - is still a reasonable, low-risk thing to try since TestCategory is definitely not one of the visible tabs, but whether Category-whitelisting is really the mechanism (vs. something else entirely) is NOT confirmed - needs an in-game check after this patch to know for sure",
+    "ValueType": "PrototypeId",
+    "Value": 3444720008110610318
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "Name",
+    "Description": "[Dinos Invade Manhattan] Repointed to LocaleStringId 9070736888404837633 - an EXISTING client string that already reads exactly 'Dinos Invade Manhattan', currently used by UESvsDinosEntryTarget.prototype.Name (the connection-target label, i.e. the travel button text the user already confirmed displays correctly live). Reusing an already-proven, already-in-the-client string instead of inventing a new LocaleStringId (which the client would have no bundled text for at all) or patching AreaName-style (confirmed inert in an earlier entry in this same file - client resolves that specific field from its own local copy regardless of server data). Same general LocaleStringId lookup mechanism as the working button, not the broken AreaName path, so this should actually render",
+    "ValueType": "LocaleStringId",
+    "Value": 9070736888404837633
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "Type",
+    "Description": "[Dinos Invade Manhattan] Native Avatar (per-hero identity) -> Player, so a player's total dino-kill count is tracked once for their account, not split per hero they happen to be playing",
+    "ValueType": "Enum",
+    "Value": "Player"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ResetFrequency",
+    "Description": "[Dinos Invade Manhattan] Native Daily -> Weekly per user's choice - a running weekly competition instead of resetting every day",
+    "ValueType": "Enum",
+    "Value": "Weekly"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "Duration",
+    "Description": "[Dinos Invade Manhattan] Native Day -> Week, matching the ResetFrequency change above",
+    "ValueType": "Enum",
+    "Value": "Week"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ScoringRules[0].Event.EntityKeyword",
+    "Description": "[Dinos Invade Manhattan] Rule 0 repurpose (was HYDRA keyword, ValueInt=5) - clearing EntityKeyword to Invalid makes ScoringEvents.FilterPrototype's null-prototype check pass unconditionally (confirmed in ScoringEvents.cs:321-324, 'if (prototype == null ...) return true'), so this rule now matches ANY entity death, giving 'total dino kills, any wave mob' per the user's chosen metric - scoped to our region by the Context patch below, not by mob identity",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ScoringRules[0].Event.Context.ContextRegionKeyword",
+    "Description": "[Dinos Invade Manhattan] Rule 0 - clearing the native StoryMode region-keyword scope (Context object confirmed to already exist for this rule via LootTableDumper --dump, unlike rule 1 which has no Context at all - see rule 1's own entries below for why it's handled differently)",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ScoringRules[0].Event.Context.ContextRegion",
+    "Description": "[Dinos Invade Manhattan] Rule 0 - scope 'any kill' to specifically UESvsDinosRegion.prototype (Ref=13643380196511063922), so this rule only fires for kills inside the Dino Wave Battles region and doesn't pick up unrelated kills anywhere else in the game",
+    "ValueType": "PrototypeId",
+    "Value": 13643380196511063922
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ScoringRules[1].Event.EntityPrototype",
+    "Description": "[Dinos Invade Manhattan] Rule 1 repurpose (was AIM keyword, ValueInt=10, NO Context at all - confirmed via --dump, unlike rules 0/2). Left untouched, this rule would silently score any AIM-keyword mob kill ANYWHERE in the game once Public/Live flip live, leaking unrelated points onto this board. Since there's no Context object to scope by region (patching a path through a null embedded prototype never gets visited by PrototypeClassManager.PostProcessContainedPrototypes' embeddedPrototype!=null check, so it would just silently never apply), retargeting via EntityPrototype instead - a direct, always-present field on the Event object, no Context needed. EntityPrototype takes priority over EntityKeyword in this class's own PostProcess (ScoringEventPrototype.cs:274-280), and that computation runs AFTER base.PostProcess() applies this exact patch, so the priority swap takes effect correctly. Targets KingLizardRiderBossEG02.prototype (Ref=12761272367405933307), the event's actual final boss - self-contained bonus point for landing that specific kill (redundant with rule 0's blanket per-kill count, so the boss kill counts as 2 in the tally - an accepted, bounded quirk, not a leak to other content)",
+    "ValueType": "PrototypeId",
+    "Value": 12761272367405933307
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ScoringRules[2].Event.EntityKeyword",
+    "Description": "[Dinos Invade Manhattan] Rule 2 repurpose (was Maggia keyword, ValueInt=15) - clearing so EntityPrototype (set below) is unambiguously the only filter",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ScoringRules[2].Event.Context.ContextRegionKeyword",
+    "Description": "[Dinos Invade Manhattan] Rule 2 - clearing the native IndustryCityPatrol region-keyword scope (Context confirmed to already exist for this rule, same as rule 0)",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ScoringRules[2].Event.Context.ContextRegion",
+    "Description": "[Dinos Invade Manhattan] Rule 2 - scope to UESvsDinosRegion same as rule 0 (belt-and-suspenders alongside the EntityPrototype filter below, since Context safely exists here)",
+    "ValueType": "PrototypeId",
+    "Value": 13643380196511063922
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/TestEntityDeathLeaderboard.prototype",
+    "Path": "ScoringRules[2].Event.EntityPrototype",
+    "Description": "[Dinos Invade Manhattan] Rule 2 - targets KingLizardBossEG02.prototype (Ref=9671380227843956965), the plain (non-Rider) King Lizard boss variant, same bonus-point pattern as rule 1's Rider boss",
+    "ValueType": "PrototypeId",
+    "Value": 9671380227843956965
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ResetFrequency",
+    "Description": "[Dino Wave Battles / Civil War hijack] User confirmed Civil War content can't actually be run and asked to hijack this leaderboard (plus CivilWarAntiReg and the CivilWar meta) for Dino Wave Battles tracking, since it already has a working, visible menu slot (unlike a brand-new leaderboard prototype, which the client's leaderboard UI apparently has no way to display - see TestEntityDeathLeaderboard's own patches above). Native Every12hours -> Weekly per user's request",
+    "ValueType": "Enum",
+    "Value": "Weekly"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "Duration",
+    "Description": "[Dino Wave Battles / Civil War hijack] Native _12hours -> Week, matching ResetFrequency above",
+    "ValueType": "Enum",
+    "Value": "Week"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[0].Event.EntityPrototype",
+    "Description": "[Dino Wave Battles / Civil War hijack - CORRECTED 2026-07-22] Original --dump used maxDepth=1, which only prints a bare 'Event: [ScoringEventEntityDeathPrototype]' header and never recurses into its own fields - this wrongly looked like 'no filters at all' on every rule. A deeper dump (maxDepth 6) revealed EVERY one of the 61 rules natively requires Context.ContextPublicEventTeam=CivilWarProReg/AntiReg (a faction registration that can never happen since the Civil War public event itself is disabled - confirmed via LiveTuning log showing Events/PublicEvents/Events/CivilWar.prototype ePETV_Enabled=0), and only 7 of the 61 rules (indices 0-6) are even EntityDeath type (rest are EntityInteract/CompleteMission/AvatarUsedPower/ItemCollected) - my original 10-rule design (one rule per mob family + 2 dedicated boss rules) doesn't fit in 7 slots, and rules 8/9 were actually EntityInteract type, not EntityDeath, so a boss KILL could never have fired them anyway. Redesigned using only 3 of the 7 available EntityDeath slots, mirroring TestEntityDeathLeaderboard's proven-working pattern exactly: this rule (0) is now 'any kill in the Dino region' (EntityPrototype cleared back to Invalid, matching the TestEntityDeathLeaderboard design) instead of a per-family rule",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[0].Event.EntityPrototypeIncludeChildren",
+    "Description": "[Dino Wave Battles / Civil War hijack] Cleared back to false alongside EntityPrototype above - not needed for an unfiltered 'any kill' rule",
+    "ValueType": "Boolean",
+    "Value": false
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[0].Event.Rank",
+    "Description": "[Dino Wave Battles / Civil War hijack] Native value was Mods/Ranks/Boss.prototype - this rule natively only counted BOSS-ranked kills, which is why regular wave-mob kills never scored even before we knew about it. Cleared to Invalid so any-ranked kill counts",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[0].Event.Context.ContextRegionKeyword",
+    "Description": "[Dino Wave Battles / Civil War hijack] Native value was Regions/Keywords/Patrols/MidtownManhattanNonCosmic.prototype - the Dino region doesn't carry this keyword, so this alone would have silently blocked every kill even with everything else fixed. Cleared so ContextRegion (set below) is the only region scope",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[0].Event.Context.ContextPublicEventTeam",
+    "Description": "[Dino Wave Battles / Civil War hijack] THE root cause of zero scoring across every kill test - native value was Events/PublicEvents/Teams/CivilWarProReg.prototype, requiring the player be registered to that faction via the actual Civil War public event, which is disabled and can never be joined. Cleared so FilterOwnerContext's FilterPublicEventTeam check passes unconditionally (null == always true)",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[0].Event.Context.ContextRegion",
+    "Description": "[Dino Wave Battles / Civil War hijack] Scope 'any kill' to specifically UESvsDinosRegion.prototype (Ref=13643380196511063922), same as TestEntityDeathLeaderboard's rule 0 - this Context object is confirmed to already exist natively on this rule (unlike what the shallow dump suggested), so this is a safe, proven-working field set",
+    "ValueType": "PrototypeId",
+    "Value": 13643380196511063922
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[1].Event.EntityPrototype",
+    "Description": "[Dino Wave Battles / Civil War hijack] Rule 1 repurposed as a dedicated KingLizardBossEG02 boss-kill bonus (was DinosaurKingLizardBase family in the original broken design - dropped since rule 0 now covers 'any kill' including King Lizards already). Fires alongside rule 0 on this specific boss's death = 1(any)+1(this) = 2pt total, matching the requested mob=1/boss=2 split",
+    "ValueType": "PrototypeId",
+    "Value": 9671380227843956965
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[1].Event.EntityPrototypeIncludeChildren",
+    "Description": "[Dino Wave Battles / Civil War hijack] False - this is an exact-match leaf boss instance, not a base class with variants",
+    "ValueType": "Boolean",
+    "Value": false
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[1].Event.Rank",
+    "Description": "[Dino Wave Battles / Civil War hijack] Native Mods/Ranks/Boss.prototype cleared - EntityPrototype's exact match already scopes this rule tightly enough, no need to also depend on this custom boss actually carrying the Boss rank tag",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[1].Event.Context.ContextRegionKeyword",
+    "Description": "[Dino Wave Battles / Civil War hijack] Native value was Regions/Keywords/Patrols/IndustryCityPatrolNonCosmic.prototype - cleared, same reasoning as rule 0",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[1].Event.Context.ContextPublicEventTeam",
+    "Description": "[Dino Wave Battles / Civil War hijack] Cleared - same root-cause fix as rule 0",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[1].Event.Context.ContextRegion",
+    "Description": "[Dino Wave Battles / Civil War hijack] Belt-and-suspenders region scope alongside the exact EntityPrototype match",
+    "ValueType": "PrototypeId",
+    "Value": 13643380196511063922
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[2].Event.EntityPrototype",
+    "Description": "[Dino Wave Battles / Civil War hijack] Rule 2 repurposed as a dedicated KingLizardRiderBossEG02 boss-kill bonus (was DinosaurPterosaurBase family in the original broken design, dropped for the same reason as rule 1)",
+    "ValueType": "PrototypeId",
+    "Value": 12761272367405933307
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[2].Event.EntityPrototypeIncludeChildren",
+    "Description": "[Dino Wave Battles / Civil War hijack] False - exact-match leaf boss instance",
+    "ValueType": "Boolean",
+    "Value": false
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[2].Event.Rank",
+    "Description": "[Dino Wave Battles / Civil War hijack] Native Mods/Ranks/Boss.prototype cleared, same reasoning as rule 1",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[2].Event.Context.ContextRegionKeyword",
+    "Description": "[Dino Wave Battles / Civil War hijack] Native value was Regions/Keywords/Story/UpperMadripoorNonCosmic.prototype - cleared",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[2].Event.Context.ContextPublicEventTeam",
+    "Description": "[Dino Wave Battles / Civil War hijack] Cleared - same root-cause fix as rule 0",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "ScoringRules[2].Event.Context.ContextRegion",
+    "Description": "[Dino Wave Battles / Civil War hijack] Belt-and-suspenders region scope alongside the exact EntityPrototype match",
+    "ValueType": "PrototypeId",
+    "Value": 13643380196511063922
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ResetFrequency",
+    "Description": "[Dino Wave Battles / Civil War hijack - SYNC FIX 2026-07-23] Found via constant 'GetInstance(): Failed to find instance for id X' / 'UpdateMetaScore(): subInstance == null' log spam (~1/sec) after the crash fix. Root cause: this ResetFrequency patch was present on CivilWarProReg but got lost for CivilWarAntiReg during the big scoring-rule rewrite, and the CivilWar meta itself never had one added at all - so ProReg was resetting Weekly while AntiReg and the meta were still on their native Every12hours. LeaderboardInstance.AddNewMetaEntries() (LeaderboardInstance.cs:283, its own comment) explicitly assumes meta and sub-leaderboards reset in lockstep ('probably fine [for native Civil War], but will have to change if we ever implement custom meta leaderboards' - which is exactly what we did). Mismatched cadence meant the meta's guessed next sub-instance id (SubInstanceId+1) stopped matching AntiReg's actual instance progression. Fixing by bringing AntiReg onto the same Weekly cadence as ProReg - see the matching CivilWar meta patch further below for the third leg of this fix",
+    "ValueType": "Enum",
+    "Value": "Weekly"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "Duration",
+    "Description": "[Dino Wave Battles / Civil War hijack - SYNC FIX 2026-07-23] Matches ResetFrequency above - see that entry's description",
+    "ValueType": "Enum",
+    "Value": "Week"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWar.prototype",
+    "Path": "ResetFrequency",
+    "Description": "[Dino Wave Battles / Civil War hijack - SYNC FIX 2026-07-23] The CivilWar META itself was NEVER given a ResetFrequency patch at all - still native Every12hours while both sub-boards are now Weekly. Same root cause as the CivilWarAntiReg fix above (see that entry's full writeup) - all three must share the exact same reset cadence for LeaderboardInstance.AddNewMetaEntries()'s sub-instance-id-guessing logic to stay valid",
+    "ValueType": "Enum",
+    "Value": "Weekly"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWar.prototype",
+    "Path": "Duration",
+    "Description": "[Dino Wave Battles / Civil War hijack - SYNC FIX 2026-07-23] Matches ResetFrequency above",
+    "ValueType": "Enum",
+    "Value": "Week"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[0].Event.EntityPrototype",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg's rule 0 (see that entry's description for the full root-cause writeup) - AntiReg's rules share identical GUIDs with ProReg's (confirmed via --dump), so the same native Rank/Context blockers apply here too",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[0].Event.EntityPrototypeIncludeChildren",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "Boolean",
+    "Value": false
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[0].Event.Rank",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[0].Event.Context.ContextRegionKeyword",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[0].Event.Context.ContextPublicEventTeam",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg - AntiReg's native value here was Events/PublicEvents/Teams/CivilWarAntiReg.prototype (the other faction), same fix applies",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[0].Event.Context.ContextRegion",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 13643380196511063922
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[1].Event.EntityPrototype",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg's rule 1 (KingLizardBossEG02 boss bonus)",
+    "ValueType": "PrototypeId",
+    "Value": 9671380227843956965
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[1].Event.EntityPrototypeIncludeChildren",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "Boolean",
+    "Value": false
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[1].Event.Rank",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[1].Event.Context.ContextRegionKeyword",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[1].Event.Context.ContextPublicEventTeam",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[1].Event.Context.ContextRegion",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 13643380196511063922
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[2].Event.EntityPrototype",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg's rule 2 (KingLizardRiderBossEG02 boss bonus)",
+    "ValueType": "PrototypeId",
+    "Value": 12761272367405933307
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[2].Event.EntityPrototypeIncludeChildren",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "Boolean",
+    "Value": false
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[2].Event.Rank",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[2].Event.Context.ContextRegionKeyword",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[2].Event.Context.ContextPublicEventTeam",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "ScoringRules[2].Event.Context.ContextRegion",
+    "Description": "[Dino Wave Battles / Civil War hijack] Mirrors CivilWarProReg",
+    "ValueType": "PrototypeId",
+    "Value": 13643380196511063922
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWar.prototype",
+    "Path": "Name",
+    "Description": "[Dino Wave Battles / Civil War hijack] Repointed to LocaleStringId 9070736888404837633 - the existing client string that already reads 'Dinos Invade Manhattan' (same one used for TestEntityDeathLeaderboard and the region's own travel-button label, both confirmed working) - so the menu doesn't show 'Civil War' for a dinosaur event",
+    "ValueType": "LocaleStringId",
+    "Value": 9070736888404837633
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarProReg.prototype",
+    "Path": "Name",
+    "Description": "[Dino Wave Battles / Civil War hijack] Repointed to the same 'Dinos Invade Manhattan' string as the CivilWar meta above - this is the sub-board that actually grants rewards, so its own name shouldn't read 'Pro-Registration' either",
+    "ValueType": "LocaleStringId",
+    "Value": 9070736888404837633
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "Name",
+    "Description": "[Dino Wave Battles / Civil War hijack] Repointed to the same 'Dinos Invade Manhattan' string, same reasoning as CivilWarProReg above",
+    "ValueType": "LocaleStringId",
+    "Value": 9070736888404837633
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWar.prototype",
+    "Path": "MetaLeaderboardEntries[0].Rewards",
+    "Description": "[Dino Wave Battles / Civil War hijack - CRASH FIX 2026-07-23] SERVER CRASHED LIVE: Leaderboard.GetMetaRewards() has its own separate native reward structure (MetaLeaderboardEntries[N].Rewards, distinct from the LeaderboardPrototype.Rewards[] array patched onto ProReg/AntiReg directly in PatchDataMod_Items_LeaderboardRewards.json) that we never knew about and never touched. It grants a meta-level reward to every player in each sub-leaderboard's Entries once per faction pass. Since our hijack mirrors identical scoring onto BOTH CivilWarProReg and CivilWarAntiReg, every player appears in both sub-boards' Entries - so the same player's reward got inserted twice (once per faction pass) into the SQLite Rewards table, which has a PRIMARY KEY on (LeaderboardId, InstanceId, ParticipantId), throwing an unhandled constraint exception that took down the entire server process (see SQLiteLeaderboardDBManager.InsertRewards - also hardened to INSERT OR IGNORE as a defense-in-depth fix, but the real fix is here: clearing this array to empty makes GetMetaRewards' `metaEntry.Rewards.IsNullOrEmpty()` check skip this whole entry's processing pass entirely, per LeaderboardInstance.cs:523. Value is an empty PrototypeArray, not an append - Path has no trailing [] so this replaces the whole field rather than adding to it. Entry [0] was CivilWarAntiReg per the native MetaLeaderboardEntries ordering",
+    "ValueType": "PrototypeArray",
+    "Value": []
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWar.prototype",
+    "Path": "MetaLeaderboardEntries[1].Rewards",
+    "Description": "[Dino Wave Battles / Civil War hijack - CRASH FIX 2026-07-23] Same fix as MetaLeaderboardEntries[0] above (entry [1] = CivilWarProReg per the native ordering) - see that entry's description for the full crash writeup. Both meta-entries' native reward structures are cleared; the ONLY reward source left active is CivilWarProReg's own direct Rewards[] array (PatchDataMod_Items_LeaderboardRewards.json), which doesn't have this per-faction duplication problem",
+    "ValueType": "PrototypeArray",
+    "Value": []
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWarAntiReg.prototype",
+    "Path": "Public",
+    "Description": "[Dino Wave Battles cleanup 2026-07-23] Hide this sub-board from the client dropdown while investigating whether the Limbo wave-battle event can reuse it. LeaderboardInfoCache.Initialize() skips any prototype with Public==false entirely, so this also removes it from RebuildActivesCache()'s active-scoring-rules loop - it stops counting kills too, not just stops displaying. CivilWarProReg (Public still true) is unaffected and keeps scoring/displaying normally. Does NOT touch the DB-level instance/schedule, so this is trivially reversible by flipping back to true",
+    "ValueType": "Boolean",
+    "Value": false
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Leaderboards/Prototypes/Leaderboards/CivilWar/CivilWar.prototype",
+    "Path": "Public",
+    "Description": "[Dino Wave Battles cleanup 2026-07-23] Hides the CivilWar meta's own row from the client dropdown (user confirmed live it showed as a 3rd selectable entry alongside ProReg/AntiReg, not just a header). Safe to hide independently of the sub-boards: GetMetaRewards()/meta-sub instance linkage lives entirely in the DB-backed Leaderboards service, not in this per-game LeaderboardInfoCache, so ProReg's own scoring and reward payout are unaffected",
+    "ValueType": "Boolean",
+    "Value": false
   }
 ]

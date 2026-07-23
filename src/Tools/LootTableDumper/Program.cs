@@ -139,6 +139,13 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--resolveleaderboards")
+            {
+                string path = args.Length > 1 ? args[1] : "";
+                ResolveLeaderboardSchedule(path);
+                return;
+            }
+
             if (args.Length > 0 && args[0] == "--convertbisjson")
             {
                 string path = args.Length > 1 ? args[1] : "";
@@ -698,6 +705,54 @@ namespace LootTableDumper
                 count++;
             }
             Console.WriteLine($"  -- {count} matches --");
+        }
+
+        /// <summary>
+        /// Reads a LeaderboardSchedule.json and, for each entry, resolves its string path to the
+        /// exact (signed-long) PrototypeGuid and placeholder ActiveInstanceId the engine's own
+        /// LeaderboardScheduler/GenerateTables would compute for it - used to hand-seed missing
+        /// Leaderboards table rows without guessing at the id math ourselves. Placeholder
+        /// ActiveInstanceId is one less than Leaderboard.GenerateInitialInstanceId's real value
+        /// (top 32 bits of the guid, bottom 32 zeroed instead of =1), so that LeaderboardDatabase.
+        /// LoadSchedule's own "IsEnabled False->True" branch - which does ActiveInstanceId + 1 -
+        /// lands exactly on the canonical initial instance id when it activates each leaderboard
+        /// for real on next server start, instead of us trying to fabricate DBLeaderboardInstance
+        /// rows (and their activation-date math) by hand.
+        /// Output: one line per entry, pipe-separated: guid|placeholderActiveInstanceId|prototypeName|leaderboardIdPath
+        /// </summary>
+        private static void ResolveLeaderboardSchedule(string path)
+        {
+            if (string.IsNullOrEmpty(path) || File.Exists(path) == false)
+            {
+                Console.WriteLine("Usage: --resolveleaderboards <path to LeaderboardSchedule.json>");
+                return;
+            }
+
+            using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(path));
+            int resolved = 0, unresolved = 0;
+
+            foreach (JsonElement entry in doc.RootElement.EnumerateArray())
+            {
+                string idPath = entry.GetProperty("LeaderboardId").GetString();
+                PrototypeId protoRef = GameDatabase.GetPrototypeRefByName(idPath);
+                if (protoRef == PrototypeId.Invalid)
+                {
+                    Console.WriteLine($"UNRESOLVED|{idPath}");
+                    unresolved++;
+                    continue;
+                }
+
+                PrototypeGuid guid = GameDatabase.GetPrototypeGuid(protoRef);
+                long guidSigned = unchecked((long)(ulong)guid);
+                ulong placeholderActiveInstance = (ulong)guid & 0xFFFFFFFF00000000UL;
+                long placeholderActiveInstanceSigned = unchecked((long)placeholderActiveInstance);
+                string name = protoRef.GetNameFormatted();
+
+                Console.WriteLine($"{guidSigned}|{placeholderActiveInstanceSigned}|{name}|{idPath}");
+                resolved++;
+            }
+
+            Console.WriteLine($"-- resolved {resolved}, unresolved {unresolved} --");
         }
 
         /// <summary>

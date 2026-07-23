@@ -169,7 +169,7 @@ namespace MHServerEmu.Games.Leaderboards
             LeaderboardInfoCache.Instance.GetActiveLeaderboardPrototypes(activeLeaderboards);
             foreach (var leaderboard in activeLeaderboards)
                 if (leaderboard.ScoringRules.HasValue())
-                    foreach (var ruleProto in leaderboard.ScoringRules)                    
+                    foreach (var ruleProto in leaderboard.ScoringRules)
                     {
                         var eventProto = ruleProto?.Event;
                         if (eventProto == null) continue;
