@@ -1,0 +1,114 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier3Superheroic.prototype",
+    "Path": "DamageMobToPlayerPct",
+    "Description": "Convert T3 to Proper Cosmic Difficulty due to adding T4 and T5",
+    "ValueType": "Float",
+    "Value": 6.59
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier3Superheroic.prototype",
+    "Path": "DamagePlayerToMobPct",
+    "Description": "Convert T3 to Proper Cosmic Difficulty due to adding T4 and T5",
+    "ValueType": "Float",
+    "Value": 0.16
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier4Cosmic.prototype",
+    "Path": "DamageMobToPlayerPct",
+    "Description": "Convert T4 to Proper Cosmic Difficulty due to adding T4 and T5",
+    "ValueType": "Float",
+    "Value": 8.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier4Cosmic.prototype",
+    "Path": "DamagePlayerToMobPct",
+    "Description": "Convert T4 to Proper Cosmic Difficulty due to adding T4 and T5",
+    "ValueType": "Float",
+    "Value": 0.13
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier3Superheroic.prototype",
+    "Path": "BonusExperiencePct",
+    "Description": "Convert T4 to Proper Cosmic Difficulty due to adding T4 and T5",
+    "ValueType": "Float",
+    "Value": 3.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier3Superheroic.prototype",
+    "Path": "ItemFindSpecialPct",
+    "Description": "150% increase to Special Item Find for Cosmic",
+    "ValueType": "Float",
+    "Value": 1.5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier3Superheroic.prototype",
+    "Path": "ItemFindRarePct",
+    "Description": "150% increase to Rare Item Find for Cosmic",
+    "ValueType": "Float",
+    "Value": 1.5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier4Cosmic.prototype",
+    "Path": "ItemFindSpecialPct",
+    "Description": "200% increase to Special Item Find for T4",
+    "ValueType": "Float",
+    "Value": 2.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier4Cosmic.prototype",
+    "Path": "ItemFindRarePct",
+    "Description": "200% increase to Rare Item Find for T4",
+    "ValueType": "Float",
+    "Value": 2.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier5Omega1.prototype",
+    "Path": "ItemFindSpecialPct",
+    "Description": "300% increase to Special Item Find for T5",
+    "ValueType": "Float",
+    "Value": 3.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier5Omega1.prototype",
+    "Path": "ItemFindRarePct",
+    "Description": "300% increase to Rare Item Find for T5",
+    "ValueType": "Float",
+    "Value": 3.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier3Superheroic.prototype",
+    "Path": "BonusItemFindBonusDifficultyMult",
+    "Description": "12x Bonus Item Find",
+    "ValueType": "Integer",
+    "Value": 12
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier4Cosmic.prototype",
+    "Path": "BonusItemFindBonusDifficultyMult",
+    "Description": "15x Bonus Item Find",
+    "ValueType": "Integer",
+    "Value": 15
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Difficulty/Tiers/Tier5Omega1.prototype",
+    "Path": "BonusItemFindBonusDifficultyMult",
+    "Description": "18x Bonus Item Find",
+    "ValueType": "Integer",
+    "Value": 18
+  }
+]
