@@ -1,26 +1,98 @@
 [
     {
         "Enabled": true,
-        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting01.prototype",
-        "Path": "Choices[0].Item",
-        "Description": "Change Crafting Choices 0 to Transmog Unique to Large Relic Box",
-        "ValueType": "PrototypeId",
-        "Value": 4323396685654662374
-	},
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting02.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomRelicsRecipe1 as a new recipe option at Rank 2, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 7175205762756910308 }
+    },
     {
         "Enabled": true,
-        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting05.prototype",
-        "Path": "Choices[1].Item",
-        "Description": "Change Crafting Choices 1 to Cash",
-        "ValueType": "PrototypeId",
-        "Value": 4946361853513506036
-    },	
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting02.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomRunesRecipe1 as a new recipe option at Rank 2, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 13906821302259883151 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting03.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomUniqueRecipe1 as a new recipe option at Rank 3, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 14658735716817444089 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting03.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add UniqueCreditRecipe1 as a new recipe option at Rank 3, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 15944827247985958131 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting06.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomRelicsRecipe2 as a new recipe option at Rank 6, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 18046228963478543589 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting06.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomRunesRecipe2 as a new recipe option at Rank 6 (previously overwrote Crafting12.Choices[2] instead - moved here and switched to append)",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 6421168023772863632 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting09.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomUniqueRecipe2 as a new recipe option at Rank 9, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 5948178106476338426 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting09.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add UniqueCreditRecipe2 (\"Cash\") as a new recipe option at Rank 9 (previously overwrote Crafting05.Choices[1] instead - moved here and switched to append)",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 4946361853513506036 }
+    },
     {
         "Enabled": true,
         "Prototype": "Loot/Tables/Vendor/Crafting/Crafting12.prototype",
-        "Path": "Choices[2].Item",
-        "Description": "Change Crafting Choices 2 to Transmog Unique to Large Rune Box",
-        "ValueType": "PrototypeId",
-        "Value": 6421168023772863632
-    }	
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomRelicsRecipe3 (\"Large Relic Box\") as a new recipe option at Rank 12 (previously overwrote Crafting01.Choices[0] instead - moved here and switched to append)",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 4323396685654662374 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting12.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomRunesRecipe3 as a new recipe option at Rank 12, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 10993934903990492305 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting15.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add RandomUniqueRecipe3 as a new recipe option at Rank 15, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 10593297249848139003 }
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Loot/Tables/Vendor/Crafting/Crafting15.prototype",
+        "Path": "Choices[]",
+        "Description": "[Crafter] Add UniqueCreditRecipe3 as a new recipe option at Rank 15, alongside the native recipes already there",
+        "ValueType": "Prototype",
+        "Value": { "ParentDataRef": 1071992662862269383, "Item": 9596007686256860405 }
+    }
 ]
