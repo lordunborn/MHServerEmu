@@ -474,5 +474,21 @@
     "Description": "Enable Live Tuning of Big10 Table",
     "ValueType": "Boolean",
     "Value": true
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Cooldowns/Channels/LootCooldownARMORPowerup.prototype",
+    "Path": "DurationMinutes",
+    "Description": "[A.R.M.O.R. Incursion (Weekly)] Reduce ARMOR powerup cooldown from 25 to 10 minutes",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Cooldowns/Channels/AoSEventBuffLootCD15min.prototype",
+    "Path": "DurationMinutes",
+    "Description": "[Agents of S.H.I.E.L.D. (Weekly)] Reduce SHIELD powerup cooldown from 15 to 10 minutes",
+    "ValueType": "Integer",
+    "Value": 10
   }
 ]
