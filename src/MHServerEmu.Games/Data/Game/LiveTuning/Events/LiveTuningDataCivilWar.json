@@ -1,172 +1,177 @@
 [
   {
-    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarCurrencyTableLT.prototype",
-    "Setting": "eLTTV_Enabled",
-    "Value": 0.0
+    "Prototype": "Events/PublicEvents/Events/CivilWar.prototype",
+    "Setting": "ePETV_Enabled",
+    "Value": 2.0
   },
   {
-    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamCap.prototype",
+    "Prototype": "Loot/Tables/Mob/ChampionsElites/CivilWarMiniBossTable.prototype",
     "Setting": "eLTTV_Enabled",
-    "Value": 0.0
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarCurrencyTableLT.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Value": 2.0
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamIM.prototype",
     "Setting": "eLTTV_Enabled",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamCap.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamIMBox.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamCapBox.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarCurrencyTableLT.prototype",
+    "Setting": "eLTTV_NoDropPercent",
+    "Value": 0.8
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamCap.prototype",
+    "Setting": "eLTTV_NoDropPercent",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamIM.prototype",
+    "Setting": "eLTTV_NoDropPercent",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/ChampionsElites/CivilWarMiniBossTable.prototype",
+    "Setting": "eLTTV_NoDropPercent",
     "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamCapCosmicTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamCapEpicTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamCapRareTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamCapUncommonTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamCapUniqueTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamIronManCosmicTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamIronManEpicTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamIronManRareTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamIronManUncommonTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "Loot/Tables/CivilWarInfluenceTokens/TeamIronManUniqueTable.prototype",
     "Setting": "eLTTV_NoDropPercent",
-    "Value": 1.0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapCosmicToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapEpicToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapRareToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapUncommonToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapUniqueToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManCosmicToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManEpicToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManRareToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManUncommonToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManUniqueToken.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0
-  },
-  {
-    "Prototype": "Entity/Items/Orbs/PowerUps/Items/Event/ARMOR/CWEventLootPowerUpTeamCapMoleMan.prototype",
-    "Setting": "eWETV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Events/PublicEvents/Events/CivilWar.prototype",
-    "Setting": "ePETV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Loot/Tables/Mob/ChampionsElites/CivilWarMiniBossTable.prototype",
-    "Setting": "eLTTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarCurrencyTableLT.prototype",
-    "Setting": "eLTTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamIMBox.prototype",
-    "Setting": "eLTTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Loot/Tables/Mob/Bosses/CivilWarEventPowerUpTableTeamCapBox.prototype",
-    "Setting": "eLTTV_Enabled",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarHubIronManAvengersRoofRegion.prototype",
-    "Setting": "eRTV_Enabled",
     "Value": 0.0
   },
   {
     "Prototype": "Entity/Items/Consumables/Prototypes/GShop/ZZZDeprecated/DeprecatedConsumables/Jackpot/Conditions/TeamCapBoost1WeekCondition.prototype",
     "Setting": "eCTV_Enabled",
-    "Value": 0.0
+    "Value": 1
   },
   {
     "Prototype": "Entity/Items/Consumables/Prototypes/GShop/ZZZDeprecated/DeprecatedConsumables/Jackpot/Conditions/TeamIronManBoost1WeekCondition.prototype",
     "Setting": "eCTV_Enabled",
-    "Value": 0.0
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapCosmicToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapEpicToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapRareToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapUncommonToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamCapUniqueToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManCosmicToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManEpicToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManRareToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManUncommonToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Items/Consumables/Prototypes/CivilWarInfluence/TeamIronManUniqueToken.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
   },
   {
     "Prototype": "Entity/Characters/Vendors/Prototypes/Endgame/CivilWarInfluenceVendorCap.prototype",
     "Setting": "eWETV_Visible",
-    "Value": 0.0
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/Vendors/Prototypes/Endgame/CivilWarInfluenceVendorIronMan.prototype",
     "Setting": "eWETV_Visible",
-    "Value": 0.0
+    "Value": 1.0
   }
 ]

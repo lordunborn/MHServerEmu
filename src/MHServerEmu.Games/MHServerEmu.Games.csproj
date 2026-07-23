@@ -38,10 +38,6 @@
     <None Update="Data\Game\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <!-- Deliberately excluded: dead/experimental content not meant to ship -->
-    <None Update="Data\Game\LiveTuning\Events\Experimental\LiveTuningDataCivilWar.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

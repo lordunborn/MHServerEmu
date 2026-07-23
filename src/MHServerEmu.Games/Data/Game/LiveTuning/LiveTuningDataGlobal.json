@@ -12,7 +12,7 @@
   {
     "Prototype": "",
     "Setting": "eGTV_VendorXPGain",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "",
@@ -42,7 +42,7 @@
   {
     "Prototype": "",
     "Setting": "eGTV_PartyXPBonusPct",
-    "Value": 1.0
+    "Value": 1.25
   },
   {
     "Prototype": "",
@@ -52,7 +52,7 @@
   {
     "Prototype": "",
     "Setting": "eGTV_CosmicPrestigeXPPct",
-    "Value": 1.0
+    "Value": 1.25
   },
   {
     "Prototype": "",
@@ -102,12 +102,12 @@
   {
     "Prototype": "",
     "Setting": "eGTV_RespectLevelForAvatarXP",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "",
     "Setting": "eGTV_RespectLevelForRegionXP",
-    "Value": 1.0
+    "Value": 0.0
   },
   {
     "Prototype": "",
@@ -122,7 +122,7 @@
   {
     "Prototype": "",
     "Setting": "eGTV_InfinityXPPct",
-    "Value": 1.0
+    "Value": 1.25
   },
   {
     "Prototype": "",

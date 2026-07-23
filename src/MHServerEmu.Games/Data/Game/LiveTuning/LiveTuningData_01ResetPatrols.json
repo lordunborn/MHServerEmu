@@ -1183,6 +1183,11 @@
     "Value": 1.0
   },
   {
+    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarHubCaptainAmericaWarehouseRegion.prototype",
+    "Setting": "eRTV_Enabled",
+    "Value": 0.0
+  },
+  {
     "Prototype": "Regions/EndGame/TierX/PatrolHightown/AltRegions/UpperMadripoorRegionL60Cosmic.prototype",
     "Setting": "eRT_BonusXPPct",
     "Value": 1.00

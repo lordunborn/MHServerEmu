@@ -13,5 +13,20 @@
     "Prototype": "Missions/Prototypes/BonusMissions/CosmoMission.prototype",
     "Setting": "eMTV_Enabled",
     "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownACCTrainer.prototype",
+    "Setting": "eWETV_Visible",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
+    "Setting": "eLTTV_NoDropPercent",
+    "Value": 0.75
   }
 ]

@@ -8,6 +8,14 @@
     ]
   },
   {
+    "Name": "Permanent Events",
+    "IsEnabled": false,
+    "Type": "AlwaysOn",
+    "Events": [
+      "CivilWar"
+    ]
+  },
+  {
     "Name": "Midtown Madness",
     "IsEnabled": true,
     "Type": "DayOfWeek",
