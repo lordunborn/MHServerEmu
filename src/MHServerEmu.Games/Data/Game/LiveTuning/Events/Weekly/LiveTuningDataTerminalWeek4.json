@@ -139,16 +139,10 @@
     "Setting": "eLTTV_Rolls",
     "Value": 2
   },
-  
-  
-  
-  
-  
-  
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleDoctorOctopus.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleDoctorOctopus.prototype",
@@ -163,7 +157,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleShocker.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/DailyBugleShocker.prototype",
@@ -176,9 +170,54 @@
     "Value": 2.5
   },
   {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD15GKraven.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD15GKraven.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD15GKraven.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/DailyBugle/DailyBugleLizard.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/DailyBugle/DailyBugleLizard.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/DailyBugle/DailyBugleLizard.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD15GVulture.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD15GVulture.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD15GVulture.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD11GKurse.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD11GKurse.prototype",
@@ -190,63 +229,22 @@
     "Setting": "eWETV_MobDropRarity",
     "Value": 2.5
   },
-  {
-    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
-    "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
-  },
-  {
-    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
-    "Setting": "eWETV_MobSpecialDropRate",
-    "Value": 2.5
-  },
-  {
-    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
-    "Setting": "eWETV_MobDropRarity",
-    "Value": 2.5
-  },
-  
-  
-  
-  
-  
-  
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD11RKurse.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD11RKurse.prototype",
     "Setting": "eWETV_MobSpecialDropRate",
-    "Value": 2.5
+    "Value": 3.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD11RKurse.prototype",
     "Setting": "eWETV_MobDropRarity",
-    "Value": 2.5
+    "Value": 3.0
   },
   {
-    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
-    "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
-  },
-  {
-    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
-    "Setting": "eWETV_MobSpecialDropRate",
-    "Value": 2.5
-  },
-  {
-    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
-    "Setting": "eWETV_MobDropRarity",
-    "Value": 2.5
-  }, 
- 
- 
- 
- 
- 
-   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD11CKurse.prototype",
     "Setting": "eWETV_MobDropRate",
     "Value": 1.0
@@ -254,12 +252,42 @@
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD11CKurse.prototype",
     "Setting": "eWETV_MobSpecialDropRate",
-    "Value": 2.5
+    "Value": 3.5
   },
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD11CKurse.prototype",
     "Setting": "eWETV_MobDropRarity",
+    "Value": 3.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
     "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Green/EGD14GUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PVEDailies/Red/EGD14RUltronTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 3.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD14CUltronTerminal.prototype",
@@ -269,45 +297,92 @@
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD14CUltronTerminal.prototype",
     "Setting": "eWETV_MobSpecialDropRate",
-    "Value": 2.5
+    "Value": 3.5
   },
   {
     "Prototype": "Entity/Characters/Bosses/PVEDailies/Cosmic/EGD14CUltronTerminal.prototype",
     "Setting": "eWETV_MobDropRarity",
-    "Value": 2.5
+    "Value": 3.5
   },
- 
- 
- 
- 
- 
- 
   {
-    "Prototype": "Entity/Characters/Bosses/VultureBase.prototype",
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireBlasterSpawnInTerminal.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
+    "Value": 1.0
   },
   {
-    "Prototype": "Entity/Characters/Bosses/VultureBase.prototype",
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireBlasterSpawnInTerminal.prototype",
     "Setting": "eWETV_MobSpecialDropRate",
     "Value": 2.5
   },
   {
-    "Prototype": "Entity/Characters/Bosses/VultureBase.prototype",
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireBlasterSpawnInTerminal.prototype",
     "Setting": "eWETV_MobDropRarity",
     "Value": 2.5
   },
-  
-  
-  
-  
-  
-  
-  
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireJackhammerSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireJackhammerSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireJackhammerSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireLauncherSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireLauncherSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireLauncherSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireMelterSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireMelterSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireMelterSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireScrapperSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireScrapperSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 2.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/AgeOfUltron/IronLegionnaires/SpawnIn/IronLegionnaireScrapperSpawnInTerminal.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 2.5
+  },
   {
     "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimension.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimension.prototype",
@@ -319,26 +394,19 @@
     "Setting": "eWETV_MobDropRarity",
     "Value": 2.5
   },
-  
-  
-  
-  
-  
-  
-  
   {
     "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimensionCosmic.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 2.5
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimensionCosmic.prototype",
     "Setting": "eWETV_MobSpecialDropRate",
-    "Value": 2.5
+    "Value": 3.5
   },
   {
     "Prototype": "Entity/Characters/Bosses/DarkDimension/KaeciliusDarkDimensionCosmic.prototype",
     "Setting": "eWETV_MobDropRarity",
-    "Value": 2.5
-  }  
+    "Value": 3.5
+  }
 ]

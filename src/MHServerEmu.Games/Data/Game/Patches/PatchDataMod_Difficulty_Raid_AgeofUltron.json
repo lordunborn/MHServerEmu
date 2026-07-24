@@ -51,7 +51,7 @@
     "Enabled": true,
     "Prototype": "Regions/EndGame/TierX/UltronGameMode/UltronRaidRegionCosmic.prototype",
     "Path": "AccessDifficulties[]",
-    "Description": "[Ultron] Despite the name, this region's native AccessDifficulties only granted Red (Heroic) access - confirmed live via a temporary ConstrainDifficulty trace: mask=Red for a Tier3Superheroic(Cosmic) request. Entering via !ultron/!difficulty's debug-teleport bypass skips this check on the way in, but the internal stage-3-to-boss-arena transition (TeleportContext_Transition) does not, silently downgrading to whatever's registered for Red (Tier2Heroic) and rejecting the re-queue attempt as \"already in queue\" against the real Tier3Superheroic InMatch entry. Appends Tier3Superheroic access (existing Tier2Heroic/Red entry untouched).",
+    "Description": "[Ultron] Despite the name, this region's native AccessDifficulties only granted Red (Heroic) access - confirmed live via [UltronQueueDiag] ConstrainDifficulty trace: mask=Red for a Tier3Superheroic(Cosmic) request. Entering via !ultron/!difficulty's debug-teleport bypass skips this check on the way in, but the internal stage-3-to-boss-arena transition (TeleportContext_Transition) does not, silently downgrading to whatever's registered for Red (Tier2Heroic) and rejecting the re-queue attempt as \"already in queue\" against the real Tier3Superheroic InMatch entry. Appends Tier3Superheroic access (existing Tier2Heroic/Red entry untouched).",
     "ValueType": "PrototypeId",
     "Value": 586640101754933627
   },

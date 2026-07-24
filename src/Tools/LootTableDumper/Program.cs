@@ -190,6 +190,16 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--findprotoref")
+            {
+                if (args.Length > 1 && ulong.TryParse(args[1], out ulong targetRefVal))
+                {
+                    int maxDepth = args.Length > 2 && int.TryParse(args[2], out int fd) ? fd : 6;
+                    FindPrototypeRef((PrototypeId)targetRefVal, maxDepth);
+                }
+                return;
+            }
+
             string[] tablePaths = args.Length > 0 ? args : new[]
             {
                 "Loot/Tables/Mob/Bosses/PatrolHightown/CrossbonesHightownTable.prototype",
@@ -511,6 +521,89 @@ namespace LootTableDumper
 
             Console.WriteLine();
             Console.WriteLine($"-- {count} matches --");
+        }
+
+        /// <summary>
+        /// Reverse-reference search: which top-level prototypes contain a PrototypeId field
+        /// (anywhere in their nested object graph - Population/Cluster/Selector chains included)
+        /// matching the given ref. Used to answer "is this boss/loot table entity shared with
+        /// other content" before boosting it via LiveTuning, since eWETV_/eLTTV_ settings apply
+        /// globally to every place a prototype is used, not just the context you're tuning for.
+        /// </summary>
+        private static void FindPrototypeRef(PrototypeId targetRef, int maxDepth)
+        {
+            Console.WriteLine($"==================== Searching all prototypes for PrototypeId reference {(ulong)targetRef} ({SafeGetName(targetRef)}) ====================");
+
+            int count = 0;
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                if (protoRef == targetRef) continue; // skip the target referencing itself trivially
+
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto == null) continue;
+
+                VisitedInChain.Clear();
+                List<string> paths = new();
+                FindProtoRefInGraph(proto, targetRef, "", 0, maxDepth, paths);
+
+                if (paths.Count > 0)
+                {
+                    count++;
+                    Console.WriteLine($"  {SafeGetName(protoRef)} [{proto.GetType().Name}] (Ref={(ulong)protoRef})");
+                    foreach (string p in paths)
+                        Console.WriteLine($"      .{p}");
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {count} top-level prototypes reference it --");
+        }
+
+        private static void FindProtoRefInGraph(object obj, PrototypeId targetRef, string path, int depth, int maxDepth, List<string> hits)
+        {
+            if (obj == null || depth > maxDepth) return;
+
+            Type type = obj.GetType();
+            if (type.IsValueType == false)
+            {
+                if (VisitedInChain.Contains(obj)) return;
+                VisitedInChain.Add(obj);
+            }
+
+            foreach (var prop in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+            {
+                if (prop.GetIndexParameters().Length > 0) continue;
+                object value;
+                try { value = prop.GetValue(obj); }
+                catch { continue; }
+                if (value == null) continue;
+
+                string childPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
+
+                if (value is PrototypeId pid)
+                {
+                    if (pid == targetRef) hits.Add(childPath);
+                }
+                else if (value is PrototypeId[] pidArr)
+                {
+                    for (int i = 0; i < pidArr.Length; i++)
+                        if (pidArr[i] == targetRef) hits.Add($"{childPath}[{i}]");
+                }
+                else if (value is Prototype nestedProto)
+                {
+                    FindProtoRefInGraph(nestedProto, targetRef, childPath, depth + 1, maxDepth, hits);
+                }
+                else if (value is System.Collections.IEnumerable enumerable && value is not string)
+                {
+                    int i = 0;
+                    foreach (var item in enumerable)
+                    {
+                        if (item is Prototype itemProto)
+                            FindProtoRefInGraph(itemProto, targetRef, $"{childPath}[{i}]", depth + 1, maxDepth, hits);
+                        i++;
+                    }
+                }
+            }
         }
 
         private static void LookupString(string locoDir, string idStr)

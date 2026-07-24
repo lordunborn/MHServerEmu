@@ -3,7 +3,7 @@
     "Enabled": true,
     "Prototype": "Metagame/PatrolMidtown/PatrolMidtownMode.prototype",
     "Path": "ApplyStates[0]",
-    "Description": "[Mystic Mayhem (Weekly)] Enable Mystic Mayhem bosses in Midtown Patrol",
+    "Description": "[Mystic Mayhem (Weekly)] Enable Mystic Mayhem bosses in Midtown Patrol. Standard workflow: move this file out of Patches/Off/ into Patches/ + restart to turn the event on, move it back + restart to turn it off. Investigated whether the 4 eWETV_Enabled LiveTuning entries (LiveTuningDataMysticMayhem.json / LiveTuningData_01ResetPatrols.json) could replace the restart-toggle - they DON'T, since MetaState-driven population placement (PopulationObject.SpawnByMarker via SpawnScheduler.ScheduleMarkerObject) never checks IsLiveTuningEnabled(), unlike the regular ambient-respawn path. Those LiveTuning entries are left in place anyway (harmless, gives partial respawn-suppression once toggled), but this patch file itself is still the real on/off switch and still needs the restart. Tabled 2026-07-24 as a real engine gap worth a proper fix another day - see the phantom-blacklist-style memory notes",
     "ValueType": "PrototypeId",
     "Value": 714436682102808322
   }

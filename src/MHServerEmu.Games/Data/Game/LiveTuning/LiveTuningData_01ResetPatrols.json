@@ -1201,5 +1201,25 @@
     "Prototype": "Regions/EndGame/TierX/PatrolHightown/AltRegions/UpperMadripoorRegionL60Cosmic.prototype",
     "Setting": "eRT_XPBuffDisplay",
     "Value": 2.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 0
+  },
+  {
+    "Prototype": "Entity/Spawners/Patrol/Midtown/Ambushes/MidtownAmbushLimboDemonsSpawner.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 0
   }
 ]

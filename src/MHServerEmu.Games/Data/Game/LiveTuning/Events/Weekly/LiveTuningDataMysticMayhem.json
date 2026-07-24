@@ -63,5 +63,25 @@
     "Prototype": "Events/GlobalEvents/EventPowerConditions/MysticMayhemEventPowerCondition.prototype",
     "Setting": "eCTV_Enabled",
     "Value": 2.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
+  },
+  {
+    "Prototype": "Entity/Spawners/Patrol/Midtown/Ambushes/MidtownAmbushLimboDemonsSpawner.prototype",
+    "Setting": "eWETV_Enabled",
+    "Value": 1
   }
 ]

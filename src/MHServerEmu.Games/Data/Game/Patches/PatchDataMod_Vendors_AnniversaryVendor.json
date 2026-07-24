@@ -3,7 +3,7 @@
         "Enabled": true,
         "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
         "Path": "MarkerSet.Markers[13].EntityGuid",
-        "Description": "Change BUXGiver to Silver Sable",
+        "Description": "Change BUXGiver to Silver Sable. NOTE: this marker slot is the single physical 'special event vendor' spot in the hub - Off/PatchDataMod_Vendors_SummerFunVendor.json patches this exact same marker to a different NPC for its own event. Only one of these vendor patches should ever be active (in Patches/, not Off/) at a time - the native SpecialEventVendor.prototype only has one Inventories[] slot, so there's no way for two seasonal vendor events to coexist here even if both patches were enabled simultaneously (last one loaded would silently win)",
         "ValueType": "PrototypeGuid",
         "Value": 6316078327140856161
     },
@@ -21,7 +21,7 @@
         "Enabled": true,
         "Prototype": "Entity/Characters/Vendors/VendorTypes/SpecialEventVendor.prototype",
         "Path": "Inventories[0].LootTable",
-        "Description": "Add Anniversary 2017 Vendor",
+        "Description": "Add Anniversary 2017 Vendor. Shares this single Inventories[0] slot with Off/PatchDataMod_Vendors_SummerFunVendor.json (SpecialEventVendor.prototype only has one inventory slot natively) - mutually exclusive by design, only activate one seasonal vendor patch at a time",
         "ValueType": "PrototypeId",
         "Value": 13601394654621801607
     },
