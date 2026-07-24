@@ -7,7 +7,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedMidtownMADNESS.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBosses.prototype",
@@ -17,7 +17,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBosses.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesAll.prototype",
@@ -27,7 +27,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesAll.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmic.prototype",
@@ -37,7 +37,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmic.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmicSub.prototype",
@@ -47,12 +47,12 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmicSub.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventBlackCat.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventBlackCat.prototype",
@@ -67,7 +67,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventManApe.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventManApe.prototype",
@@ -82,7 +82,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
@@ -97,7 +97,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
@@ -112,7 +112,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
@@ -127,7 +127,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossMidtown.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossMidtown.prototype",

@@ -57,7 +57,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/CrossbonesHightownTable.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/GorgonHightownPatrol.prototype",
@@ -67,7 +67,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/GorgonHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/InfernalWarskrullHightownPatrol.prototype",
@@ -77,7 +77,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/InfernalWarskrullHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/KirigiHightownPatrol.prototype",
@@ -87,7 +87,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/KirigiHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/MindlessTitanHightownPatrol.prototype",
@@ -97,7 +97,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/MindlessTitanHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullAvengersHightownPatrol.prototype",
@@ -107,7 +107,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullAvengersHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullElektraHightownPatrol.prototype",
@@ -117,7 +117,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullElektraHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullHKHightownPatrol.prototype",
@@ -127,7 +127,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullHKHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullKingpinHightownPatrol.prototype",
@@ -137,7 +137,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullKingpinHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullNickFuryHightownPatrol.prototype",
@@ -147,7 +147,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullNickFuryHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullXMenHightownPatrol.prototype",
@@ -157,7 +157,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SkrullXMenHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SovereignSiegeHightownPatrol.prototype",
@@ -167,7 +167,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/SovereignSiegeHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/StygianTideeHightownPatrol.prototype",
@@ -177,7 +177,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/StygianTideeHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/XWarskrullHightownPatrol.prototype",
@@ -187,7 +187,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/XWarskrullHightownPatrol.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBosses.prototype",
@@ -197,7 +197,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBosses.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBossesAll.prototype",
@@ -207,7 +207,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBossesAll.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBossesCosmic.prototype",
@@ -217,7 +217,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBossesCosmic.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBossesCosmicSub.prototype",
@@ -227,12 +227,12 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolHightown/Subtable/SharedPatrolHightownBossesCosmicSub.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventAvengersWarskrull.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventAvengersWarskrull.prototype",
@@ -247,7 +247,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventCosmicWarskrull.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventCosmicWarskrull.prototype",
@@ -262,7 +262,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventIncursionInfernalWarskrull.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventIncursionInfernalWarskrull.prototype",
@@ -277,7 +277,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventIncursionMindlessTitan.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventIncursionMindlessTitan.prototype",
@@ -292,7 +292,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventIncursionSkrullElektra.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventIncursionSkrullElektra.prototype",
@@ -307,7 +307,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventIncursionSkrullKingpin.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventIncursionSkrullKingpin.prototype",
@@ -322,7 +322,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventKingpin.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventKingpin.prototype",
@@ -337,7 +337,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullCaptainAmerica.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullCaptainAmerica.prototype",
@@ -352,7 +352,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullCyclops.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullCyclops.prototype",
@@ -367,7 +367,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullElektra.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullElektra.prototype",
@@ -382,7 +382,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullIronFist.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullIronFist.prototype",
@@ -397,7 +397,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullLukeCage.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullLukeCage.prototype",
@@ -412,7 +412,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullMsMarvel.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullMsMarvel.prototype",
@@ -427,7 +427,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullNickFury.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullNickFury.prototype",
@@ -442,7 +442,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullPsylocke.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullPsylocke.prototype",
@@ -457,7 +457,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullPunisher.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullPunisher.prototype",
@@ -472,7 +472,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullThor.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullThor.prototype",
@@ -487,7 +487,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullX23.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventSkrullX23.prototype",
@@ -502,7 +502,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventXWarskrull.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolHightown/HightownEventXWarskrull.prototype",
@@ -522,7 +522,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBosses.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesAll.prototype",
@@ -532,7 +532,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesAll.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmic.prototype",
@@ -542,7 +542,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmic.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmicSub.prototype",
@@ -552,12 +552,12 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolBrooklyn/Subtable/SharedPatrolBrooklynBossesCosmicSub.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventAmalgamatedOne.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventAmalgamatedOne.prototype",
@@ -572,7 +572,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBackInBlack.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBackInBlack.prototype",
@@ -587,7 +587,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeBlue.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeBlue.prototype",
@@ -602,7 +602,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeGreen.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeGreen.prototype",
@@ -617,7 +617,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeRed.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneBigTimeRed.prototype",
@@ -632,7 +632,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneEotE.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneEotE.prototype",
@@ -647,7 +647,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneFF.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneFF.prototype",
@@ -662,7 +662,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneSuper.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventCloneSuper.prototype",
@@ -677,7 +677,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventDoctorOctopus.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventDoctorOctopus.prototype",
@@ -692,7 +692,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventGrimReaper.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventGrimReaper.prototype",
@@ -707,7 +707,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventKraven.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventKraven.prototype",
@@ -722,7 +722,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLivingLaser.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLivingLaser.prototype",
@@ -737,7 +737,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLoki.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventLoki.prototype",
@@ -752,7 +752,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV01.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV01.prototype",
@@ -767,7 +767,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV02.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV02.prototype",
@@ -782,7 +782,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV03.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMGHGangmemberCookV03.prototype",
@@ -797,7 +797,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOK.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOK.prototype",
@@ -812,7 +812,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalker.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalker.prototype",
@@ -827,7 +827,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV2.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV2.prototype",
@@ -842,7 +842,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV3.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV3.prototype",
@@ -857,7 +857,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV4.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMODOKWalkerV4.prototype",
@@ -872,7 +872,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMrSinister.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventMrSinister.prototype",
@@ -887,7 +887,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventRhino.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventRhino.prototype",
@@ -902,7 +902,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSDoctorOctopus.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSDoctorOctopus.prototype",
@@ -917,7 +917,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSElectro.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSElectro.prototype",
@@ -932,7 +932,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSGrimReaper.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSGrimReaper.prototype",
@@ -947,7 +947,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSKraven.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSKraven.prototype",
@@ -962,7 +962,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSLizard.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSLizard.prototype",
@@ -977,7 +977,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSRhino.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSSRhino.prototype",
@@ -992,7 +992,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonArcherBoss.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonArcherBoss.prototype",
@@ -1007,7 +1007,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonDualBoss.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonDualBoss.prototype",
@@ -1022,7 +1022,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonMaulBoss.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonMaulBoss.prototype",
@@ -1037,7 +1037,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonSwordBoss.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventSurturDemonSwordBoss.prototype",
@@ -1052,7 +1052,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Hood.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Hood.prototype",
@@ -1067,7 +1067,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1LivingLaser.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1LivingLaser.prototype",
@@ -1082,7 +1082,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Taskmaster.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT1Taskmaster.prototype",
@@ -1097,7 +1097,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Bullseye.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Bullseye.prototype",
@@ -1112,7 +1112,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Kingpin.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Kingpin.prototype",
@@ -1127,7 +1127,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Tombstone.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventT2Tombstone.prototype",
@@ -1142,7 +1142,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTaskmaster.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTaskmaster.prototype",
@@ -1157,7 +1157,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTombstone.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventTombstone.prototype",
@@ -1172,7 +1172,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventVenom.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventVenom.prototype",
@@ -1187,7 +1187,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventWizard.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolBrooklyn/BrooklynEventWizard.prototype",
@@ -1207,7 +1207,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBosses.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesAll.prototype",
@@ -1217,7 +1217,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesAll.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmic.prototype",
@@ -1227,7 +1227,7 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmic.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmicSub.prototype",
@@ -1237,17 +1237,17 @@
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedPatrolMidtownBossesCosmicSub.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedMidtownMADNESS.prototype",
     "Setting": "eLTTV_Rolls",
-    "Value": 2
+    "Value": 1
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventBlackCat.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventBlackCat.prototype",
@@ -1262,7 +1262,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventManApe.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventManApe.prototype",
@@ -1277,7 +1277,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
@@ -1292,7 +1292,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
@@ -1307,7 +1307,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
@@ -1322,7 +1322,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossBrooklyn.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossBrooklyn.prototype",
@@ -1337,7 +1337,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossHightown.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossHightown.prototype",
@@ -1352,7 +1352,7 @@
   {
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossMidtown.prototype",
     "Setting": "eWETV_MobDropRate",
-    "Value": 1.0
+    "Value": 2.0
   },
   {
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossMidtown.prototype",
