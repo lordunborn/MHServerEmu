@@ -1,7 +1,10 @@
 using Gazillion;
 using MHServerEmu.Core.Extensions;
+using MHServerEmu.Core.Helpers;
+using MHServerEmu.Core.Logging;
 using MHServerEmu.Games.GameData;
 using MHServerEmu.Games.GameData.LiveTuning;
+using MHServerEmu.Games.GameData.PatchManager;
 using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.GameData.Prototypes.Markers;
 using MHServerEmu.Games.Locales;
@@ -35,6 +38,12 @@ namespace LootTableDumper
             if (args.Length > 0 && args[0] == "--regions")
             {
                 DumpRegionInventory();
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--validatepatches")
+            {
+                ValidatePatches();
                 return;
             }
 
@@ -238,6 +247,110 @@ namespace LootTableDumper
 
                 VisitedInChain.Clear();
                 PrintNode(proto, 0);
+            }
+        }
+
+        /// <summary>
+        /// Re-parses every PatchData*.json file under Data/Game/Patches (same file discovery as
+        /// PrototypePatchManager.LoadPatchDataFromDisk) and, for every Enabled entry, independently
+        /// resolves the "Prototype" name and force-loads that prototype to exercise the real patch
+        /// application pipeline. PrototypePatchManager silently skips entries whose Prototype name
+        /// fails to resolve (no log line at all) - this catches that case directly instead of relying
+        /// on log-scraping. Application failures (missing field, type mismatch) still surface as Warn/
+        /// WarnException through a collector log target, since those DO log but easy to miss by eye
+        /// across hundreds of entries.
+        /// </summary>
+        private static void ValidatePatches()
+        {
+            var collector = new LogCollectorTarget();
+            LogManager.Enabled = true;
+            LogManager.AttachTarget(collector);
+
+            string patchDirectory = Path.Combine(FileHelper.DataDirectory, "Game", "Patches");
+            var options = new JsonSerializerOptions { Converters = { new PatchEntryConverter() } };
+
+            int totalEnabled = 0;
+            int propertiesEntries = 0;
+            var unresolved = new List<(string File, string Prototype, string Path)>();
+
+            foreach (string filePath in FileHelper.GetFilesWithPrefix(patchDirectory, "PatchData", "json"))
+            {
+                string fileName = Path.GetFileName(filePath);
+                PrototypePatchEntry[] entries = FileHelper.DeserializeJson<PrototypePatchEntry[]>(filePath, options);
+                if (entries == null)
+                {
+                    Console.WriteLine($"[PARSE FAILED] {fileName}");
+                    continue;
+                }
+
+                foreach (PrototypePatchEntry entry in entries)
+                {
+                    if (entry.Enabled == false) continue;
+                    totalEnabled++;
+
+                    if (entry.Value.ValueType == MHServerEmu.Games.GameData.PatchManager.ValueType.Properties)
+                    {
+                        // Applied via a separate mechanism (CheckProperties), not the CheckAndUpdate
+                        // pipeline below - just confirm the prototype name still resolves.
+                        propertiesEntries++;
+                    }
+
+                    PrototypeId protoRef = GameDatabase.GetPrototypeRefByName(entry.Prototype);
+                    if (protoRef == PrototypeId.Invalid)
+                    {
+                        unresolved.Add((fileName, entry.Prototype, entry.Path));
+                        continue;
+                    }
+
+                    // Touching the prototype triggers PrototypeClassManager's PreCheck/PostOverride,
+                    // which runs every pending patch entry queued against this PrototypeId.
+                    GameDatabase.GetPrototype<Prototype>(protoRef);
+                }
+            }
+
+            Console.WriteLine($"==================== Patch validation: {totalEnabled} enabled entries checked ({propertiesEntries} Properties-type, applied via a separate path) ====================");
+
+            if (unresolved.Count > 0)
+            {
+                Console.WriteLine($"\n[UNRESOLVED PROTOTYPE NAME] {unresolved.Count} entries - PrototypePatchManager silently skips these, no log line ever printed:");
+                foreach (var (file, proto, path) in unresolved)
+                    Console.WriteLine($"  {file}: '{proto}' (Path={path})");
+            }
+            else
+            {
+                Console.WriteLine("\nAll entries resolved to a valid prototype name.");
+            }
+
+            var failures = collector.Messages.Where(m => m.Level >= LoggingLevel.Warn).ToList();
+            if (failures.Count > 0)
+            {
+                Console.WriteLine($"\n[APPLY FAILURES] {failures.Count} Warn/Error messages from PrototypePatchManager while force-loading patched prototypes:");
+                foreach (var msg in failures)
+                    Console.WriteLine($"  {msg}");
+            }
+            else
+            {
+                Console.WriteLine("No Warn/Error output from PrototypePatchManager while applying patches.");
+            }
+        }
+
+        private sealed class LogCollectorTarget : LogTarget
+        {
+            public List<LogMessage> Messages { get; } = new();
+
+            public LogCollectorTarget() : base(new LogTargetSettings
+            {
+                IncludeTimestamps = false,
+                MinimumLevel = LoggingLevel.Trace,
+                MaximumLevel = LoggingLevel.Fatal,
+                Channels = LogChannels.All
+            })
+            { }
+
+            public override void ProcessLogMessage(in LogMessage message)
+            {
+                if (message.Logger == nameof(PrototypePatchManager))
+                    Messages.Add(message);
             }
         }
 
@@ -1643,7 +1756,8 @@ namespace LootTableDumper
             }
             else if (proto is LootDropItemPrototype dropItem)
             {
-                Console.WriteLine($"{indent}[LootDropItemPrototype] Item={SafeGetName(dropItem.Item)} (Ref={(ulong)dropItem.Item}) ParentDataRef={(ulong)dropItem.ParentDataRef} NumMin={dropItem.NumMin} NumMax={dropItem.NumMax} Weight={dropItem.Weight}");
+                PrototypeId itemRef = dropItem.Item?.DataRef ?? PrototypeId.Invalid;
+                Console.WriteLine($"{indent}[LootDropItemPrototype] Item={SafeGetName(itemRef)} (Ref={(ulong)itemRef}) ParentDataRef={(ulong)dropItem.ParentDataRef} NumMin={dropItem.NumMin} NumMax={dropItem.NumMax} Weight={dropItem.Weight}");
                 PrintModifiers(dropItem, indent);
             }
             else if (proto is LootDropItemFilterPrototype itemFilter)
@@ -1653,7 +1767,8 @@ namespace LootTableDumper
             }
             else if (proto is LootDropAgentPrototype agentDrop)
             {
-                Console.WriteLine($"{indent}[LootDropAgentPrototype] Agent={SafeGetName(agentDrop.Agent)} (Ref={(ulong)agentDrop.Agent}) ParentDataRef={(ulong)agentDrop.ParentDataRef} NumMin={agentDrop.NumMin} NumMax={agentDrop.NumMax} Weight={agentDrop.Weight}");
+                PrototypeId agentRef = agentDrop.Agent?.DataRef ?? PrototypeId.Invalid;
+                Console.WriteLine($"{indent}[LootDropAgentPrototype] Agent={SafeGetName(agentRef)} (Ref={(ulong)agentRef}) ParentDataRef={(ulong)agentDrop.ParentDataRef} NumMin={agentDrop.NumMin} NumMax={agentDrop.NumMax} Weight={agentDrop.Weight}");
                 PrintModifiers(agentDrop, indent);
             }
             else if (proto is LootDropCharacterTokenPrototype charToken)

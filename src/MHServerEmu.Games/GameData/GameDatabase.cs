@@ -115,9 +115,6 @@ namespace MHServerEmu.Games.GameData
 
             // initializeKeywordPrototypes
 
-            // Initialize PrototypePatchManager
-            PrototypePatchManager.Instance.Initialize(config.EnablePatchManager);
-
             // Preload all prototypes if needed
             if (config.LoadAllPrototypes)
             {
