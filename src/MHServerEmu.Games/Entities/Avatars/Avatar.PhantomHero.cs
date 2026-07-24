@@ -403,9 +403,9 @@ namespace MHServerEmu.Games.Entities.Avatars
                             {
                                 foreach (var assignment in phantomAvatarProto.EquipmentInventories)
                                 {
-                                    var invProto = assignment.Inventory.As<InventoryPrototype>();
+                                    var invProto = assignment.Inventory;
                                     if (invProto == null || invProto.ConvenienceLabel == InventoryConvenienceLabel.Costume) continue;
-                                    phantom.GetInventoryByRef(assignment.Inventory)?.DestroyContained();
+                                    phantom.GetInventoryByRef(invProto.DataRef)?.DestroyContained();
                                 }
                             }
                             List<ulong> resynced = ApplyPhantomGear(phantomPlayerObj, phantom, callerLevel, null);
@@ -1403,7 +1403,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             {
                 if (assignment.UnlocksAtCharacterLevel > level) continue;
 
-                InventoryPrototype invProto = assignment.Inventory.As<InventoryPrototype>();
+                InventoryPrototype invProto = assignment.Inventory;
                 if (invProto == null) continue;
                 // The costume slot is driven by the phantom costume system —
                 // equipping a rolled costume item here would clobber it.
@@ -1424,7 +1424,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                 if (assignment.UISlot is EquipmentInvUISlot.Legendary or EquipmentInvUISlot.UruForged
                     && hasBiSForThisSlot == false) continue;
 
-                Inventory equipInventory = phantomAvatar.GetInventoryByRef(assignment.Inventory);
+                Inventory equipInventory = phantomAvatar.GetInventoryByRef(invProto.DataRef);
                 if (equipInventory == null) continue;
 
                 EquipmentInvUISlot uiSlot = assignment.UISlot;
@@ -1649,10 +1649,10 @@ namespace MHServerEmu.Games.Entities.Avatars
 
             foreach (AvatarEquipInventoryAssignmentPrototype assignment in avatarProto.EquipmentInventories)
             {
-                InventoryPrototype invProto = assignment.Inventory.As<InventoryPrototype>();
+                InventoryPrototype invProto = assignment.Inventory;
                 if (invProto == null || invProto.ConvenienceLabel == InventoryConvenienceLabel.Costume) continue;
 
-                Inventory equipInventory = phantomAvatar.GetInventoryByRef(assignment.Inventory);
+                Inventory equipInventory = phantomAvatar.GetInventoryByRef(invProto.DataRef);
                 if (equipInventory == null || equipInventory.Count == 0) continue;
 
                 ulong itemId = equipInventory.GetEntityInSlot(0);

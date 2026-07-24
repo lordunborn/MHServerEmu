@@ -159,14 +159,14 @@ namespace MHServerEmu.Games.GameData.PatchManager
             {
                 Type targetElementType = targetType.GetElementType();
                 Type sourceElementType = rawValue.GetType().GetElementType();
-                
+
                 // If element types are compatible, create new array with correct type
-                if (targetElementType != sourceElementType && 
+                if (targetElementType != sourceElementType &&
                     (targetElementType.IsAssignableFrom(sourceElementType) || sourceElementType.IsAssignableFrom(targetElementType)))
                 {
                     Array sourceArray = (Array)rawValue;
                     Array targetArray = Array.CreateInstance(targetElementType, sourceArray.Length);
-                    
+
                     for (int i = 0; i < sourceArray.Length; i++)
                     {
                         object element = sourceArray.GetValue(i);
@@ -177,11 +177,23 @@ namespace MHServerEmu.Games.GameData.PatchManager
                         else
                             targetArray.SetValue(null, i);
                     }
-                    
+
                     return targetArray;
                 }
-                
+
                 return rawValue;
+            }
+
+            if (targetType.IsSubclassOf(typeof(Prototype)))
+            {
+                switch (rawValue)
+                {
+                    case PrototypeId protoRef:
+                        return GameDatabase.GetPrototype<Prototype>(protoRef);
+
+                    case ulong dataId:
+                        return GameDatabase.GetPrototype<Prototype>((PrototypeId)dataId);
+                }
             }
 
             TypeConverter converter = TypeDescriptor.GetConverter(targetType);

@@ -829,9 +829,9 @@ namespace MHServerEmu.Games.Entities
                 // to the costume system).
                 foreach (var assignment in avatarProto.EquipmentInventories)
                 {
-                    var invProto = assignment.Inventory.As<GameData.Prototypes.InventoryPrototype>();
+                    var invProto = assignment.Inventory;
                     if (invProto == null || invProto.ConvenienceLabel == Inventories.InventoryConvenienceLabel.Costume) continue;
-                    phantom.GetInventoryByRef(assignment.Inventory)?.DestroyContained();
+                    phantom.GetInventoryByRef(invProto.DataRef)?.DestroyContained();
                 }
 
                 List<ulong> applied = Avatar.ApplyPhantomGear(phantomOwner, phantom, phantom.CharacterLevel, null);

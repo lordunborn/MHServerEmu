@@ -163,12 +163,13 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
     public class UIPrototype : Prototype, IBinaryResource
     {
-        public UIPanelPrototype[] UIPanels { get; private set; }
+        public UIPanelPrototype[] UIPanels { get; protected set; }
+
+        //---
 
         public void Deserialize(BinaryReader reader)
         {
-            if (BinaryResourceSerializer.ReadPrototypeContainer(out UIPanelPrototype[] uiPanels, reader))
-                UIPanels = uiPanels;
+            UIPanels = BinaryResourceSerializer.ReadPrototypeContainer<UIPanelPrototype>(reader);
         }
     }
 
@@ -188,15 +189,14 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public bool UseNewPlacementSystem { get; protected set; }
         public bool KeepLoaded { get; protected set; }
 
+        //---
+
         public virtual void Deserialize(BinaryReader reader)
         {
             PanelName = reader.ReadFixedString32();
             TargetName = reader.ReadFixedString32();
             ScaleMode = (PanelScaleMode)reader.ReadUInt32();
-
-            if (BinaryResourceSerializer.ReadPrototypeContainer(out UIPanelPrototype[] children, reader))
-                Children = children;
-
+            Children = BinaryResourceSerializer.ReadPrototypeContainer<UIPanelPrototype>(reader);
             WidgetClass = reader.ReadFixedString32();
             SwfName = reader.ReadFixedString32();
             OpenOnStart = reader.ReadBoolean();
@@ -217,6 +217,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public Vector2 BottomRightPin { get; protected set; }
         public string BR_X_TargetName { get; protected set; }
         public string BR_Y_TargetName { get; protected set; }
+
+        //---
 
         public override void Deserialize(BinaryReader reader)
         {
@@ -239,6 +241,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public string PreferredLane { get; protected set; }
         public Vector2 OuterEdgePin { get; protected set; }
         public Vector2 NewSourceAttachmentPin { get; protected set; }
+
+        //---
 
         public override void Deserialize(BinaryReader reader)
         {
@@ -478,7 +482,8 @@ namespace MHServerEmu.Games.GameData.Prototypes
     public class ReputationDisplayInfoPrototype : Prototype
     {
         public LocaleStringId DisplayName { get; protected set; }
-        public PrototypeId[] ReputationLevels { get; protected set; }     // VectorPrototypeRefPtr ReputationLevelDisplayInfoPrototype
+        [PrototypeField(PrototypeFieldType.VectorPrototypeRefPtr)]
+        public ReputationLevelDisplayInfoPrototype[] ReputationLevels { get; protected set; }
     }
 
     public class UISystemLockPrototype : Prototype
@@ -684,10 +689,14 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public int FlashDelayMS { get; protected set; }
         public bool ShowOncePerAccount { get; protected set; }
 
+        //---
+
         public bool ShouldShowTip(Player player)
         {
-            if (ShowOncePerAccount == false) return true;
-            else return player.Properties[PropertyEnum.TutorialHasSeenTip, DataRef] == false;
+            if (ShowOncePerAccount)
+                return player.Properties[PropertyEnum.TutorialHasSeenTip, DataRef] == false;
+
+            return true;
         }
     }
 

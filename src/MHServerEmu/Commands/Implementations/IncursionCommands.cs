@@ -340,14 +340,15 @@ namespace MHServerEmu.Commands.Implementations
                 return $"'{GameDatabase.GetPrototypeName(matchedRef)}' failed to resolve as a WorldEntityPrototype.";
 
             static string RefName(PrototypeId r) => r != PrototypeId.Invalid ? GameDatabase.GetPrototypeName(r) : "(none)";
+            static string RefNameProto(Prototype p) => p != null ? GameDatabase.GetPrototypeName(p.DataRef) : "(none)";
 
             var sb = new StringBuilder();
             sb.AppendLine(GameDatabase.GetPrototypeName(matchedRef));
             sb.AppendLine($"type={proto.GetType().Name}");
             sb.AppendLine($"unrealClass={(proto.UnrealClass != AssetId.Invalid ? GameDatabase.GetAssetName(proto.UnrealClass) : "(none)")}");
-            sb.AppendLine($"rank={RefName(proto.Rank)}");
-            sb.AppendLine($"alliance={RefName(proto.Alliance)}");
-            sb.AppendLine($"preInteractPower={RefName(proto.PreInteractPower)}");
+            sb.AppendLine($"rank={RefNameProto(proto.Rank)}");
+            sb.AppendLine($"alliance={RefNameProto(proto.Alliance)}");
+            sb.AppendLine($"preInteractPower={RefNameProto(proto.PreInteractPower)}");
 
             if (proto.Keywords != null && proto.Keywords.Length > 0)
                 sb.AppendLine($"keywords={string.Join(",", proto.Keywords.Select(RefName))}");

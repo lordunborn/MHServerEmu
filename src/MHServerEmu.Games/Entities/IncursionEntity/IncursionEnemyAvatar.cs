@@ -29,8 +29,9 @@ namespace MHServerEmu.Games.Entities.IncursionEntity
             get
             {
                 var avatarProto = RenderAvatarRef.As<AvatarPrototype>();
-                if (avatarProto != null && avatarProto.StealablePower != PrototypeId.Invalid)
-                    return avatarProto.StealablePower;
+                StealablePowerInfoPrototype stealablePowerInfoProto = avatarProto?.StealablePower;
+                if (stealablePowerInfoProto != null)
+                    return stealablePowerInfoProto.DataRef;
                 return PrototypeId.Invalid;
             }
         }

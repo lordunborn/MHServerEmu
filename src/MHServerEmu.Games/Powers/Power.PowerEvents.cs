@@ -984,12 +984,13 @@ namespace MHServerEmu.Games.Powers
             PowerEventContextTransformModePrototype contextProto = triggeredPowerEvent.PowerEventContext as PowerEventContextTransformModePrototype;
             if (!Verify.IsNotNull(contextProto)) return;
 
-            PrototypeId transformModeRef = contextProto.TransformMode;
-            TransformModePrototype transformModeProto = transformModeRef.As<TransformModePrototype>();
+            TransformModePrototype transformModeProto = contextProto.TransformMode;
             if (!Verify.IsNotNull(transformModeProto)) return;
 
+            PrototypeId transformModeRef = contextProto.TransformMode.DataRef;
+
             PrototypeId currentTransformMode = ownerAvatar.CurrentTransformMode;
-            if (!Verify.IsTrue(currentTransformMode == PrototypeId.Invalid || currentTransformMode == contextProto.TransformMode)) return;
+            if (!Verify.IsTrue(currentTransformMode == PrototypeId.Invalid || currentTransformMode == transformModeRef)) return;
 
             // If already in this transform mode, toggle it off
             if (currentTransformMode == transformModeRef)
@@ -1008,12 +1009,11 @@ namespace MHServerEmu.Games.Powers
             PowerEventContextTransformModePrototype contextProto = triggeredPowerEvent.PowerEventContext as PowerEventContextTransformModePrototype;
             if (!Verify.IsNotNull(contextProto)) return;
 
-            PrototypeId transformModeRef = contextProto.TransformMode;
-            TransformModePrototype transformModeProto = transformModeRef.As<TransformModePrototype>();
+            TransformModePrototype transformModeProto = contextProto.TransformMode;
             if (!Verify.IsNotNull(transformModeProto)) return;
 
             PrototypeId currentTransformMode = ownerAvatar.CurrentTransformMode;
-            if (!Verify.IsTrue(currentTransformMode == PrototypeId.Invalid || currentTransformMode == contextProto.TransformMode)) return;
+            if (!Verify.IsTrue(currentTransformMode == PrototypeId.Invalid || currentTransformMode == contextProto.TransformMode.DataRef)) return;
 
             PrototypeId transformComboPowerRef = currentTransformMode == PrototypeId.Invalid
                 ? transformModeProto.EnterTransformModePower
@@ -1081,7 +1081,7 @@ namespace MHServerEmu.Games.Powers
             KeywordGlobalsPrototype keywordGlobals = GameDatabase.KeywordGlobalsPrototype;
             if (!Verify.IsNotNull(keywordGlobals)) return;
 
-            KeywordPrototype controlPowerKeywordProto = keywordGlobals.ControlPowerKeywordPrototype.As<KeywordPrototype>();
+            KeywordPrototype controlPowerKeywordProto = keywordGlobals.ControlPowerKeywordPrototype;
             if (!Verify.IsNotNull(controlPowerKeywordProto)) return;
 
             Avatar masterAvatar = null;
@@ -1253,13 +1253,13 @@ namespace MHServerEmu.Games.Powers
             PowerEventContextTeleportRegionPrototype teleportRegionContext = triggeredPowerEvent.PowerEventContext as PowerEventContextTeleportRegionPrototype;
             if (!Verify.IsNotNull(teleportRegionContext)) return;
 
-            PrototypeId targetProtoRef = teleportRegionContext.Destination;
-            if (!Verify.IsTrue(targetProtoRef != PrototypeId.Invalid)) return;
+            RegionConnectionTargetPrototype targetProto = teleportRegionContext.Destination;
+            if (!Verify.IsNotNull(targetProto)) return;
 
             Avatar avatar = Game.EntityManager.GetEntity<Avatar>(settings.TargetEntityId);
             if (!Verify.IsNotNull(avatar)) return;
 
-            avatar.SchedulePowerTeleport(targetProtoRef, TimeSpan.Zero);
+            avatar.SchedulePowerTeleport(targetProto.DataRef, TimeSpan.Zero);
         }
 
         private void DoPowerEventActionStealPower(ulong targetId)
@@ -1290,7 +1290,7 @@ namespace MHServerEmu.Games.Powers
             else
             {
                 // Check if there is a power to steal
-                stealablePowerInfoProto = agentProto.StealablePower.As<StealablePowerInfoPrototype>();
+                stealablePowerInfoProto = agentProto.StealablePower;
             }
 
             if (stealablePowerInfoProto == null)
@@ -1339,7 +1339,7 @@ namespace MHServerEmu.Games.Powers
             Sphere vacuumVolume = new(avatar.RegionLocation.Position, itemDonateContext.Radius);
             DataDirectory dataDirectory = DataDirectory.Instance;
             BlueprintId donationBlueprint = dataDirectory.GetPrototypeBlueprintDataRef(GameDatabase.AdvancementGlobalsPrototype.PetTechDonationItemPrototype);
-            RarityPrototype rarityThresholdProto = itemDonateContext.RarityThreshold.As<RarityPrototype>();
+            RarityPrototype rarityThresholdProto = itemDonateContext.RarityThreshold;
 
             using var vacuumedItemsHandle = ListPool<Item>.Instance.Get(out List<Item> vacuumedItems);
             foreach (WorldEntity worldEntity in region.IterateEntitiesInVolume(vacuumVolume, new()))
