@@ -9,6 +9,7 @@ using MHServerEmu.Games.Properties;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 namespace LootTableDumper
 {
@@ -197,6 +198,13 @@ namespace LootTableDumper
                     int maxDepth = args.Length > 2 && int.TryParse(args[2], out int fd) ? fd : 6;
                     FindPrototypeRef((PrototypeId)targetRefVal, maxDepth);
                 }
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--regionaudit")
+            {
+                string pattern = args.Length > 1 ? args[1] : "";
+                RegionAssetAudit(pattern);
                 return;
             }
 
@@ -1309,6 +1317,256 @@ namespace LootTableDumper
             Console.WriteLine();
             Console.WriteLine($"-- Regions disabled via LiveTuning eRTV_Enabled=0: {rtvDisabled.Count} --");
             foreach (string name in rtvDisabled) Console.WriteLine($"  {name}");
+        }
+
+        /// <summary>
+        /// Screens unreachable/target-only regions (repurposing candidates from --regions) for the
+        /// specific client-asset failure mode confirmed 3-for-3 in prior investigation (Civil War
+        /// Bazaar/Airport, Brooklyn Winter, Midtown Xmas): the region's Area(s) point at a District/
+        /// CellSet/ClientMap resource that is either an orphaned duplicate nobody else uses, or a
+        /// stale reference into a completely unrelated zone family. Both patterns produced a clean,
+        /// error-free server-side region generation followed by an indefinite client-side hang -
+        /// nothing in the server log flags it, so this has to be caught by data comparison instead.
+        /// Not a guarantee (can't see the client's actual asset bundles), just a pre-screen so
+        /// candidates don't have to be tested in-game one at a time.
+        /// </summary>
+        private static void RegionAssetAudit(string pattern)
+        {
+            try
+            {
+                LiveTuningManager.Instance.Initialize();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"LiveTuning failed to load - eRTV values will be defaults (1). {e.Message}");
+            }
+
+            DataDirectory dataDirectory = DataDirectory.Instance;
+
+            // ---- Reachability plumbing (same approach as --regions) ----
+            Dictionary<PrototypeId, PrototypeId> targetToRegion = new();
+            HashSet<PrototypeId> regionsWithTarget = new();
+            foreach (PrototypeId targetRef in dataDirectory.IteratePrototypesInHierarchy<RegionConnectionTargetPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                var target = GameDatabase.GetPrototype<RegionConnectionTargetPrototype>(targetRef);
+                if (target == null || target.Region == PrototypeId.Invalid) continue;
+                targetToRegion[targetRef] = target.Region;
+                regionsWithTarget.Add(target.Region);
+            }
+
+            HashSet<PrototypeId> waypointsInGraphs = new();
+            foreach (PrototypeId graphRef in dataDirectory.IteratePrototypesInHierarchy<WaypointGraphPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                var graph = GameDatabase.GetPrototype<WaypointGraphPrototype>(graphRef);
+                if (graph?.Chapters == null) continue;
+                foreach (WaypointChapterPrototype chapter in graph.Chapters)
+                {
+                    if (chapter?.Waypoints == null) continue;
+                    foreach (PrototypeId wpRef in chapter.Waypoints)
+                        waypointsInGraphs.Add(wpRef);
+                }
+            }
+
+            HashSet<PrototypeId> regionsWithOpenWaypoint = new();
+            foreach (PrototypeId wpRef in dataDirectory.IteratePrototypesInHierarchy<WaypointPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                var wp = GameDatabase.GetPrototype<WaypointPrototype>(wpRef);
+                if (wp == null || wp.Destination == PrototypeId.Invalid) continue;
+                if (wp.StartLocked || waypointsInGraphs.Contains(wpRef) == false) continue;
+
+                if (targetToRegion.TryGetValue(wp.Destination, out PrototypeId regionRef) == false)
+                {
+                    if (GameDatabase.GetPrototype<RegionPrototype>(wp.Destination) != null)
+                        regionRef = wp.Destination;
+                    else
+                        continue;
+                }
+                regionsWithOpenWaypoint.Add(regionRef);
+            }
+
+            HashSet<PrototypeId> regionsWithTransition = new();
+            foreach (PrototypeId trRef in dataDirectory.IteratePrototypesInHierarchy<TransitionPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                var tr = GameDatabase.GetPrototype<TransitionPrototype>(trRef);
+                if (tr == null || tr.DirectTarget == PrototypeId.Invalid) continue;
+                if (targetToRegion.TryGetValue(tr.DirectTarget, out PrototypeId regionRef) == false) continue;
+                regionsWithTransition.Add(regionRef);
+            }
+
+            List<(string Name, RegionPrototype Proto)> regions = new();
+            foreach (PrototypeId regionRef in dataDirectory.IteratePrototypesInHierarchy<RegionPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                var proto = GameDatabase.GetPrototype<RegionPrototype>(regionRef);
+                if (proto == null) continue;
+                regions.Add((SafeGetName(regionRef), proto));
+            }
+
+            // A region only counts as reachable through a genuine entry channel: an open waypoint,
+            // matchmaking queue, or an in-world transition pointing at it. Being listed in another
+            // region's AltRegions[] is NOT by itself proof of reachability - that other region might
+            // itself be nothing but a dead RegionConnectionTarget stub (confirmed real case: Civil War's
+            // Bazaar/Airport "Band" regions are TARGETONLY with zero real entry point, yet their own
+            // Region10/25/50 difficulty-tier AltRegions siblings would otherwise "vouch" for each other
+            // in a closed loop and get miscounted as live). AltRegions membership only propagates
+            // reachability from a base that is ITSELF genuinely reachable through one of those channels.
+            bool HasGenuineEntryChannel(RegionPrototype proto) =>
+                regionsWithOpenWaypoint.Contains(proto.DataRef) ||
+                proto.IsQueueRegion ||
+                regionsWithTransition.Contains(proto.DataRef);
+
+            HashSet<PrototypeId> reachableViaLiveBase = new();
+            foreach ((string _, RegionPrototype proto) in regions)
+            {
+                if (proto.AltRegions.IsNullOrEmpty()) continue;
+                if (HasGenuineEntryChannel(proto) == false) continue;
+                foreach (PrototypeId altRef in proto.AltRegions)
+                    if (altRef != PrototypeId.Invalid && altRef != proto.DataRef)
+                        reachableViaLiveBase.Add(altRef);
+            }
+
+            bool IsReachable(RegionPrototype proto) =>
+                HasGenuineEntryChannel(proto) ||
+                reachableViaLiveBase.Contains(proto.DataRef);
+
+            // ---- Build the live-asset pool from every reachable region's resolved district/cellset/clientmap assets ----
+            Dictionary<AssetId, List<string>> assetToLiveRegions = new();
+            foreach ((string name, RegionPrototype proto) in regions)
+            {
+                if (IsReachable(proto) == false) continue;
+
+                HashSet<AssetId> fingerprint = new();
+                GetRegionResourceFingerprint(proto, fingerprint);
+                foreach (AssetId assetId in fingerprint)
+                {
+                    if (assetToLiveRegions.TryGetValue(assetId, out List<string> list) == false)
+                    {
+                        list = new();
+                        assetToLiveRegions[assetId] = list;
+                    }
+                    if (list.Count < 3) list.Add(Path.GetFileNameWithoutExtension(name));
+                }
+            }
+
+            Console.WriteLine($"==================== Region Asset-Reuse Audit (filter: '{pattern}') ====================");
+            Console.WriteLine($"Live/reachable regions contribute {assetToLiveRegions.Count} distinct district/cellset/clientmap assets.");
+            Console.WriteLine();
+
+            int safeCount = 0, riskyCount = 0, skipCount = 0;
+            List<string> riskyReport = new();
+
+            foreach ((string name, RegionPrototype proto) in regions)
+            {
+                if (IsReachable(proto)) continue; // only auditing repurposing candidates
+                if (string.IsNullOrEmpty(pattern) == false && name.Contains(pattern, StringComparison.OrdinalIgnoreCase) == false) continue;
+
+                bool isTargetOnly = regionsWithTarget.Contains(proto.DataRef);
+
+                HashSet<AssetId> fingerprint = new();
+                GetRegionResourceFingerprint(proto, fingerprint);
+
+                if (fingerprint.Count == 0)
+                {
+                    skipCount++;
+                    Console.WriteLine($"[SKIP]  {Path.GetFileNameWithoutExtension(name)} | no resolvable district/cellset/clientmap assets - can't assess");
+                    continue;
+                }
+
+                List<string> sharedWith = new();
+                List<string> orphanAssets = new();
+                foreach (AssetId assetId in fingerprint)
+                {
+                    string assetName = GameDatabase.GetAssetName(assetId);
+                    if (assetToLiveRegions.TryGetValue(assetId, out List<string> liveRegionNames))
+                        sharedWith.Add($"{assetName} (also used by {string.Join(",", liveRegionNames)})");
+                    else
+                        orphanAssets.Add(assetName);
+                }
+
+                bool nameFamilyMismatch = orphanAssets.Count > 0 && HasTokenOverlap(name, orphanAssets) == false;
+
+                if (sharedWith.Count > 0 && orphanAssets.Count == 0)
+                {
+                    safeCount++;
+                    Console.WriteLine($"[SAFE]  {Path.GetFileNameWithoutExtension(name)}{(isTargetOnly ? " (TARGETONLY)" : "")} | shares: {string.Join("; ", sharedWith)}");
+                }
+                else
+                {
+                    riskyCount++;
+                    string flag = nameFamilyMismatch ? "RISKY+NAME-MISMATCH" : "RISKY";
+                    string line = $"[{flag}] {Path.GetFileNameWithoutExtension(name)}{(isTargetOnly ? " (TARGETONLY)" : "")} | orphaned/unverified: {string.Join("; ", orphanAssets)}" +
+                        (sharedWith.Count > 0 ? $" | also shares: {string.Join("; ", sharedWith)}" : "");
+                    Console.WriteLine(line);
+                    riskyReport.Add(line);
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("==================== SUMMARY ====================");
+            Console.WriteLine($"SAFE (shares a live district/cellset/clientmap - low risk): {safeCount}");
+            Console.WriteLine($"RISKY (orphaned/unverified resource - matches confirmed dead-zone pattern): {riskyCount}");
+            Console.WriteLine($"SKIP (nothing resolvable to check): {skipCount}");
+        }
+
+        /// <summary>Collects every District/CellSet/Cell/ClientMap AssetId a region's generator+areas depend on.</summary>
+        private static void GetRegionResourceFingerprint(RegionPrototype region, HashSet<AssetId> fingerprint)
+        {
+            if (region.ClientMap != AssetId.Invalid) fingerprint.Add(region.ClientMap);
+
+            if (region.RegionGenerator is SingleCellRegionGeneratorPrototype singleCellRegionGen)
+            {
+                if (singleCellRegionGen.Cell != AssetId.Invalid) fingerprint.Add(singleCellRegionGen.Cell);
+                return;
+            }
+
+            HashSet<PrototypeId> areaRefs = new();
+            region.RegionGenerator?.GetAreasInGenerator(areaRefs);
+
+            foreach (PrototypeId areaRef in areaRefs)
+            {
+                AreaPrototype area = GameDatabase.GetPrototype<AreaPrototype>(areaRef);
+                if (area == null) continue;
+                if (area.ClientMap != AssetId.Invalid) fingerprint.Add(area.ClientMap);
+
+                switch (area.Generator)
+                {
+                    case DistrictAreaGeneratorPrototype districtGen:
+                        if (districtGen.District != AssetId.Invalid) fingerprint.Add(districtGen.District);
+                        break;
+                    case SingleCellAreaGeneratorPrototype singleCellAreaGen:
+                        if (singleCellAreaGen.Cell != AssetId.Invalid) fingerprint.Add(singleCellAreaGen.Cell);
+                        break;
+                    case BaseGridAreaGeneratorPrototype gridGen:
+                        if (gridGen.CellSets.HasValue())
+                            foreach (CellSetEntryPrototype cellSet in gridGen.CellSets)
+                                if (cellSet != null && cellSet.CellSet != AssetId.Invalid)
+                                    fingerprint.Add(cellSet.CellSet);
+                        break;
+                }
+            }
+        }
+
+        private static readonly Regex TokenSplitRegex = new(@"[A-Z]+(?![a-z])|[A-Z][a-z]*|[0-9]+|[a-z]+", RegexOptions.Compiled);
+
+        /// <summary>Splits a Calligraphy-style PascalCase/underscored identifier into lowercase word tokens.</summary>
+        private static HashSet<string> ExtractTokens(string identifier)
+        {
+            HashSet<string> tokens = new();
+            foreach (Match m in TokenSplitRegex.Matches(identifier))
+                if (m.Value.Length >= 4)
+                    tokens.Add(m.Value.ToLowerInvariant());
+            return tokens;
+        }
+
+        /// <summary>True if the region name shares at least one 4+ char word token with any of the given asset names.</summary>
+        private static bool HasTokenOverlap(string regionName, List<string> assetNames)
+        {
+            HashSet<string> regionTokens = ExtractTokens(Path.GetFileNameWithoutExtension(regionName));
+            foreach (string assetName in assetNames)
+            {
+                HashSet<string> assetTokens = ExtractTokens(assetName);
+                if (regionTokens.Overlaps(assetTokens)) return true;
+            }
+            return false;
         }
 
         /// <summary>Rough upper-bound count of individual item/agent drops reachable under a table if every gate passed.</summary>
