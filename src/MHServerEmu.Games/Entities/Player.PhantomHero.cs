@@ -21,6 +21,8 @@ namespace MHServerEmu.Games.Entities
     {
         private static readonly Logger PhantomHostLogger = LogManager.CreateLogger();
 
+        private bool IsPhantomLoggingEnabled => Game?.CustomGameOptions?.PhantomHeroesLoggingEnable ?? false;
+
         // Three parallel lists indexed together:
         //   _phantomAvatarIds[i]  = runtime Avatar entity id of the phantom
         //   _phantomPlayerIds[i]  = runtime Player entity id owning that Avatar
@@ -185,14 +187,14 @@ namespace MHServerEmu.Games.Entities
                         av.Destroy();
                     }
                 }
-                catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom] kick avatar 0x{avatarId:X} failed: {ex.Message}"); }
+                catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom] kick avatar 0x{avatarId:X} failed: {ex.Message}"); }
 
                 try
                 {
                     if (phantom.IsInGame) phantom.ExitGame();
                     phantom.Destroy();
                 }
-                catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom] kick phantom-player 0x{phantom.Id:X} failed: {ex.Message}"); }
+                catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom] kick phantom-player 0x{phantom.Id:X} failed: {ex.Message}"); }
 
                 return true;
             }
@@ -208,7 +210,7 @@ namespace MHServerEmu.Games.Entities
                 if (known.Length > 0) known.Append(", ");
                 known.Append($"{phantom.GetName()}=0x{phantom.DatabaseUniqueId:X}");
             }
-            PhantomHostLogger.Warn($"[Phantom] kick failed to match: requested dbId=0x{targetPlayerDbId:X} name='{targetPlayerName}'; known phantoms: [{known}]");
+            if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom] kick failed to match: requested dbId=0x{targetPlayerDbId:X} name='{targetPlayerName}'; known phantoms: [{known}]");
             return false;
         }
 
@@ -242,7 +244,7 @@ namespace MHServerEmu.Games.Entities
                     av.Destroy();
                     removed++;
                 }
-                catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom] purge avatar 0x{avatarId:X} failed: {ex.Message}"); }
+                catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom] purge avatar 0x{avatarId:X} failed: {ex.Message}"); }
             }
             foreach (ulong phantomPlayerId in _phantomPlayerIds)
             {
@@ -256,7 +258,7 @@ namespace MHServerEmu.Games.Entities
                     if (p.IsInGame) p.ExitGame();
                     p.Destroy();
                 }
-                catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom] purge phantom-player 0x{phantomPlayerId:X} failed: {ex.Message}"); }
+                catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom] purge phantom-player 0x{phantomPlayerId:X} failed: {ex.Message}"); }
             }
 
             _phantomAvatarIds.Clear();
@@ -299,7 +301,7 @@ namespace MHServerEmu.Games.Entities
                 });
             }
             int n = PurgePhantoms(announceLeave: false);
-            PhantomHostLogger.Info($"[Phantom] snapshot for transfer: {mig.PhantomIntents.Count} intent(s), purged {n} live phantom(s)");
+            if (IsPhantomLoggingEnabled) PhantomHostLogger.Info($"[Phantom] snapshot for transfer: {mig.PhantomIntents.Count} intent(s), purged {n} live phantom(s)");
         }
 
         /// <summary>
@@ -322,12 +324,12 @@ namespace MHServerEmu.Games.Entities
                     // "random from deck / caller's level" path.
                     ulong id = caller.SpawnPhantomHeroFromIntent((PrototypeId)intent.AvatarRef, intent.Level, intent.Username, intent.LockLevel, intent.CostumeRef, out string error, intent.GearRefs);
                     if (id != 0) spawned++;
-                    else PhantomHostLogger.Warn($"[Phantom] restore intent {intent.Username} failed: {error}");
+                    else if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom] restore intent {intent.Username} failed: {error}");
                 }
-                catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom] restore intent {intent.Username} threw: {ex.Message}"); }
+                catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom] restore intent {intent.Username} threw: {ex.Message}"); }
             }
             mig.PhantomIntents.Clear();
-            PhantomHostLogger.Info($"[Phantom] restore from migration: {spawned} phantom(s) re-spawned");
+            if (IsPhantomLoggingEnabled) PhantomHostLogger.Info($"[Phantom] restore from migration: {spawned} phantom(s) re-spawned");
             return spawned;
         }
 
@@ -340,7 +342,7 @@ namespace MHServerEmu.Games.Entities
         {
             if (_phantomAvatarIds.Count == 0) return;
             int n = PurgePhantoms();
-            if (n > 0) PhantomHostLogger.Info($"[Phantom] ExitGame purge for {this}: destroyed {n} phantom(s)");
+            if (n > 0) if (IsPhantomLoggingEnabled) PhantomHostLogger.Info($"[Phantom] ExitGame purge for {this}: destroyed {n} phantom(s)");
         }
 
         // ================================================================
@@ -418,7 +420,7 @@ namespace MHServerEmu.Games.Entities
                             .SetMemberEvent(PartyMemberEvent.ePME_Remove)
                             .Build());
                     }
-                    catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom:Party] member-remove failed: {ex.Message}"); }
+                    catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom:Party] member-remove failed: {ex.Message}"); }
                     _syncedPhantomMemberDbIds.Remove(runtimeId);
                 }
             }
@@ -433,7 +435,7 @@ namespace MHServerEmu.Games.Entities
                         .SetGroupId(groupId)
                         .Build());
                 }
-                catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom:Party] teardown failed: {ex.Message}"); }
+                catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom:Party] teardown failed: {ex.Message}"); }
                 _phantomPartyGroupType = GroupType.GroupType_Party;
                 return;
             }
@@ -486,7 +488,7 @@ namespace MHServerEmu.Games.Entities
                     .SetPartyInfo(partyInfoBuilder.Build())
                     .Build());
             }
-            catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom:Party] sync failed: {ex.Message}"); }
+            catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom:Party] sync failed: {ex.Message}"); }
         }
 
         /// <summary>
@@ -518,7 +520,7 @@ namespace MHServerEmu.Games.Entities
                 .Build();
 
             try { SendMessage(message); }
-            catch (System.Exception ex) { PhantomHostLogger.Warn($"[Phantom:Party] synthetic leave result failed: {ex.Message}"); }
+            catch (System.Exception ex) { if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom:Party] synthetic leave result failed: {ex.Message}"); }
         }
 
         /// <summary>
@@ -587,7 +589,7 @@ namespace MHServerEmu.Games.Entities
             }
             catch (System.Exception ex)
             {
-                PhantomHostLogger.Warn($"[Phantom:Squad] load failed for {this}: {ex.Message}");
+                if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom:Squad] load failed for {this}: {ex.Message}");
                 return new(StringComparer.OrdinalIgnoreCase);
             }
         }
@@ -604,7 +606,7 @@ namespace MHServerEmu.Games.Entities
             }
             catch (System.Exception ex)
             {
-                PhantomHostLogger.Warn($"[Phantom:Squad] save failed for {this}: {ex.Message}");
+                if (IsPhantomLoggingEnabled) PhantomHostLogger.Warn($"[Phantom:Squad] save failed for {this}: {ex.Message}");
                 return false;
             }
         }
@@ -909,7 +911,7 @@ namespace MHServerEmu.Games.Entities
             // The in-game chat window truncates long lines and a slot can
             // have a couple hundred candidates — write the full, untruncated
             // list to the server log so it's actually usable for curation.
-            PhantomHostLogger.Info($"[PhantomHero:GearCandidates] {phantom.PrototypeDataRef.GetName()} slot={slot}: {candidates.Count}/{rawCount} survive filtering -> {string.Join(", ", candidates)}");
+            if (IsPhantomLoggingEnabled) PhantomHostLogger.Info($"[PhantomHero:GearCandidates] {phantom.PrototypeDataRef.GetName()} slot={slot}: {candidates.Count}/{rawCount} survive filtering -> {string.Join(", ", candidates)}");
 
             if (candidates.Count == 0) return $"No candidates for slot {slot} on this hero after filtering ({rawCount} raw candidate(s) before filtering — all excluded).";
 

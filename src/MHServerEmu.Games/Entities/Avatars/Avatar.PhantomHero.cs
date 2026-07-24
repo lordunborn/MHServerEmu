@@ -41,6 +41,8 @@ namespace MHServerEmu.Games.Entities.Avatars
     {
         private static readonly Logger PhantomLogger = LogManager.CreateLogger();
 
+        private bool IsPhantomLoggingEnabled => Game?.CustomGameOptions?.PhantomHeroesLoggingEnable ?? false;
+
         // No hardcoded roster — the pool is built at first spawn by iterating the
         // client's actual AvatarPrototype hierarchy (NoAbstractApprovedOnly, i.e.
         // concrete + shipping-approved entries). This makes the mod version-
@@ -258,7 +260,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                         if (newPowerStuckTicks >= PhantomPowerStuckTickThreshold)
                         {
                             try { phantom.ActivePower?.EndPower(EndPowerFlags.ExplicitCancel | EndPowerFlags.Force); }
-                            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] force-end stuck power {activePowerRef.GetName()} on 0x{phantom.Id:X} failed: {ex.Message}"); }
+                            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] force-end stuck power {activePowerRef.GetName()} on 0x{phantom.Id:X} failed: {ex.Message}"); }
                             s_phantomPowerStuckTrack.Remove(phantom.Id);
                         }
                         else
@@ -313,9 +315,9 @@ namespace MHServerEmu.Games.Entities.Avatars
                             {
                                 Vector3 downedLeashPos = ChoosePhantomLeashPos(downedRegion, callerPos, rng, phantom.Bounds.Radius);
                                 phantom.ChangeRegionPosition(downedLeashPos, null);
-                                PhantomLogger.Info($"[PhantomHero:Down] {phantom} downed corpse was {MathF.Sqrt(callerDistSqDowned):F0} from caller, leashed to {downedLeashPos.ToStringNames()}");
+                                if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:Down] {phantom} downed corpse was {MathF.Sqrt(callerDistSqDowned):F0} from caller, leashed to {downedLeashPos.ToStringNames()}");
                             }
-                            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Down] corpse leash failed: {ex.Message}"); }
+                            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero:Down] corpse leash failed: {ex.Message}"); }
                         }
                     }
 
@@ -355,9 +357,9 @@ namespace MHServerEmu.Games.Entities.Avatars
                         Vector3 herePos = phantom.RegionLocation.Position;
                         phantom.Locomotor?.Stop();
                         phantom.ChangeRegionPosition(herePos, null);
-                        PhantomLogger.Info($"[PhantomHero:Down] {phantom} revived - pose refreshed");
+                        if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:Down] {phantom} revived - pose refreshed");
                     }
-                    catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Down] revive refresh failed: {ex.Message}"); }
+                    catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero:Down] revive refresh failed: {ex.Message}"); }
                 }
 
                 // Level sync: phantoms always match the caller's CURRENT
@@ -414,7 +416,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                         // stale spawn-time value.
                         host.UpdatePhantomLevel(phantom.Id, callerLevel);
                     }
-                    catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] level sync {phantom.Id:X} → {callerLevel} failed: {ex.Message}"); }
+                    catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] level sync {phantom.Id:X} → {callerLevel} failed: {ex.Message}"); }
                 }
 
                 // Stuck detection: if the phantom's position barely moved
@@ -645,12 +647,12 @@ namespace MHServerEmu.Games.Entities.Avatars
                                 reviveLoco.Stop();
                                 phantom.ChangeRegionPosition(rescuePos, null);
                                 s_phantomStuckTrack[phantom.Id] = (rescuePos, 0);
-                                PhantomLogger.Info($"[PhantomHero:Revive] {phantom} path to downed {downedKindDiag} {downed} failed (pathResult={reviveLoco.LastGeneratedPathResult}), force-leashed to {rescuePos.ToStringNames()}");
+                                if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:Revive] {phantom} path to downed {downedKindDiag} {downed} failed (pathResult={reviveLoco.LastGeneratedPathResult}), force-leashed to {rescuePos.ToStringNames()}");
                             }
-                            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Revive] rescue leash threw: {ex.Message}"); }
+                            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero:Revive] rescue leash threw: {ex.Message}"); }
                         }
                     }
-                    PhantomLogger.Info($"[PhantomHero:Revive] {phantom} approaching downed {downedKindDiag} {downed} dist={MathF.Sqrt(downedDistSq):F0} castRange={MathF.Sqrt(castRangeSq):F0} followOk={followOk}");
+                    if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:Revive] {phantom} approaching downed {downedKindDiag} {downed} dist={MathF.Sqrt(downedDistSq):F0} castRange={MathF.Sqrt(castRangeSq):F0} followOk={followOk}");
                 }
                 else
                 {
@@ -665,7 +667,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     try
                     {
                         var reviveResult = phantom.ResurrectOtherAvatar(downed, bypassCooldown: true);
-                        PhantomLogger.Info($"[PhantomHero:Revive] {phantom} -> {downedKindDiag} {downed} dist={MathF.Sqrt(downedDistSq):F0} castRange={MathF.Sqrt(castRangeSq):F0} result={reviveResult}");
+                        if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:Revive] {phantom} -> {downedKindDiag} {downed} dist={MathF.Sqrt(downedDistSq):F0} castRange={MathF.Sqrt(castRangeSq):F0} result={reviveResult}");
                         if (revivingHumanDiag && reviveResult == PowerUseResult.Success && downedOwnerDiag != null)
                             s_phantomHumanReviveCooldown[downedOwnerDiag.Id] = nowMsRevive;
                         // Deliberately NOT releasing the claim here on Success.
@@ -681,7 +683,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                         // .Remove near "revived - pose refreshed" below), and
                         // the hard timeout is the backstop if that never runs.
                     }
-                    catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero:Revive] {phantom.Id:X} -> {downed.Id:X} failed: {ex.Message}"); }
+                    catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero:Revive] {phantom.Id:X} -> {downed.Id:X} failed: {ex.Message}"); }
                 }
                 return; // don't hunt while triaging a downed teammate
             }
@@ -852,7 +854,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     bool ok = loco.FollowEntity(nearest.Id, followStopDist, followStopDist, ref opts, false);
                     if (s_phantomLocoLogged.Add(phantom.Id))
                     {
-                        PhantomLogger.Info($"[PhantomHero:Loco] {phantom} authoritative={phantom.IsMovementAuthoritative} simulated={phantom.IsSimulated} inWorld={phantom.IsInWorld} target={nearest.Id:X} dist={MathF.Sqrt(nearestDistSq):F0} FollowEntity returned={ok} locoEnabled={loco.IsEnabled} isMoving={loco.IsMoving} method={loco.Method} baseSpeed={loco.DefaultRunSpeed} hasPath={loco.HasPath} pathResult={loco.LastGeneratedPathResult} canMove={phantom.CanMove()}");
+                        if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:Loco] {phantom} authoritative={phantom.IsMovementAuthoritative} simulated={phantom.IsSimulated} inWorld={phantom.IsInWorld} target={nearest.Id:X} dist={MathF.Sqrt(nearestDistSq):F0} FollowEntity returned={ok} locoEnabled={loco.IsEnabled} isMoving={loco.IsMoving} method={loco.Method} baseSpeed={loco.DefaultRunSpeed} hasPath={loco.HasPath} pathResult={loco.LastGeneratedPathResult} canMove={phantom.CanMove()}");
                     }
                 }
             }
@@ -916,7 +918,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                         BlacklistTarget(phantom.Id, tryTarget.Id, nowMsSweep);
                     }
                     if (!fired && diagWant)
-                        PhantomLogger.Info($"[PhantomHero:Attack] {phantom} all {maxTries} candidates rejected the attack — sweep found {candidates.Count} hostile(s), first={candidates[0].we} dist={MathF.Sqrt(candidates[0].distSq):F0}");
+                        if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:Attack] {phantom} all {maxTries} candidates rejected the attack — sweep found {candidates.Count} hostile(s), first={candidates[0].we} dist={MathF.Sqrt(candidates[0].distSq):F0}");
                     // 800 ms floor + 400 ms jitter so 3 phantoms don't fire in
                     // lockstep.
                     s_phantomNextAttackMs[phantom.Id] = now + 800 + (long)(rng.NextDouble() * 400);
@@ -1613,12 +1615,12 @@ namespace MHServerEmu.Games.Entities.Avatars
                             TryEquipCandidate(pickedProto.DataRef);
                         }
                         if (acceptedItem != null)
-                            PhantomLogger.Info($"[PhantomHero:Gear] slot {uiSlot} on {avatarProto.DataRef.GetName()} — UniqueAvatarArmor pool had nothing usable at level {level}, filled from general Armor pool instead");
+                            if (game?.CustomGameOptions?.PhantomHeroesLoggingEnable ?? false) PhantomLogger.Info($"[PhantomHero:Gear] slot {uiSlot} on {avatarProto.DataRef.GetName()} — UniqueAvatarArmor pool had nothing usable at level {level}, filled from general Armor pool instead");
                     }
 
                     if (acceptedItem == null)
                     {
-                        PhantomLogger.Warn($"[PhantomHero:Gear] slot pool for {uiSlot} on {avatarProto.DataRef.GetName()} has NO item usable/equippable at level {level} — slot left empty");
+                        if (game?.CustomGameOptions?.PhantomHeroesLoggingEnable ?? false) PhantomLogger.Warn($"[PhantomHero:Gear] slot pool for {uiSlot} on {avatarProto.DataRef.GetName()} has NO item usable/equippable at level {level} — slot left empty");
                         continue;
                     }
 
@@ -1626,7 +1628,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                 }
                 catch (Exception ex)
                 {
-                    PhantomLogger.Warn($"[PhantomHero:Gear] equip roll for slot {uiSlot} on {phantomAvatar.Id:X} failed: {ex.Message}");
+                    if (game?.CustomGameOptions?.PhantomHeroesLoggingEnable ?? false) PhantomLogger.Warn($"[PhantomHero:Gear] equip roll for slot {uiSlot} on {phantomAvatar.Id:X} failed: {ex.Message}");
                 }
             }
 
@@ -1889,7 +1891,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     sb.Append($"{rejected[i].we}({rejected[i].reason},{MathF.Sqrt(rejected[i].distSq):F0}) ");
                 sb.Append(']');
             }
-            PhantomLogger.Info(sb.ToString());
+            if (phantom?.Game?.CustomGameOptions?.PhantomHeroesLoggingEnable ?? false) PhantomLogger.Info(sb.ToString());
         }
 
         // Below this fraction of max HP, a phantom reaches for its own
@@ -1943,7 +1945,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             // blacklist above exists to prevent.
             s_phantomNextSelfHealMs[phantom.Id] = nowMs + PhantomSelfHealCooldownMs;
             if (result == PowerUseResult.Success)
-                PhantomLogger.Info($"[PhantomHero:SelfHeal] {phantom} used medkit at {health}/{healthMax} HP");
+                if (phantom?.Game?.CustomGameOptions?.PhantomHeroesLoggingEnable ?? false) PhantomLogger.Info($"[PhantomHero:SelfHeal] {phantom} used medkit at {health}/{healthMax} HP");
             return result == PowerUseResult.Success;
         }
 
@@ -2051,7 +2053,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                 PowerUseResult result = phantom.ActivatePower(power.PrototypeDataRef, ref settings);
                 s_phantomNextSupportBuffMs[phantom.Id] = nowMs + PhantomSupportBuffCooldownMs;
                 if (result == PowerUseResult.Success)
-                    PhantomLogger.Info($"[PhantomHero:Support] {phantom} used {pp.DataRef.GetName()} on {effectiveTarget}");
+                    if (phantom?.Game?.CustomGameOptions?.PhantomHeroesLoggingEnable ?? false) PhantomLogger.Info($"[PhantomHero:Support] {phantom} used {pp.DataRef.GetName()} on {effectiveTarget}");
                 return result == PowerUseResult.Success;
             }
             return false;
@@ -2258,7 +2260,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     if (chosenPowerInstance?.Prototype?.ExtraActivation is SecondaryActivateOnReleasePrototype)
                     {
                         try { chosenPowerInstance.ReleaseVariableActivation(ref settings); }
-                        catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] ReleaseVariableActivation({chosenPower.GetName()}) failed on {phantom.Id:X}: {ex.Message}"); }
+                        catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] ReleaseVariableActivation({chosenPower.GetName()}) failed on {phantom.Id:X}: {ex.Message}"); }
                     }
                 }
 
@@ -2287,7 +2289,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     Power probePower = phantom.PowerCollection?.GetPower(chosenPower);
                     bool isValid = probePower != null && probePower.IsValidTarget(target);
                     string allianceRef = target.Alliance != null ? target.Alliance.DataRef.GetName() : "<null>";
-                    PhantomLogger.Info($"[PhantomHero:Attack] {phantom} → target={target} power={chosenPower.GetName()} result={result} isValidTarget={isValid} tgtDormant={target.IsDormant} tgtUntargetable={target.IsUntargetable} tgtUnaffectable={target.IsUnaffectable} tgtAffectedByPowers={target.IsAffectedByPowers()} tgtSim={target.IsSimulated} tgtInWorld={target.IsInWorld} tgtAlliance={allianceRef} phantomAlliance={(phantom.Alliance?.DataRef.GetName() ?? "<null>")}");
+                    if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:Attack] {phantom} → target={target} power={chosenPower.GetName()} result={result} isValidTarget={isValid} tgtDormant={target.IsDormant} tgtUntargetable={target.IsUntargetable} tgtUnaffectable={target.IsUnaffectable} tgtAffectedByPowers={target.IsAffectedByPowers()} tgtSim={target.IsSimulated} tgtInWorld={target.IsInWorld} tgtAlliance={allianceRef} phantomAlliance={(phantom.Alliance?.DataRef.GetName() ?? "<null>")}");
                 }
                 return result;
             }
@@ -2585,7 +2587,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             {
                 if (phantomAvatar.ChangeCostume(appliedCostumeRef) == false)
                 {
-                    PhantomLogger.Warn($"[PhantomHero] ChangeCostume({appliedCostumeRef.GetName()}) failed for {avatarRef.GetName()}");
+                    if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] ChangeCostume({appliedCostumeRef.GetName()}) failed for {avatarRef.GetName()}");
                     appliedCostumeRef = PrototypeId.Invalid;
                 }
             }
@@ -2640,7 +2642,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             // Any downstream init that assumes a real client is trapped; the
             // essential IsInGame flag lands on entity-level first.
             try { phantomPlayer.EnterGame(); }
-            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] phantomPlayer.EnterGame() partial: {ex.Message}"); }
+            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] phantomPlayer.EnterGame() partial: {ex.Message}"); }
 
             // Clear the loading-screen state that Player.Initialize (line 233 —
             // QueueLoadingScreen(Invalid)) sets unconditionally on every Player.
@@ -2648,7 +2650,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             // Left set, it makes IsFullscreenObscured=true → every power activation
             // returns PowerUseResult.FullscreenMovie via Agent.CanTriggerPower line 500.
             try { phantomPlayer.OnLoadingScreenFinished(); }
-            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] OnLoadingScreenFinished failed: {ex.Message}"); }
+            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] OnLoadingScreenFinished failed: {ex.Message}"); }
 
             if (phantomAvatar.EnterWorld(region, spawnPos, spawnOri) == false)
             {
@@ -2692,16 +2694,16 @@ namespace MHServerEmu.Games.Entities.Avatars
                         bool interested = aoi.InterestedInEntity(phantomAvatar.Id, AOINetworkPolicyValues.AOIChannelProximity);
                         if (!interested)
                         {
-                            PhantomLogger.Info($"[PhantomHero:PowerSync] SKIP {realPlayer.GetName()} — not interested in phantom {phantomAvatar.Id:X} (proximity=false). collectionSize={collectionSize}");
+                            if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:PowerSync] SKIP {realPlayer.GetName()} — not interested in phantom {phantomAvatar.Id:X} (proximity=false). collectionSize={collectionSize}");
                             continue;
                         }
                         bool sent = phantomAvatar.PowerCollection.SendEntireCollection(realPlayer);
-                        PhantomLogger.Info($"[PhantomHero:PowerSync] {realPlayer.GetName()} ← phantom {phantomAvatar.Id:X} collection ({collectionSize} powers) sent={sent}");
+                        if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:PowerSync] {realPlayer.GetName()} ← phantom {phantomAvatar.Id:X} collection ({collectionSize} powers) sent={sent}");
                     }
                 }
                 else
                 {
-                    PhantomLogger.Warn($"[PhantomHero:PowerSync] phantom {phantomAvatar.Id:X} has no PowerCollection at spawn — client can't render any VFX");
+                    if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero:PowerSync] phantom {phantomAvatar.Id:X} has no PowerCollection at spawn — client can't render any VFX");
                 }
 
                 // Diagnostic: log what each real player's AOI decided for the phantom.
@@ -2709,16 +2711,16 @@ namespace MHServerEmu.Games.Entities.Avatars
                 {
                     if (realPlayer.PlayerConnection == null) continue;
                     var aoi = realPlayer.AOI;
-                    if (aoi == null) { PhantomLogger.Info($"[PhantomHero:AOI] real={realPlayer} AOI=null"); continue; }
+                    if (aoi == null) { if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:AOI] real={realPlayer} AOI=null"); continue; }
                     bool avatarInterested = aoi.InterestedInEntity(phantomAvatar.Id);
                     bool playerInterested = aoi.InterestedInEntity(phantomPlayer.Id);
                     Vector3 phantomPos = phantomAvatar.RegionLocation.Position;
                     Vector3 realPos = realPlayer.CurrentAvatar?.RegionLocation.Position ?? Vector3.Zero;
                     float dist = Vector3.Distance2D(phantomPos, realPos);
-                    PhantomLogger.Info($"[PhantomHero:AOI] real={realPlayer.GetName()} sameRegion={realPlayer.GetRegion() == region} avatarInterested={avatarInterested} playerInterested={playerInterested} dist={dist:F0} phantomPos={phantomPos.ToStringNames()} realPos={realPos.ToStringNames()} inWorld={phantomAvatar.IsInWorld} cell={phantomAvatar.Cell?.Id.ToString() ?? "null"}");
+                    if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero:AOI] real={realPlayer.GetName()} sameRegion={realPlayer.GetRegion() == region} avatarInterested={avatarInterested} playerInterested={playerInterested} dist={dist:F0} phantomPos={phantomPos.ToStringNames()} realPos={realPos.ToStringNames()} inWorld={phantomAvatar.IsInWorld} cell={phantomAvatar.Cell?.Id.ToString() ?? "null"}");
                 }
             }
-            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] AOI broadcast failed: {ex.Message}"); }
+            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] AOI broadcast failed: {ex.Message}"); }
 
             // By default phantoms take real damage and are despawned instead of
             // going down when they'd otherwise die (see Avatar.OnKilled's
@@ -2750,7 +2752,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             // players get flipped simulated=true when a peer's AOI notices
             // them; phantoms may not go through that path reliably.
             try { phantomAvatar.SetSimulated(true); }
-            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] SetSimulated(true) failed: {ex.Message}"); }
+            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] SetSimulated(true) failed: {ex.Message}"); }
 
             // Book-keeping goes on the human Player (source of truth) — not on
             // this Avatar shell — so `!phantom clear` and tick reattachment
@@ -2775,7 +2777,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             host.RegisterPhantom(phantomAvatar.Id, phantomPlayer.Id, descriptor);
             SchedulePhantomTick();
 
-            PhantomLogger.Info($"[PhantomHero] {this} spawned '{avatarRef.GetName()}' (avatarId 0x{phantomAvatar.Id:X}, phantomPlayerId 0x{phantomPlayer.Id:X}) at {spawnPos.ToStringNames()} level {effectiveLevel}");
+            if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero] {this} spawned '{avatarRef.GetName()}' (avatarId 0x{phantomAvatar.Id:X}, phantomPlayerId 0x{phantomPlayer.Id:X}) at {spawnPos.ToStringNames()} level {effectiveLevel}");
             return phantomAvatar.Id;
         }
 
@@ -2892,7 +2894,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                             av.Destroy();
                         }
                     }
-                    catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] stale-region cleanup avatar 0x{id:X} failed: {ex.Message}"); }
+                    catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] stale-region cleanup avatar 0x{id:X} failed: {ex.Message}"); }
                     if (playerId != 0)
                     {
                         try
@@ -2900,7 +2902,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                             Player p = mgr.GetEntity<Player>(playerId);
                             if (p != null) { if (p.IsInGame) p.ExitGame(); p.Destroy(); }
                         }
-                        catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] stale-region cleanup phantom-player 0x{playerId:X} failed: {ex.Message}"); }
+                        catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] stale-region cleanup phantom-player 0x{playerId:X} failed: {ex.Message}"); }
                     }
                     host.UnregisterPhantom(id);
                     s_phantomAttackLogged.Remove(id);
@@ -2917,7 +2919,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     PrunePowerBlacklistFor(id);
                     PruneReviveClaimsFor(id);
                 }
-                PhantomLogger.Info($"[PhantomHero] {this} reattach: pruned {stale.Count} stale, {alive} alive");
+                if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero] {this} reattach: pruned {stale.Count} stale, {alive} alive");
             }
 
             if (alive > 0)
@@ -2999,14 +3001,14 @@ namespace MHServerEmu.Games.Entities.Avatars
             PrunePowerBlacklistFor(myId);
             PruneReviveClaimsFor(myId);
 
-            PhantomLogger.Info($"[PhantomHero] {this} was defeated and has been despawned.");
+            if (IsPhantomLoggingEnabled) PhantomLogger.Info($"[PhantomHero] {this} was defeated and has been despawned.");
 
             try
             {
                 if (IsInWorld) ExitWorld();
                 Destroy();
             }
-            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] death-despawn avatar cleanup failed: {ex.Message}"); }
+            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] death-despawn avatar cleanup failed: {ex.Message}"); }
 
             try
             {
@@ -3016,7 +3018,7 @@ namespace MHServerEmu.Games.Entities.Avatars
                     phantomPlayerEntity.Destroy();
                 }
             }
-            catch (Exception ex) { PhantomLogger.Warn($"[PhantomHero] death-despawn phantom-player cleanup failed: {ex.Message}"); }
+            catch (Exception ex) { if (IsPhantomLoggingEnabled) PhantomLogger.Warn($"[PhantomHero] death-despawn phantom-player cleanup failed: {ex.Message}"); }
         }
 
         private class PhantomDeathEvent : CallMethodEvent<Avatar>
