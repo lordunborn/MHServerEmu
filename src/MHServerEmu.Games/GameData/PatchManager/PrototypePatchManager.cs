@@ -19,7 +19,10 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
         public static PrototypePatchManager Instance { get; } = new();
 
-        public void Initialize(bool enablePatchManager)
+        /// <summary>
+        /// Loads patches before Globals are loaded.
+        /// </summary>
+        public void PreInitialize(bool enablePatchManager)
         {
             if (enablePatchManager == false) return;
 
@@ -35,9 +38,21 @@ namespace MHServerEmu.Games.GameData.PatchManager
             // unrelated loot-table entry appending its own PrototypeId elsewhere, permanently and
             // silently skipping SHIELDSupplyBoost's own ActionsTriggeredOnItemEvent.Choices[0].Power
             // patch - no warning, no trace, since PreCheck() bailed on _initialized instead of ever
-            // consulting _patchDict.
+            // consulting _patchDict. This flag now covers both the PrePatchData pass here and the
+            // PatchData pass in Initialize() below, since it's set once and never cleared.
             _initialized = true;
-            LoadPatchDataFromDisk();
+            LoadPatchDataFromDisk("PrePatchData");
+            ReapplyPatchesToAlreadyConstructedPrototypes();
+        }
+
+        /// <summary>
+        /// Loads patches after Globals are loaded.
+        /// </summary>
+        public void Initialize(bool enablePatchManager)
+        {
+            if (enablePatchManager == false) return;
+
+            LoadPatchDataFromDisk("PatchData");
             ReapplyPatchesToAlreadyConstructedPrototypes();
         }
 
@@ -83,20 +98,20 @@ namespace MHServerEmu.Games.GameData.PatchManager
             }
         }
 
-        private void LoadPatchDataFromDisk()
+        private bool LoadPatchDataFromDisk(string prefix)
         {
             string patchDirectory = Path.Combine(FileHelper.DataDirectory, "Game", "Patches");
             if (Directory.Exists(patchDirectory) == false)
             {
                 Logger.Warn("LoadPatchDataFromDisk(): Game data directory not found");
-                return;
+                return false;
             }
 
             int count = 0;
             var options = new JsonSerializerOptions { Converters = { new PatchEntryConverter() } };
 
-            // Read all .json files that start with PatchData
-            foreach (string filePath in FileHelper.GetFilesWithPrefix(patchDirectory, "PatchData", "json"))
+            // Read all .json files that start with the specified prefix
+            foreach (string filePath in FileHelper.GetFilesWithPrefix(patchDirectory, prefix, "json"))
             {
                 string fileName = Path.GetFileName(filePath);
 
@@ -119,7 +134,10 @@ namespace MHServerEmu.Games.GameData.PatchManager
                 Logger.Trace($"Parsed patch data from {fileName}");
             }
 
-            Logger.Info($"Loaded {count} patches");
+            if (count > 0)
+                Logger.Info($"Loaded {count} {prefix} patches");
+
+            return true;
         }
 
         private void AddPatchValue(PrototypeId prototypeId, in PrototypePatchEntry value)
