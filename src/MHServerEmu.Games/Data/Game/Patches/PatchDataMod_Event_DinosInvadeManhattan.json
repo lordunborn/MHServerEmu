@@ -884,5 +884,141 @@
     "Description": "[Dino Wave Battles cleanup 2026-07-23] Hides the CivilWar meta's own row from the client dropdown (user confirmed live it showed as a 3rd selectable entry alongside ProReg/AntiReg, not just a header). Safe to hide independently of the sub-boards: GetMetaRewards()/meta-sub instance linkage lives entirely in the DB-backed Leaderboards service, not in this per-game LeaderboardInfoCache, so ProReg's own scoring and reward payout are unaffected",
     "ValueType": "Boolean",
     "Value": false
+  },
+  {
+    "Enabled": false,
+    "Prototype": "UI/MetaGame/ObjectiveCountRight.prototype",
+    "Path": "Descriptor",
+    "Description": "[Dinos Invade Manhattan] DISABLED 2026-07-25 - dead end, see PvEScaleGameMode.ThreatMeterWidgetRef's comment. Left disabled rather than deleted as a record: this alone (plus the two entries below) does NOT make ObjectiveCountRight show our text - confirmed live it instead renders a client-side '$MissionObjectiveName$' placeholder, unaffected by any of these three patches despite all three confirmed applying correctly server-side (checked via startup log trace lines). Original attempt: was going to redirect this widget's text away from its shared inherited Descriptor (7888675903313282321, shared with ObjectiveCountLeft/ObjectiveCountCenter siblings) to a fresh dedicated LocaleStringId (9182736450192837465, confirmed zero referrers anywhere via --findlocalestringref)",
+    "ValueType": "LocaleStringId",
+    "Value": 9182736450192837465
+  },
+  {
+    "Enabled": false,
+    "Prototype": "UI/MetaGame/ObjectiveCountRight.prototype",
+    "Path": "WidgetMovieClipOverride",
+    "Description": "[Dinos Invade Manhattan] DISABLED 2026-07-25, same dead end as the Descriptor entry above - confirmed live this widget still rendered as a plain right-aligned counter despite this patch applying server-side, so this field is also client-resolved-locally for this widget. Original attempt: copy DangerRoomCounterBarBASE's own WidgetMovieClipOverride (WidgetCounterBarBlue) to keep the bar visual after switching widgets",
+    "ValueType": "Asset",
+    "Value": 8477204455388157185
+  },
+  {
+    "Enabled": false,
+    "Prototype": "UI/MetaGame/ObjectiveCountRight.prototype",
+    "Path": "DisplayMissionName",
+    "Description": "[Dinos Invade Manhattan] DISABLED 2026-07-25, same dead end - confirmed live the client kept showing the '$MissionObjectiveName$' placeholder despite this patch applying server-side (verified DisplayMissionName correctly resolved to False in the server's own prototype data via --dump). This whole widget family is client-built to bind to a real tracked mission's name; DangerRoomCounterBarBASE's own chain never had this problem since its native (client-shipped, unpatched) value was already false",
+    "ValueType": "Boolean",
+    "Value": false
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
+    "Path": "WaveDifficultyFailureThreshold",
+    "Description": "[Dinos Invade Manhattan] Native flat 50 regardless of group size, while threat RISE already scales linearly by live in-world player count (PvEScaleGameMode.ScheduledWaveTick) - meaning a 10-player instance faced 10x the absolute threat swing per tick against the SAME fixed ceiling a solo player used, which is why nobody on the live 10-player-capped server got past Phase 1 despite solo runs landing at only 23-28% of the cap. PvEScaleGameMode.GetEffectiveFailureThreshold() now multiplies this field by CountInWorldPlayers(), so this value is really a PER-PLAYER unit. Cut from 50 to 18 - the exact per-player passive-rise-per-phase number (WaveDifficultyPerSecond 0.10 * 180s phase) - so zero kills/power-ups over a full phase lands exactly at the ceiling rather than comfortably under it, matching solo's existing felt difficulty while fixing the group-size asymmetry",
+    "ValueType": "Float",
+    "Value": 18.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase2Base.prototype",
+    "Path": "WaveDifficultyFailureThreshold",
+    "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 18.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase3Base.prototype",
+    "Path": "WaveDifficultyFailureThreshold",
+    "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 18.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase4Base.prototype",
+    "Path": "WaveDifficultyFailureThreshold",
+    "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 18.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase5Base.prototype",
+    "Path": "WaveDifficultyFailureThreshold",
+    "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 18.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase6Base.prototype",
+    "Path": "WaveDifficultyFailureThreshold",
+    "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 18.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase7Base.prototype",
+    "Path": "WaveDifficultyFailureThreshold",
+    "Description": "[Dinos Invade Manhattan] Same per-player threshold scaling as Phase1-6, applied to the boss phase for consistency (this phase's native WaveDurationMS is already patched to 360000/6min elsewhere in this file, independent of this cut) - see Phase1's entry for the full reasoning",
+    "ValueType": "Float",
+    "Value": 18.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] REINTERPRETED 2026-07-25 - PvEScaleGameMode.CollectPowerUp() now treats this field as a 0.0-1.0 FRACTION of current threat removed per pickup, not a flat amount, so a pickup stays meaningful whether grabbed early (low threat) or late (near the ceiling) and its relative value no longer shrinks as the player-scaled ceiling grows with group size (the flat-8.0 version was a fixed ~44% of a SOLO phase's rise but shrank to a much smaller fraction as ceiling and rise both scaled up together for larger groups - orbs were becoming pointless in a full group even though the per-player math theoretically stayed constant). 0.25 means a well-timed grab always cuts a quarter of whatever threat currently stands, regardless of group size or how close to failing the group already is - a starting point for live tuning, not a final number",
+    "ValueType": "Float",
+    "Value": 0.25
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase2Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.25
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase3Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.25
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase4Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.25
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase5Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.25
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase6Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
+    "ValueType": "Float",
+    "Value": 0.25
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase7Base.prototype",
+    "Path": "PowerUpDifficultyReduction",
+    "Description": "[Dinos Invade Manhattan] Native value here was an un-rebalanced 0.7 (a leftover flat-era number, never bumped to 8.0 like Phase1-6 since the boss phase doesn't use the same wave-power-up flow the same way) - now explicitly set to the same 0.25 fraction as the wave phases so the boss phase's orb (if one spawns) behaves consistently rather than keeping a stale, much smaller flat-era value reinterpreted as an oddly tiny 70% cut",
+    "ValueType": "Float",
+    "Value": 0.25
   }
 ]

@@ -108,5 +108,8 @@ namespace MHServerEmu.Games
         public bool RogueNemesisCommandsRequireAdmin { get; private set; } = true;
         public bool RogueNemesisLoggingEnable { get; private set; } = false;
         public bool RogueNemesisLogVerboseEnable { get; private set; } = false;
+
+        // Dinos Invade Manhattan / PvEScaleGameMode
+        public bool DinosWaveBattleLoggingEnable { get; private set; } = false;
     }
 }
