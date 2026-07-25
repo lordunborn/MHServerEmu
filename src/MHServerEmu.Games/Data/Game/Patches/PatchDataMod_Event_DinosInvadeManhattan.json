@@ -79,6 +79,14 @@
   },
   {
     "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype",
+    "Path": "PlayerLimit",
+    "Description": "[Dinos Invade Manhattan] Native PlayerLimit is 30. On the largest live server that let 30 real players stack into a single PublicCombatZone instance, which broke the wave difficulty balance: PvEScaleGameMode.ScheduledWaveTick() scales threat rise linearly by live in-world player count (threat += WaveDifficultyPerSecond * inWorldPlayerCount * tickSeconds), so a 30-player instance accumulates threat far faster than the WaveDifficultyFailureThreshold can be fought back down, failing Phase 1 out almost immediately. Capping at 10 throttles that multiplier directly. The engine's existing public-region load balancer (WorldManager.GetOrCreatePublicRegion/RegionLoadBalancer) already fills existing non-full instances before spinning a new one and already shares phase/threat state per-instance rather than per-player - no code changes needed, this PlayerLimit value is the only thing that needed to change",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
     "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
     "Path": "PowerUpItem",
     "Description": "[Dinos Invade Manhattan] PvEWaveBattlePowerUpItem never got a working model. EventLootPowerUpKingpin (tried first) worked visually but carries ARMOR-event mission baggage (granted a 'go kill Kingpin' condition on pickup). DangerRoomTrackedRegionScoreOrb200 is a generic, mission-free 'pick up to adjust a tracked score' orb - DesignState Live, native ObjectiveInfo (VisibleAlways, 50000 edge range) and Icons, no villain-specific side effects",
