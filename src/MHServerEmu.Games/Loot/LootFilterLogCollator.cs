@@ -1,3 +1,4 @@
+using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
 
 namespace MHServerEmu.Games.Loot
@@ -68,7 +69,7 @@ namespace MHServerEmu.Games.Loot
             if (session.HasContent == false) return;
             try
             {
-                string dir = Path.Combine("Logs", "LootFilter");
+                string dir = Path.Combine(FileHelper.ServerRoot, "Logs", "LootFilter");
                 Directory.CreateDirectory(dir);
                 string safeName = string.Join("_", session.PlayerName.Split(Path.GetInvalidFileNameChars()));
                 string fileName = $"LootFilter_{safeName}_{session.StartTime:yyyyMMdd_HHmmss}_{session.PlayerId}.log";

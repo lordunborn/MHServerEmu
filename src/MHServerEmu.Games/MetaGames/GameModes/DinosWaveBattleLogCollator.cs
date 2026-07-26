@@ -1,3 +1,4 @@
+using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
 
 namespace MHServerEmu.Games.MetaGames.GameModes
@@ -6,8 +7,12 @@ namespace MHServerEmu.Games.MetaGames.GameModes
     /// Per-run log collator for PvEScaleGameMode (Dinos Invade Manhattan) threat-balance diagnostics.
     /// Buffers structured tick/kill/power-up/phase-transition lines in memory for the lifetime of one
     /// continuous playthrough (spanning every phase's separate MetaGameMode instance), and flushes to
-    /// a dedicated file only on the run's true end (boss defeated, or any phase failure) - mirrors
-    /// StashAffinityLogCollator's buffer-then-flush-at-session-end shape.
+    /// a dedicated file under {ServerRoot}/Logs/DinosWaveBattle only on the run's true end (boss
+    /// defeated, or any phase failure) - mirrors StashAffinityLogCollator's buffer-then-flush-at-
+    /// session-end shape. Uses FileHelper.ServerRoot (not a bare relative "Logs" path) so the output
+    /// directory is anchored to the server executable regardless of the process's working directory -
+    /// a bare relative path silently wrote elsewhere (or nowhere visible) whenever launched with a
+    /// different CWD, e.g. via a service/wrapper.
     ///
     /// Sessions are keyed by (Game.Id, MetaGame.Id), NOT bare MetaGame.Id. MetaGame.Id (like every
     /// Entity.Id) is only unique WITHIN a single Game instance - GameThreadManager runs a pool of
@@ -32,7 +37,7 @@ namespace MHServerEmu.Games.MetaGames.GameModes
             public readonly ulong MetaGameId;
             public readonly DateTime StartTime;
             public readonly System.Text.StringBuilder Buffer = new();
-            public string AvatarLabel = "unknown";
+            public string PlayerLabel = "unknown";
 
             public Session(ulong gameId, ulong metaGameId)
             {
@@ -64,13 +69,13 @@ namespace MHServerEmu.Games.MetaGames.GameModes
             }
         }
 
-        public static void SetAvatarLabel(ulong gameId, ulong metaGameId, string label)
+        public static void SetPlayerLabel(ulong gameId, ulong metaGameId, string label)
         {
             if (metaGameId == 0 || string.IsNullOrEmpty(label)) return;
             lock (_sessions)
             {
                 if (_sessions.TryGetValue((gameId, metaGameId), out Session session))
-                    session.AvatarLabel = label;
+                    session.PlayerLabel = label;
             }
         }
 
@@ -92,10 +97,10 @@ namespace MHServerEmu.Games.MetaGames.GameModes
 
             try
             {
-                string dir = Path.Combine("Logs", "DinosWaveBattle");
+                string dir = Path.Combine(FileHelper.ServerRoot, "Logs", "DinosWaveBattle");
                 Directory.CreateDirectory(dir);
-                string safeAvatar = string.Join("_", session.AvatarLabel.Split(Path.GetInvalidFileNameChars()));
-                string fileName = $"DinosWaveBattle_{safeAvatar}_{outcome}_{session.StartTime:yyyyMMdd_HHmmss}_{gameId}_{metaGameId}.log";
+                string safePlayerName = string.Join("_", session.PlayerLabel.Split(Path.GetInvalidFileNameChars()));
+                string fileName = $"DinosWaveBattle_{safePlayerName}_{outcome}_{session.StartTime:yyyyMMdd_HHmmss}_{gameId}_{metaGameId}.log";
                 string path = Path.Combine(dir, fileName);
                 File.WriteAllText(path, session.Buffer.ToString());
                 Logger.Info($"[DinosWaveBattleCollator] Wrote {session.Buffer.Length} chars to '{path}'.");

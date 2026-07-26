@@ -1,3 +1,4 @@
+using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
 
 namespace MHServerEmu.Games.Entities
@@ -68,7 +69,7 @@ namespace MHServerEmu.Games.Entities
             if (session.HasContent == false) return;
             try
             {
-                string dir = Path.Combine("Logs", "StashAffinity");
+                string dir = Path.Combine(FileHelper.ServerRoot, "Logs", "StashAffinity");
                 Directory.CreateDirectory(dir);
                 string safeName = string.Join("_", session.PlayerName.Split(Path.GetInvalidFileNameChars()));
                 string fileName = $"StashAffinity_{safeName}_{session.StartTime:yyyyMMdd_HHmmss}_{session.PlayerId}.log";

@@ -174,8 +174,8 @@ namespace MHServerEmu.Games.MetaGames.GameModes
                 int playerCount = CountInWorldPlayers();
                 Player firstPlayer = GetRandomPlayer();
                 Avatar firstAvatar = firstPlayer?.CurrentAvatar;
-                if (firstAvatar != null)
-                    DinosWaveBattleLogCollator.SetAvatarLabel(Game.Id, MetaGame.Id, $"{firstAvatar.PrototypeName}_L{firstAvatar.CharacterLevel}");
+                if (firstPlayer != null && firstAvatar != null)
+                    DinosWaveBattleLogCollator.SetPlayerLabel(Game.Id, MetaGame.Id, $"{firstPlayer.GetName()}_L{firstAvatar.CharacterLevel}");
 
                 LogWaveBattle($"PHASE_START phase={GameDatabase.GetFormattedPrototypeName(_proto.DataRef)} boss={_isBossPhase} " +
                     $"durationS={_proto.WaveDurationMS / 1000} enteringThreat={_threat:F2}/{GetEffectiveFailureThreshold()} players={playerCount}");
