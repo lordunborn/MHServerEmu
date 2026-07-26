@@ -1,0 +1,8 @@
+[
+  {
+    "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype",
+    "Setting": "eRT_BonusXPPct",
+    "Description": "[Dinos Invade Manhattan] A full run generates roughly 1500 mob kills in ~20 minutes, far above what normal leveling content expects, badly distorting the leveling curve. eRT_BonusXPPct is a straight multiplier applied in Avatar.GetLiveTuningXPMultiplier() (xpMult *= regionMultiplier), multiplied AGAINST (not combined with) the separate term xpMult *= 1f + region.Properties[ExperienceBonusPct] in Avatar.ApplyXPModifiers(). This region is hard-locked to Tier2Heroic, whose native BonusExperiencePct=0.9 gets added to region.Properties[ExperienceBonusPct] by Region.ApplyDifficultyTierProperties() (Region.cs:971) regardless of this setting, giving that other term a fixed value of 1+0.9=1.9x. Final multiplier = 1.9 x this value. Started with 0.0526 (nets exactly 10% of normal XP) as a math-derived starting point, but confirmed via live in-game testing (reloadlivetuning, not just a file edit) that it felt like too steep a cut - live-tuned to 0.50 instead, netting 1.9*0.50=0.95 (players get ~95% of normal XP, a light trim rather than a heavy cut). Hot-reloadable via LiveTuning (no restart needed). To retune for a different final XP pct, solve X = (desired final multiplier) / 1.9, e.g. X~=0.1316 for 25% of normal XP, X~=0.2632 for half. NOTE: this multiplier is gated behind Player.CanUseLiveTuneBonuses() unless eGTV_ServerBonusUnlockLevelOverride (in LiveTuningDataGlobal.json) is below its default of 1.0 (e.g. 0) or eGTV_RespectLevelForRegionXP is 0 - confirmed set on both our own and TAHITI's servers as of this writing, but verify on any other server this ships to",
+    "Value": 0.50
+  }
+]
