@@ -89,10 +89,10 @@
     "Enabled": true,
     "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype",
     "Path": "Properties",
-    "Description": "[Dinos Invade Manhattan] XP curve tuning - a full run generates roughly 1500 mob kills in ~20 minutes, which is far above what normal leveling content expects and was found to be badly distorting the leveling curve. PropertyEnum.ExperienceBonusPct is read additively (1f + value) in Avatar.ApplyXPModifiers() alongside party/difficulty-tier XP multipliers, so -0.90 here means all XP earned in this region is cut by 90% (players get 10% of the XP a kill would normally award) - set as a conservative default, not a final number. Adjust this single value per-server as needed: e.g. -0.75 for 25% of normal XP, -0.5 for half",
+    "Description": "[Dinos Invade Manhattan] XP curve tuning - a full run generates roughly 1500 mob kills in ~20 minutes, which is far above what normal leveling content expects and was found to be badly distorting the leveling curve. PropertyEnum.ExperienceBonusPct is read additively (1f + value) in Avatar.ApplyXPModifiers() alongside party/difficulty-tier XP multipliers. IMPORTANT: Region.ApplyDifficultyTierProperties() (Region.cs:971) ADDS the active difficulty tier's own BonusExperiencePct on top of this prototype default via Properties.AdjustProperty() at region init - this region is hard-locked to Tier2Heroic, which natively carries BonusExperiencePct=0.9 (a +90% Heroic-difficulty XP bonus). So the value here must be offset by that +0.9 to land on the intended final multiplier: -1.80 + 0.9 = -0.90 net, giving 1+(-0.90)=0.10x (players get 10% of the XP a kill would normally award). Set as a conservative default, not a final number - to retune, solve for X in (X + 0.9) = (desired final ExperienceBonusPct), e.g. X=-1.65 nets -0.75 final (25% of normal XP), X=-1.4 nets -0.5 final (half)",
     "ValueType": "Properties",
     "Value": {
-      "ExperienceBonusPct": -0.90
+      "ExperienceBonusPct": -1.80
     }
   },
   {
