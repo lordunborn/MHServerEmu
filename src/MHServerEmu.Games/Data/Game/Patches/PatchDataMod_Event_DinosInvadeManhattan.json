@@ -913,9 +913,9 @@
     "Enabled": true,
     "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
     "Path": "WaveDifficultyFailureThreshold",
-    "Description": "[Dinos Invade Manhattan] Native flat 50 regardless of group size, while threat RISE already scales linearly by live in-world player count (PvEScaleGameMode.ScheduledWaveTick) - meaning a 10-player instance faced 10x the absolute threat swing per tick against the SAME fixed ceiling a solo player used, which is why nobody on the live 10-player-capped server got past Phase 1 despite solo runs landing at only 23-28% of the cap. PvEScaleGameMode.GetEffectiveFailureThreshold() now multiplies this field by CountInWorldPlayers(), so this value is really a PER-PLAYER unit. Cut from 50 to 18 - the exact per-player passive-rise-per-phase number (WaveDifficultyPerSecond 0.10 * 180s phase) - so zero kills/power-ups over a full phase lands exactly at the ceiling rather than comfortably under it, matching solo's existing felt difficulty while fixing the group-size asymmetry",
+    "Description": "[Dinos Invade Manhattan] REVISED 2026-07-25 (second pass) - Native flat 50 regardless of group size, while threat RISE already scales linearly by live in-world player count (PvEScaleGameMode.ScheduledWaveTick), which is why nobody on the live 10-player-capped server got past Phase 1. PvEScaleGameMode.GetEffectiveFailureThreshold() now multiplies this field by CountInWorldPlayers(), so this value is really a PER-PLAYER unit. FIRST attempt cut this to 18 (one phase's raw passive rise) on the assumption a phase's own rise should define its own ceiling - but threat is NOT reset between phases (only cleared on win/fail), so leftover threat compounds; a solo run failed mid-Phase-3 at 18.09. SECOND attempt raised to 35 alongside bumping the orb to 0.4 - a full solo win log then showed peak threat only ever reached 21.44 (61% of cap) and settled to 15.83/35 (45%) by the boss, confirming both numbers had far more slack than needed (net-per-phase growth self-moderates as the orb's percentage cut grows with threat: +4.53, +1.93, +2.05, +0.40, +1.92). Cut to 25 - still real headroom above that observed ~16-21 peak (so a clean run doesn't fail), but tight enough that missed kills or a skipped orb pickup actually threatens the run, unlike 35's wide safety margin. Still a live-tuning starting point",
     "ValueType": "Float",
-    "Value": 18.0
+    "Value": 25.0
   },
   {
     "Enabled": true,
@@ -923,7 +923,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 18.0
+    "Value": 25.0
   },
   {
     "Enabled": true,
@@ -931,7 +931,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 18.0
+    "Value": 25.0
   },
   {
     "Enabled": true,
@@ -939,7 +939,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 18.0
+    "Value": 25.0
   },
   {
     "Enabled": true,
@@ -947,7 +947,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 18.0
+    "Value": 25.0
   },
   {
     "Enabled": true,
@@ -955,7 +955,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 18.0
+    "Value": 25.0
   },
   {
     "Enabled": true,
@@ -963,15 +963,15 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold scaling as Phase1-6, applied to the boss phase for consistency (this phase's native WaveDurationMS is already patched to 360000/6min elsewhere in this file, independent of this cut) - see Phase1's entry for the full reasoning",
     "ValueType": "Float",
-    "Value": 18.0
+    "Value": 25.0
   },
   {
     "Enabled": true,
     "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
     "Path": "PowerUpDifficultyReduction",
-    "Description": "[Dinos Invade Manhattan] REINTERPRETED 2026-07-25 - PvEScaleGameMode.CollectPowerUp() now treats this field as a 0.0-1.0 FRACTION of current threat removed per pickup, not a flat amount, so a pickup stays meaningful whether grabbed early (low threat) or late (near the ceiling) and its relative value no longer shrinks as the player-scaled ceiling grows with group size (the flat-8.0 version was a fixed ~44% of a SOLO phase's rise but shrank to a much smaller fraction as ceiling and rise both scaled up together for larger groups - orbs were becoming pointless in a full group even though the per-player math theoretically stayed constant). 0.25 means a well-timed grab always cuts a quarter of whatever threat currently stands, regardless of group size or how close to failing the group already is - a starting point for live tuning, not a final number",
+    "Description": "[Dinos Invade Manhattan] REINTERPRETED 2026-07-25 - PvEScaleGameMode.CollectPowerUp() now treats this field as a 0.0-1.0 FRACTION of current threat removed per pickup, not a flat amount, so a pickup stays meaningful whether grabbed early (low threat) or late (near the ceiling) and its relative value no longer shrinks as the player-scaled ceiling grows with group size (the flat-8.0 version was a fixed ~44% of a SOLO phase's rise but shrank to a much smaller fraction as ceiling and rise both scaled up together for larger groups - orbs were becoming pointless in a full group even though the per-player math theoretically stayed constant). BUMPED 2026-07-25 from 0.25 to 0.4 after a solo test failed mid-Phase-3 with too-weak early-game cuts (25% of a still-low 4.43 threat only removed 1.11). That fix worked, but a follow-up solo win log showed 0.4's growing cut (percentage of a climbing threat) was actively DECELERATING threat growth late-run (+0.40 net in Phase5 vs +4.53 in Phase1), leaving too much slack against the also-raised 35 ceiling. CUT to 0.3 (second pass, alongside the ceiling coming down to 25) - still stronger early than the original 0.25, but not so strong late-run that it flattens out the intended rising tension entirely. Still a live-tuning starting point",
     "ValueType": "Float",
-    "Value": 0.25
+    "Value": 0.3
   },
   {
     "Enabled": true,
@@ -979,7 +979,7 @@
     "Path": "PowerUpDifficultyReduction",
     "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 0.25
+    "Value": 0.3
   },
   {
     "Enabled": true,
@@ -987,7 +987,7 @@
     "Path": "PowerUpDifficultyReduction",
     "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 0.25
+    "Value": 0.3
   },
   {
     "Enabled": true,
@@ -995,7 +995,7 @@
     "Path": "PowerUpDifficultyReduction",
     "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 0.25
+    "Value": 0.3
   },
   {
     "Enabled": true,
@@ -1003,7 +1003,7 @@
     "Path": "PowerUpDifficultyReduction",
     "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 0.25
+    "Value": 0.3
   },
   {
     "Enabled": true,
@@ -1011,7 +1011,7 @@
     "Path": "PowerUpDifficultyReduction",
     "Description": "[Dinos Invade Manhattan] Same percentage reinterpretation as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 0.25
+    "Value": 0.3
   },
   {
     "Enabled": true,
@@ -1019,6 +1019,6 @@
     "Path": "PowerUpDifficultyReduction",
     "Description": "[Dinos Invade Manhattan] Native value here was an un-rebalanced 0.7 (a leftover flat-era number, never bumped to 8.0 like Phase1-6 since the boss phase doesn't use the same wave-power-up flow the same way) - now explicitly set to the same 0.25 fraction as the wave phases so the boss phase's orb (if one spawns) behaves consistently rather than keeping a stale, much smaller flat-era value reinterpreted as an oddly tiny 70% cut",
     "ValueType": "Float",
-    "Value": 0.25
+    "Value": 0.3
   }
 ]
