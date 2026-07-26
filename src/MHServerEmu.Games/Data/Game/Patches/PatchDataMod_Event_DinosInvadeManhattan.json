@@ -87,6 +87,16 @@
   },
   {
     "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype",
+    "Path": "Properties",
+    "Description": "[Dinos Invade Manhattan] XP curve tuning - a full run generates roughly 1500 mob kills in ~20 minutes, which is far above what normal leveling content expects and was found to be badly distorting the leveling curve. PropertyEnum.ExperienceBonusPct is read additively (1f + value) in Avatar.ApplyXPModifiers() alongside party/difficulty-tier XP multipliers, so -0.90 here means all XP earned in this region is cut by 90% (players get 10% of the XP a kill would normally award) - set as a conservative default, not a final number. Adjust this single value per-server as needed: e.g. -0.75 for 25% of normal XP, -0.5 for half",
+    "ValueType": "Properties",
+    "Value": {
+      "ExperienceBonusPct": -0.90
+    }
+  },
+  {
+    "Enabled": true,
     "Prototype": "Metagame/PvEWaveBase/PvEScaleBattle/Modes/PvEScaleGamePhase1Base.prototype",
     "Path": "PowerUpItem",
     "Description": "[Dinos Invade Manhattan] PvEWaveBattlePowerUpItem never got a working model. EventLootPowerUpKingpin (tried first) worked visually but carries ARMOR-event mission baggage (granted a 'go kill Kingpin' condition on pickup). DangerRoomTrackedRegionScoreOrb200 is a generic, mission-free 'pick up to adjust a tracked score' orb - DesignState Live, native ObjectiveInfo (VisibleAlways, 50000 edge range) and Icons, no villain-specific side effects",
