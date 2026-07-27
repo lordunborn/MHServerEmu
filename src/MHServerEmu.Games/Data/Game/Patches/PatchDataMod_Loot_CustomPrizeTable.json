@@ -11,12 +11,12 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
     "Path": "Choices[0]",
-    "Description": "[Custom Prize Table] Slot 0: Cosmic Artifact, back to 100% guaranteed (reverted from an earlier 50% test) but kept OnceDaily(PerAccount) - user's final call: first King Lizard kill of the day guarantees an artifact, then locked out for 20h (per model variant - see KingLizardBossEG02/Rider's LootCooldownTimeHours patch). Still clones the full CosmicArtifactsTable.prototype (all 48 choices intact) rather than hand-copying, only NoDropPercent + Modifiers are overridden on the clone",
+    "Description": "[Custom Prize Table] Slot 0: Cosmic Artifact, back to 100% guaranteed (reverted from an earlier 50% test), OnceDaily(PerAccount) - user's final call: first King Lizard kill of the day guarantees an artifact, then locked out for 20h (per model variant - see KingLizardBossEG02/Rider's LootCooldownTimeHours patch). FIXED 2026-07-27: the referenced Loot/Modifiers/OnceDaily.defaults (2702037107533811112) actually has PerAccount=False natively (confirmed via LootTableDumper --dump) - despite this and the other 3 OnceDaily slots' descriptions all claiming PerAccount, none of them ever actually were, letting players bypass the 20h lock by farming on alts. Overriding PerAccount=true on the clone here fixes it for real (ItemResolverContext.GetDropChance/SetDropChanceCooldown key off this exact per-node flag to choose Player.Properties vs Avatar.Properties). Still clones the full CosmicArtifactsTable.prototype (all 48 choices intact) rather than hand-copying, only NoDropPercent + Modifiers are overridden on the clone",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 6601388876799612218,
       "NoDropPercent": 0,
-      "Modifiers": [ { "ParentDataRef": 2702037107533811112 } ]
+      "Modifiers": [ { "ParentDataRef": 2702037107533811112, "PerAccount": true } ]
     }
   },
   {
@@ -99,13 +99,13 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
     "Path": "Choices[6]",
-    "Description": "[Custom Prize Table] Slot 6: HeroComm10Box, now OnceDaily(PerAccount) to limit farming. LootRollOnceDailyPrototype.IsValidForNode() only accepts LootTablePrototype nodes (checked in source), not a bare LootDropItemPrototype - so this had to move from a direct item-drop into a wrapper table (PickWeight, NoDropPercent=0 so it's still guaranteed whenever the cooldown allows) to carry the modifier",
+    "Description": "[Custom Prize Table] Slot 6: HeroComm10Box, OnceDaily(PerAccount) to limit farming. LootRollOnceDailyPrototype.IsValidForNode() only accepts LootTablePrototype nodes (checked in source), not a bare LootDropItemPrototype - so this had to move from a direct item-drop into a wrapper table (PickWeight, NoDropPercent=0 so it's still guaranteed whenever the cooldown allows) to carry the modifier. FIXED 2026-07-27: added PerAccount=true override - the referenced OnceDaily.defaults modifier is PerAccount=False natively, so despite this slot's own description claiming PerAccount, it was actually tracking the cooldown per-avatar, letting it be farmed on alts",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 5508985158461163528,
       "PickMethod": "PickWeight",
       "NoDropPercent": 0,
-      "Modifiers": [ { "ParentDataRef": 2702037107533811112 } ],
+      "Modifiers": [ { "ParentDataRef": 2702037107533811112, "PerAccount": true } ],
       "Choices": [
         { "ParentDataRef": 1071992662862269383, "Item": 7963913432821078741, "NumMin": 1, "NumMax": 1, "Weight": 100 }
       ]
@@ -115,13 +115,13 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
     "Path": "Choices[7]",
-    "Description": "[Custom Prize Table] Slot 7: ProtComm10Box, same OnceDaily(PerAccount) wrapper as HeroComm10Box, tracked independently",
+    "Description": "[Custom Prize Table] Slot 7: ProtComm10Box, same OnceDaily(PerAccount) wrapper as HeroComm10Box, tracked independently. FIXED 2026-07-27: same PerAccount=true override fix as HeroComm10Box (Slot 6) - see that entry's description",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 5508985158461163528,
       "PickMethod": "PickWeight",
       "NoDropPercent": 0,
-      "Modifiers": [ { "ParentDataRef": 2702037107533811112 } ],
+      "Modifiers": [ { "ParentDataRef": 2702037107533811112, "PerAccount": true } ],
       "Choices": [
         { "ParentDataRef": 1071992662862269383, "Item": 10583912791301561068, "NumMin": 1, "NumMax": 1, "Weight": 100 }
       ]
@@ -155,13 +155,13 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
     "Path": "Choices[11]",
-    "Description": "[Custom Prize Table] Slot 11: Costume/Card/Pet at a real 2% chance, OnceDaily(PerAccount). Rebuilt inline rather than referencing SpecialsCostumeCardPet.prototype directly - that table's own NoDropPercent is 0 (the 1.375%/once-daily gate actually lives on a wrapper INSIDE SharedEndgameWaveBattles, not on this named table), so a direct reference here would be 100% instead of 2%. Replicates the same internal weighted odds (Fortune Card / Rank-1 Costume / Old Lace Pet / Rank-8 prestige Costume) under our own 2% gate",
+    "Description": "[Custom Prize Table] Slot 11: Costume/Card/Pet at a real 2% chance, OnceDaily(PerAccount). Rebuilt inline rather than referencing SpecialsCostumeCardPet.prototype directly - that table's own NoDropPercent is 0 (the 1.375%/once-daily gate actually lives on a wrapper INSIDE SharedEndgameWaveBattles, not on this named table), so a direct reference here would be 100% instead of 2%. Replicates the same internal weighted odds (Fortune Card / Rank-1 Costume / Old Lace Pet / Rank-8 prestige Costume) under our own 2% gate. FIXED 2026-07-27: same PerAccount=true override fix as the Cosmic Artifact slot (Slot 0) - see that entry's description for the full root cause",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 5508985158461163528,
       "PickMethod": "PickWeight",
       "NoDropPercent": 0.98,
-      "Modifiers": [ { "ParentDataRef": 2702037107533811112 } ],
+      "Modifiers": [ { "ParentDataRef": 2702037107533811112, "PerAccount": true } ],
       "Choices": [
         { "ParentDataRef": 7084891761292086861, "ItemRank": 1, "UISlot": "Costume", "NumMin": 1, "NumMax": 1, "Weight": 100 },
         { "ParentDataRef": 1071992662862269383, "Item": 15142736093714783733, "NumMin": 1, "NumMax": 1, "Weight": 200 },

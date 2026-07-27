@@ -1187,7 +1187,10 @@ namespace LootTableDumper
         /// </summary>
         private static void DumpGeneric(string path, int maxDepth)
         {
-            PrototypeId protoRef = GameDatabase.GetPrototypeRefByName(path);
+            PrototypeId protoRef = ulong.TryParse(path, out ulong rawRef)
+                ? (PrototypeId)rawRef
+                : GameDatabase.GetPrototypeRefByName(path);
+
             if (protoRef == PrototypeId.Invalid)
             {
                 Console.WriteLine($"Could not resolve prototype name: {path}");
