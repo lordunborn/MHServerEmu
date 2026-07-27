@@ -20,8 +20,17 @@ namespace LootTableDumper
     {
         private static readonly HashSet<object> VisitedInChain = new(ReferenceEqualityComparer.Instance);
 
+        private static LogCollectorTarget _bootCollector;
+
         static void Main(string[] args)
         {
+            // Attached before GameDatabase is ever touched below, so --tracepatch can see
+            // PrototypePatchManager activity from the eager LoadAllPrototypes pass too, not just
+            // whatever happens to run after this Main() body starts dispatching on args.
+            _bootCollector = new LogCollectorTarget();
+            LogManager.Enabled = true;
+            LogManager.AttachTarget(_bootCollector);
+
             if (PakFileSystem.Instance.Initialize() == false)
             {
                 Console.WriteLine("PakFileSystem failed to initialize.");
@@ -44,6 +53,12 @@ namespace LootTableDumper
             if (args.Length > 0 && args[0] == "--validatepatches")
             {
                 ValidatePatches();
+                return;
+            }
+
+            if (args.Length > 1 && args[0] == "--tracepatch")
+            {
+                TracePatchTrace(args[1]);
                 return;
             }
 
@@ -337,6 +352,24 @@ namespace LootTableDumper
             else
             {
                 Console.WriteLine("No Warn/Error output from PrototypePatchManager while applying patches.");
+            }
+        }
+
+        private static void TracePatchTrace(string searchTerm)
+        {
+            // Also force-touch the prototype in case it wasn't part of the eager LoadAllPrototypes
+            // pass (harmless no-op if it's already loaded and cached).
+            PrototypeId protoRef = GameDatabase.GetPrototypeRefByName(searchTerm);
+            if (protoRef != PrototypeId.Invalid)
+                GameDatabase.GetPrototype<Prototype>(protoRef);
+
+            Console.WriteLine($"==================== All PrototypePatchManager log messages captured since process start (filtered by '{searchTerm}') ====================");
+            Console.WriteLine($"Total captured messages: {_bootCollector.Messages.Count}");
+            foreach (var msg in _bootCollector.Messages)
+            {
+                string text = msg.ToString();
+                if (text.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    Console.WriteLine($"[{msg.Level}] {text}");
             }
         }
 
