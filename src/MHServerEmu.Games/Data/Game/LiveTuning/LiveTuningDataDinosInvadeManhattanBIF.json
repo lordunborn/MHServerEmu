@@ -1,0 +1,8 @@
+[
+  {
+    "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype",
+    "Setting": "eRT_BonusItemFindMultiplier",
+    "Description": "[Dinos Invade Manhattan] A full run generates roughly 1500 mob kills in ~20 minutes. Region.GetBonusItemFindMultiplier() = Prototype.BonusItemFindMultiplier * difficultyMult * this value, and AwardBonusLoot() awards RankPrototype.BonusItemFindPoints per ranked kill scaled by that multiplier - at Dinos' kill volume, Bonus Item Find (BIF) accumulates far faster than any other content in the game, effectively letting it be farmed. Setting this to 0 zeroes the whole multiplier, which AwardBonusLoot() treats as 'no bonus loot at all' and skips entirely. This file is only loaded at all when CustomGameOptionsConfig.DinosDisableBonusItemFind is true in Config.ini (see LiveTuningManager.LoadLiveTuningData) - flip that to false and restart to let BIF accumulate normally in this region again. Hot-reloadable via LiveTuning (no restart needed) only for CHANGING this value while the file is already being loaded; toggling whether the file loads at all still requires a restart since it's read once from Config.ini at startup.",
+    "Value": 0.0
+  }
+]

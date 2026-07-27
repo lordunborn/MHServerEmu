@@ -111,5 +111,6 @@ namespace MHServerEmu.Games
 
         // Dinos Invade Manhattan / PvEScaleGameMode
         public bool DinosWaveBattleLoggingEnable { get; private set; } = false;
+        public bool DinosDisableBonusItemFind { get; private set; } = false;
     }
 }

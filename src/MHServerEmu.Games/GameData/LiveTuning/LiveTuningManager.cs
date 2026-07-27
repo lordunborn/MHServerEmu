@@ -1,4 +1,5 @@
 ﻿using Gazillion;
+using MHServerEmu.Core.Config;
 using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
 using MHServerEmu.Core.Memory;
@@ -35,9 +36,20 @@ namespace MHServerEmu.Games.GameData.LiveTuning
 
             List<NetStructLiveTuningSettingProtoEnumValue> settings = new();
 
+            bool disableDinosBonusItemFind = ConfigManager.Instance.GetConfig<CustomGameOptionsConfig>().DinosDisableBonusItemFind;
+
             // Read all .json files that start with LiveTuningData
             foreach (string filePath in FileHelper.GetFilesWithPrefix(LiveTuningDataDirectory, "LiveTuningData", "json"))
+            {
+                // Kept in its own file (rather than folded into LiveTuningDataDinosInvadeManhattan.json)
+                // so it can be gated independently by the DinosDisableBonusItemFind ini toggle without
+                // touching that file's always-on eRT_BonusXPPct entry.
+                string fileName = Path.GetFileName(filePath);
+                if (fileName == "LiveTuningDataDinosInvadeManhattanBIF.json" && disableDinosBonusItemFind == false)
+                    continue;
+
                 LoadLiveTuningDataFromFile(filePath, settings);
+            }
 
             // Get additional event Live Tuning based on the current day
             LiveTuningEventScheduler.Instance.GetLiveTuningSettings(settings);
