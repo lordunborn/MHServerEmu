@@ -37,6 +37,49 @@ namespace MHServerEmu.Games.GameData.PatchManager
             // consulting _patchDict.
             _initialized = true;
             LoadPatchDataFromDisk();
+            ReapplyPatchesToAlreadyConstructedPrototypes();
+        }
+
+        /// <summary>
+        /// A patch entry can permanently miss its own PreCheck()/PostOverride() window regardless of
+        /// file processing order: ParseJsonPrototype() (used for "Prototype"/"Prototype[]" values that
+        /// embed an existing PrototypeId, e.g. adding an existing item into another table's Choices[])
+        /// force-constructs that referenced prototype immediately, during raw JSON deserialization of
+        /// whatever OTHER patch file happens to contain it - which can construct still more prototypes
+        /// transitively (e.g. the referenced item's own native LootTable field). A prototype's
+        /// PreCheck()/PostOverride() sequence only ever runs once, at first construction, so if that
+        /// first construction happens before its own dedicated patch file is even parsed, its entries
+        /// are stuck unpatched forever - no warning, no trace, since nothing ever revisits it.
+        ///
+        /// Confirmed via a real case (Tahiti's ICPLeader.json "Add SSB" entries, which reference
+        /// BonusItemFindBox.prototype - whose own native data uses BonusItemFindTable.prototype as its
+        /// loot table): this eagerly built BonusItemFindTable ~40 files before SSBOptimization.json/
+        /// SSBRemovalPatch.json ever got parsed, permanently losing their entries despite the
+        /// _initialized-ordering fix above (which only covers the reverse case: the target's own
+        /// patches already registered before something else force-constructs it).
+        ///
+        /// Runs once, after every patch file has been parsed and _patchDict is fully populated. For any
+        /// prototype that still has unpatched entries, GetPrototype() below is a harmless no-op if nothing
+        /// has touched it yet (normal lazy construction then proceeds through the standard, now-correct
+        /// PreCheck()/PostOverride() flow) - the only case where entries can STILL be unpatched afterward
+        /// is a prototype that was already built earlier, which is exactly the case this needs to catch.
+        /// Forcing PostProcessContainedPrototypes() directly (rather than PostProcess()) re-runs only the
+        /// patch-application traversal, not whatever extra one-time setup a subclass's PostProcess()
+        /// override does for itself - though that does still run again for every CONTAINED prototype
+        /// touched during the retraversal, since those go through their own ordinary PostProcess() calls.
+        /// </summary>
+        private void ReapplyPatchesToAlreadyConstructedPrototypes()
+        {
+            foreach (var kvp in _patchDict)
+            {
+                if (NotPatched(kvp.Value) == false) continue;
+
+                Prototype prototype = GameDatabase.GetPrototype<Prototype>(kvp.Key);
+                if (prototype == null) continue;
+
+                if (NotPatched(kvp.Value))
+                    GameDatabase.PrototypeClassManager.PostProcessContainedPrototypes(prototype);
+            }
         }
 
         private void LoadPatchDataFromDisk()
@@ -364,6 +407,18 @@ namespace MHServerEmu.Games.GameData.PatchManager
             if (parent.DataRef != PrototypeId.Invalid && _patchDict.ContainsKey(parent.DataRef))
                 parentPath = string.Empty;
             _pathDict[child] = $"{parentPath}.{fieldName}[{index}]";
+        }
+
+        /// <summary>
+        /// Returns every registered patch entry across all resolved prototypes, for external tooling
+        /// (e.g. LootTableDumper's --patchstatus) to report on Patched status after a full load pass.
+        /// Not used by any runtime game logic.
+        /// </summary>
+        public IEnumerable<(PrototypeId ProtoRef, PrototypePatchEntry Entry)> EnumerateAllEntries()
+        {
+            foreach (var kvp in _patchDict)
+                foreach (PrototypePatchEntry entry in kvp.Value)
+                    yield return (kvp.Key, entry);
         }
     }
 }
