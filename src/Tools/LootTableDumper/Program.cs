@@ -163,6 +163,12 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--checkenumcollisions")
+            {
+                CheckLootTableEnumCollisions();
+                return;
+            }
+
             if (args.Length > 0 && args[0] == "--dumpstrings")
             {
                 string locoDir = args.Length > 1 ? args[1] : "";
@@ -919,6 +925,55 @@ namespace LootTableDumper
                 count++;
             }
             Console.WriteLine($"  -- {count} matches --");
+        }
+
+        /// <summary>
+        /// Iterates every LootTablePrototype in the game, groups them by their resolved
+        /// LootTablePrototypeEnumValue, and reports any enum value shared by more than one
+        /// distinct PrototypeId - direct proof (or disproof) of a LiveTuning array-index collision
+        /// between unrelated loot tables.
+        /// </summary>
+        private static void CheckLootTableEnumCollisions()
+        {
+            Console.WriteLine("==================== Checking LootTablePrototypeEnumValue collisions ====================");
+
+            Dictionary<int, List<PrototypeId>> enumToProtoRefs = new();
+            int total = 0;
+
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto is not LootTablePrototype lootTableProto) continue;
+
+                total++;
+                int enumVal = lootTableProto.LootTablePrototypeEnumValue;
+
+                if (enumToProtoRefs.TryGetValue(enumVal, out List<PrototypeId> list) == false)
+                {
+                    list = new();
+                    enumToProtoRefs[enumVal] = list;
+                }
+                list.Add(protoRef);
+            }
+
+            Console.WriteLine($"Total LootTablePrototype instances checked: {total}");
+
+            int collisionGroups = 0;
+            foreach (var kvp in enumToProtoRefs)
+            {
+                if (kvp.Value.Count <= 1) continue;
+
+                // enum value 0 is the well-known "invalid/unset" bucket - every table that never
+                // got a real enum value assigned lands here together, which is not a real collision.
+                if (kvp.Key == 0) continue;
+
+                collisionGroups++;
+                Console.WriteLine($"  COLLISION at enum value {kvp.Key}:");
+                foreach (PrototypeId protoRef in kvp.Value)
+                    Console.WriteLine($"    {SafeGetName(protoRef)} (Ref={(ulong)protoRef})");
+            }
+
+            Console.WriteLine($"  -- {collisionGroups} colliding enum value(s) found (excluding enum 0) --");
         }
 
         /// <summary>
