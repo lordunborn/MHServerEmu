@@ -9,6 +9,7 @@ using MHServerEmu.Games.GameData.Prototypes;
 using MHServerEmu.Games.GameData.Prototypes.Markers;
 using MHServerEmu.Games.Locales;
 using MHServerEmu.Games.Properties;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -47,6 +48,12 @@ namespace LootTableDumper
             if (args.Length > 0 && args[0] == "--regions")
             {
                 DumpRegionInventory();
+                return;
+            }
+
+            if (args.Length > 0 && args[0] == "--patchstatus")
+            {
+                PatchStatus();
                 return;
             }
 
@@ -352,6 +359,49 @@ namespace LootTableDumper
             else
             {
                 Console.WriteLine("No Warn/Error output from PrototypePatchManager while applying patches.");
+            }
+        }
+
+        /// <summary>
+        /// Force-loads every enabled patch entry's target prototype (same as ValidatePatches), then
+        /// reports how many of the entries PrototypePatchManager actually registered ended up with
+        /// Patched == true vs still false after the full pass - i.e. entries that resolved a valid
+        /// prototype name but never found a matching path/field to apply to. This is a DIFFERENT
+        /// failure mode than ValidatePatches' "unresolved prototype name" check: those never even
+        /// make it into _patchDict, while these are registered but silently never matched.
+        /// </summary>
+        private static void PatchStatus()
+        {
+            string patchDirectory = Path.Combine(FileHelper.DataDirectory, "Game", "Patches");
+            var options = new JsonSerializerOptions { Converters = { new PatchEntryConverter() } };
+
+            foreach (string filePath in FileHelper.GetFilesWithPrefix(patchDirectory, "PatchData", "json"))
+            {
+                PrototypePatchEntry[] entries = FileHelper.DeserializeJson<PrototypePatchEntry[]>(filePath, options);
+                if (entries == null) continue;
+
+                foreach (PrototypePatchEntry entry in entries)
+                {
+                    if (entry.Enabled == false) continue;
+                    PrototypeId protoRef = GameDatabase.GetPrototypeRefByName(entry.Prototype);
+                    if (protoRef == PrototypeId.Invalid) continue;
+                    GameDatabase.GetPrototype<Prototype>(protoRef);
+                }
+            }
+
+            var allEntries = PrototypePatchManager.Instance.EnumerateAllEntries().ToList();
+            int patchedTrue = allEntries.Count(e => e.Entry.Patched);
+            int patchedFalse = allEntries.Count - patchedTrue;
+
+            Console.WriteLine($"==================== Patch status: {allEntries.Count} entries registered in PrototypePatchManager ====================");
+            Console.WriteLine($"Patched=true:  {patchedTrue}");
+            Console.WriteLine($"Patched=false: {patchedFalse}");
+
+            if (patchedFalse > 0)
+            {
+                Console.WriteLine("\n[NEVER MATCHED] registered but never found a matching path/field:");
+                foreach (var (protoRef, entry) in allEntries.Where(e => e.Entry.Patched == false))
+                    Console.WriteLine($"  {entry.Prototype} (Path={entry.Path})");
             }
         }
 
@@ -1227,7 +1277,7 @@ namespace LootTableDumper
                 else
                 {
                     string str = value.ToString();
-                    if (string.IsNullOrEmpty(str) || str == "0" || str == "False") continue;
+                    if (string.IsNullOrEmpty(str)) continue;
                     Console.WriteLine($"{indent}{prop.Name}: {str}");
                 }
             }
