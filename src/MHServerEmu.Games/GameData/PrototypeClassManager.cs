@@ -218,7 +218,7 @@ namespace MHServerEmu.Games.GameData
                             if (hasPatch) PrototypePatchManager.Instance.SetPathIndex(prototype, element, fieldInfo.Name, index++);
                             element.PostProcess();
                         }
-                        
+
                         break;
 
                     case PrototypeFieldType.ListMixin:

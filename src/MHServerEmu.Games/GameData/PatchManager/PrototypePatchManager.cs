@@ -20,14 +20,33 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
         public void Initialize(bool enablePatchManager)
         {
-            if (enablePatchManager) _initialized = LoadPatchDataFromDisk();
+            if (enablePatchManager == false) return;
+
+            // Set this before loading rather than after: a patch entry that appends an existing
+            // PrototypeId into a Prototype-typed array (GetElementValue() below) force-constructs
+            // that target prototype immediately, as a side effect, while this loop is still parsing
+            // OTHER patch files. A prototype's own PostProcess()/PreCheck()/PostOverride() sequence
+            // only ever runs once (at first construction, then cached) - if that first construction
+            // happens to land inside this same loop, PreCheck() needs _initialized already true to
+            // find and apply whatever is already registered in _patchDict for it, even though the
+            // overall load pass isn't finished yet. Confirmed via a real case (Tahiti's SSB removal
+            // patch): SHIELDSupplyBoost.prototype got eagerly constructed here as a side effect of an
+            // unrelated loot-table entry appending its own PrototypeId elsewhere, permanently and
+            // silently skipping SHIELDSupplyBoost's own ActionsTriggeredOnItemEvent.Choices[0].Power
+            // patch - no warning, no trace, since PreCheck() bailed on _initialized instead of ever
+            // consulting _patchDict.
+            _initialized = true;
+            LoadPatchDataFromDisk();
         }
 
-        private bool LoadPatchDataFromDisk()
+        private void LoadPatchDataFromDisk()
         {
             string patchDirectory = Path.Combine(FileHelper.DataDirectory, "Game", "Patches");
             if (Directory.Exists(patchDirectory) == false)
-                return Logger.WarnReturn(false, "LoadPatchDataFromDisk(): Game data directory not found");
+            {
+                Logger.Warn("LoadPatchDataFromDisk(): Game data directory not found");
+                return;
+            }
 
             int count = 0;
             var options = new JsonSerializerOptions { Converters = { new PatchEntryConverter() } };
@@ -56,7 +75,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
                 Logger.Trace($"Parsed patch data from {fileName}");
             }
 
-            return Logger.InfoReturn(true, $"Loaded {count} patches");
+            Logger.Info($"Loaded {count} patches");
         }
 
         private void AddPatchValue(PrototypeId prototypeId, in PrototypePatchEntry value)
@@ -110,7 +129,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
             if (_protoStack.Count == 0) return;
 
             string currentPath = string.Empty;
-            if (prototype.DataRef == PrototypeId.Invalid 
+            if (prototype.DataRef == PrototypeId.Invalid
                 && _pathDict.TryGetValue(prototype, out currentPath) == false) return;
 
             PrototypeId patchProtoRef = _protoStack.Peek();
@@ -334,7 +353,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
         public void SetPath(Prototype parent, Prototype child, string fieldName)
         {
             string parentPath = _pathDict.TryGetValue(parent, out var path) ? path : string.Empty;
-            if (parent.DataRef != PrototypeId.Invalid && _patchDict.ContainsKey(parent.DataRef)) 
+            if (parent.DataRef != PrototypeId.Invalid && _patchDict.ContainsKey(parent.DataRef))
                 parentPath = string.Empty;
             _pathDict[child] = $"{parentPath}.{fieldName}";
         }
@@ -342,7 +361,7 @@ namespace MHServerEmu.Games.GameData.PatchManager
         public void SetPathIndex(Prototype parent, Prototype child, string fieldName, int index)
         {
             string parentPath = _pathDict.TryGetValue(parent, out var path) ? path : string.Empty;
-            if (parent.DataRef != PrototypeId.Invalid && _patchDict.ContainsKey(parent.DataRef)) 
+            if (parent.DataRef != PrototypeId.Invalid && _patchDict.ContainsKey(parent.DataRef))
                 parentPath = string.Empty;
             _pathDict[child] = $"{parentPath}.{fieldName}[{index}]";
         }
