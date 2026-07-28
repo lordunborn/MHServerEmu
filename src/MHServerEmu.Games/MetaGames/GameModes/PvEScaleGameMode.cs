@@ -174,13 +174,19 @@ namespace MHServerEmu.Games.MetaGames.GameModes
             if (IsWaveBattleLoggingEnabled)
             {
                 int playerCount = CountInWorldPlayers();
+
+                // LogWaveBattle() lazily creates the collator session on the first call of the run,
+                // so it must fire before SetPlayerLabel() - otherwise the very first phase's label
+                // attempt is a no-op against a session that doesn't exist yet, and the label is left
+                // for whichever phase activates next to claim (SetPlayerLabel() only honors the
+                // first caller per session, see its own comment).
+                LogWaveBattle($"PHASE_START phase={GameDatabase.GetFormattedPrototypeName(_proto.DataRef)} boss={_isBossPhase} " +
+                    $"durationS={_proto.WaveDurationMS / 1000} enteringThreat={_threat:F2}/{GetEffectiveFailureThreshold()} players={playerCount}");
+
                 Player firstPlayer = GetRandomPlayer();
                 Avatar firstAvatar = firstPlayer?.CurrentAvatar;
                 if (firstPlayer != null && firstAvatar != null)
                     DinosWaveBattleLogCollator.SetPlayerLabel(Game.Id, MetaGame.Id, $"{firstPlayer.GetName()}_L{firstAvatar.CharacterLevel}");
-
-                LogWaveBattle($"PHASE_START phase={GameDatabase.GetFormattedPrototypeName(_proto.DataRef)} boss={_isBossPhase} " +
-                    $"durationS={_proto.WaveDurationMS / 1000} enteringThreat={_threat:F2}/{GetEffectiveFailureThreshold()} players={playerCount}");
             }
 
             Region.EntityDeadEvent.AddActionBack(_entityDeadAction);
