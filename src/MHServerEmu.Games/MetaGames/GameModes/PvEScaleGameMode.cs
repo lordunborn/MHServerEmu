@@ -235,6 +235,22 @@ namespace MHServerEmu.Games.MetaGames.GameModes
             }
         }
 
+        // Safety net for DinosWaveBattleLogCollator: SucceedMode()/FailMode() are the only places that
+        // normally call EndRun() to flush a run's buffered log to disk, but neither fires if the whole
+        // MetaGame/region tears down some other way first - e.g. every player leaves and the region is
+        // cleaned up, or the server restarts mid-run. Without this, that run's entire buffered log is
+        // silently lost in memory, never written - the exact "inconsistent logging" gap reported live.
+        // MetaGame.Destroy() calls OnDestroy() on every registered mode instance (all phases, not just
+        // the currently active one), so this can fire more than once per real run; EndRun() already
+        // no-ops safely if the session was already flushed or never existed, so calling it unconditionally
+        // here is harmless either way.
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            if (IsWaveBattleLoggingEnabled)
+                DinosWaveBattleLogCollator.EndRun(Game.Id, MetaGame.Id, "ABANDONED");
+        }
+
         public override void OnDeactivate()
         {
             base.OnDeactivate();
