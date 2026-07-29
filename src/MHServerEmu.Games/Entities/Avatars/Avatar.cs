@@ -4305,6 +4305,10 @@ namespace MHServerEmu.Games.Entities.Avatars
                 UseShannaPortalGuide(player, interactableObject);
             else if (interactableObject.PrototypeDataRef == MistyKnightMidtownTeleporterRef)
                 UseMistyKnightMidtownTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == CloakICPTeleporterRef)
+                UseCloakICPTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == DoctorStrangeHightownTeleporterRef)
+                UseDoctorStrangeHightownTeleporter(player, interactableObject);
 
             interactableObject.OnInteractedWith(this);
 
@@ -4428,6 +4432,112 @@ namespace MHServerEmu.Games.Entities.Avatars
                 teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
                 teleporter.DifficultyTierRef = difficultyTierRef;
                 teleporter.TeleportToTarget(MidtownPatrolTargetRef);
+            }
+        }
+
+        // [EG Patrols] Second teleporter NPC (ICP/Brooklyn), same template as Misty Knight's Midtown one.
+        // Entity/Characters/NPCs/HubNPCs/CivilWarCaptainAmericaHubNPCs/CivilWarCloak.prototype - confirmed
+        // unused elsewhere: 0 prototype-data references anywhere in the game (--findprotoref), only ever
+        // placed via marker in the inactive CivilWar_Warehouse_HUB.cell (Civil War content confirmed
+        // non-live in this fork).
+        private static readonly PrototypeId CloakICPTeleporterRef = (PrototypeId)16464612829383107056;
+
+        // Zero prototype-data references (--findlocalestringref) - same "safe narrow string" category as
+        // MistyKnightFlavorTextRef, found the same way via --dumpstrings.
+        private static readonly LocaleStringId CloakFlavorTextRef = (LocaleStringId)1348443174102631738;
+
+        // Regions/EndGame/TierX/PatrolBrooklyn/Targets/DocksPatrolEntryTarget01.prototype - same target the
+        // !patrol icp command uses.
+        private static readonly PrototypeId ICPPatrolTargetRef = (PrototypeId)3167345368996519883;
+
+        private static void UseCloakICPTeleporter(Player player, WorldEntity cloak)
+        {
+            Game game = player.Game;
+
+            GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
+            dialog.OnResponse = OnCloakICPTeleporterDialogResponse;
+            dialog.Message.LocaleString = CloakFlavorTextRef;
+            dialog.Options = DialogOptionEnum.WorldClick;
+            dialog.TargetId = cloak.Id;
+            dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive);
+
+            game.GameDialogManager.ShowDialog(dialog);
+
+            void OnCloakICPTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            {
+                PrototypeId difficultyTierRef = response.ButtonIndex switch
+                {
+                    GameDialogResultEnum.eGDR_Option1 => Tier4CosmicRef,
+                    GameDialogResultEnum.eGDR_Option2 => Tier5Omega1Ref,
+                    _ => PrototypeId.Invalid
+                };
+                if (difficultyTierRef == PrototypeId.Invalid) return;
+
+                Player responsePlayer = game.EntityManager.GetEntityByDbGuid<Player>(playerGuid);
+                if (responsePlayer == null) return;
+
+                using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+                teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
+                teleporter.DifficultyTierRef = difficultyTierRef;
+                teleporter.TeleportToTarget(ICPPatrolTargetRef);
+            }
+        }
+
+        // [EG Patrols] Third teleporter NPC (Hightown), same template as the previous two.
+        // Entity/Characters/NPCs/DoctorStrange.prototype - Ironman Tutorial was abandoned (confirmed live:
+        // his model has zero mouse-hover/interact collision client-side even after fixing DesignState and
+        // interact-eligibility - a client-asset limitation, not something a patch can fix). Doctor Strange
+        // confirmed safe to reuse instead: 0 cell-marker placements anywhere; his 3 prototype-data
+        // references are either dead content (SerpentMenSurvival is restricted to a ZZZDevelopment dead
+        // room; the old MysticMayhemChild1 redacted variant is itself DesignState:NotInGame) or cosmetic-only
+        // (the live MysticMayhemChild1New event references him purely for his icon/name in a
+        // StoryNotification popup - confirmed live via a full run of that quest, never a physical spawn).
+        // Native DesignState was NotInGame, flipped to Live via patch same as Cloak.
+        private static readonly PrototypeId DoctorStrangeHightownTeleporterRef = (PrototypeId)13792587214021661359;
+
+        // Zero prototype-data references (--findlocalestringref) - one of several duplicate/orphaned copies
+        // of the Industry City S.H.I.E.L.D. briefing text (only one of the ~7 copies is actually the live
+        // one CloakFlavorTextRef uses; the rest, like this one, were never wired to anything).
+        private static readonly LocaleStringId DoctorStrangeFlavorTextRef = (LocaleStringId)2330418597998167342;
+
+        // Regions/EndGame/TierX/PatrolHightown/ConnectionTargets/WaypointTargets/HightownPatrolWPTarget.prototype
+        // (UpperMadripoorRegionL60Cosmic) - same target the !patrol hightown command uses.
+        private static readonly PrototypeId HightownPatrolTargetRef = (PrototypeId)10783787859937667646;
+
+        private static void UseDoctorStrangeHightownTeleporter(Player player, WorldEntity doctorStrange)
+        {
+            Game game = player.Game;
+
+            GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
+            dialog.OnResponse = OnDoctorStrangeHightownTeleporterDialogResponse;
+            dialog.Message.LocaleString = DoctorStrangeFlavorTextRef;
+            dialog.Options = DialogOptionEnum.WorldClick;
+            dialog.TargetId = doctorStrange.Id;
+            dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive);
+
+            game.GameDialogManager.ShowDialog(dialog);
+
+            void OnDoctorStrangeHightownTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            {
+                PrototypeId difficultyTierRef = response.ButtonIndex switch
+                {
+                    GameDialogResultEnum.eGDR_Option1 => Tier4CosmicRef,
+                    GameDialogResultEnum.eGDR_Option2 => Tier5Omega1Ref,
+                    _ => PrototypeId.Invalid
+                };
+                if (difficultyTierRef == PrototypeId.Invalid) return;
+
+                Player responsePlayer = game.EntityManager.GetEntityByDbGuid<Player>(playerGuid);
+                if (responsePlayer == null) return;
+
+                using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+                teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
+                teleporter.DifficultyTierRef = difficultyTierRef;
+                teleporter.TeleportToTarget(HightownPatrolTargetRef);
             }
         }
 

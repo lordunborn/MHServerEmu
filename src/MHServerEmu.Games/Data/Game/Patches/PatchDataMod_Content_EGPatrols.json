@@ -11,12 +11,104 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[30].Position",
-    "Description": "[EG Patrols] Midtown teleporter position - reusing the exact spot the user already scoped out in Avengers Tower this morning.",
+    "Description": "[EG Patrols] Midtown teleporter - final placement position in Avengers Tower (previous value was a testing-cluster spot, easy to reach all 3 at once).",
     "ValueType": "Vector3",
     "Value": [
-      -1241.375,
-      1944.625,
-      128
+      294.25,
+      858.375,
+      372
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[30].Rotation",
+    "Description": "[EG Patrols] Misty Knight's native rotation at this marker was (3.83, 0, 0), not zero - explicitly zeroed out per user's request so the correct final rotation can be judged fresh from a known (0,0,0) baseline, same as Cloak (whose native rotation already happened to be zero).",
+    "ValueType": "Vector3",
+    "Value": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/HubNPCs/CivilWarCaptainAmericaHubNPCs/CivilWarCloak.prototype",
+    "Path": "DesignState",
+    "Description": "[EG Patrols] Cloak's native DesignState is DevelopmentOnly (unlike Misty Knight, who was already Live) - flip to Live so our custom interact dialog actually fires instead of falling back to just his native ambient click-through greeting.",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[31].EntityGuid",
+    "Description": "[EG Patrols] ICP teleporter - place Entity/Characters/NPCs/HubNPCs/CivilWarCaptainAmericaHubNPCs/CivilWarCloak.prototype. Confirmed unused elsewhere: 0 prototype-data references anywhere in the game (--findprotoref), only ever placed via marker in the inactive CivilWar_Warehouse_HUB.cell (Civil War content confirmed non-live in this fork - see civil-war-hijack memory). Marker 31's native LastKnownEntityName was SpawnMarkers/Types/MissionGiverTinyV2.prototype - same generic 'mission giver can spawn here' marker category as marker 30 (Misty Knight's slot), not a fixed real NPC, so safe to reuse the same way.",
+    "ValueType": "PrototypeGuid",
+    "Value": 3247942265405900330
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[31].Position",
+    "Description": "[EG Patrols] ICP teleporter - final placement position in Avengers Tower (previous value was a testing-cluster spot, easy to reach all 3 at once).",
+    "ValueType": "Vector3",
+    "Value": [
+      1147.125,
+      1034.25,
+      371
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[31].Rotation",
+    "Description": "[EG Patrols] Cloak final rotation - 135 degrees counterclockwise from the zeroed (0,0,0) baseline. Same sign convention confirmed live earlier for this exact marker (negative = counterclockwise).",
+    "ValueType": "Vector3",
+    "Value": [
+      -2.356194490192345,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/DoctorStrange.prototype",
+    "Path": "DesignState",
+    "Description": "[EG Patrols] Hightown teleporter - Ironman Tutorial was abandoned (confirmed live: his model has no mouse-hover/interact collision at all client-side, even after fixing DesignState+DialogText - a client-asset limitation, not a data problem). Doctor Strange's native DesignState is NotInGame (same class of blocker as Cloak's DevelopmentOnly). Confirmed safe to reuse: 0 cell-marker placements anywhere; the 3 prototype-data references are all either dead (SerpentMenSurvival is ActiveInRegions-restricted to a ZZZDevelopment dead room, and the old MysticMayhemChild1 redacted variant is itself DesignState:NotInGame) or cosmetic-only (the live MysticMayhemChild1New event references him only for his icon/name in a StoryNotification popup - confirmed live via a full run of that quest, he's never physically spawned).",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[32].EntityGuid",
+    "Description": "[EG Patrols] Hightown teleporter - place Entity/Characters/NPCs/DoctorStrange.prototype. Marker 32's native LastKnownEntityName was SpawnMarkers/Types/MissionTinyV2.prototype - same generic 'mission giver can spawn here' marker category as markers 30/31, not a fixed real NPC. Already has a real native DialogTextList (unlike Ironman Tutorial), so no DialogText fix needed for interact-eligibility.",
+    "ValueType": "PrototypeGuid",
+    "Value": 4823431446756076203
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[32].Position",
+    "Description": "[EG Patrols] Hightown teleporter - final placement position in Avengers Tower (previous value was a testing-cluster spot, easy to reach all 3 at once).",
+    "ValueType": "Vector3",
+    "Value": [
+      758.857,
+      580.75,
+      371
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[32].Rotation",
+    "Description": "[EG Patrols] Doctor Strange final rotation - 90 degrees clockwise from the zeroed (0,0,0) baseline. Assuming the same sign convention confirmed for Cloak's marker (negative=CCW, so positive=CW) - flip the sign if it turns out backwards live, same as the earlier Cloak sign flip.",
+    "ValueType": "Vector3",
+    "Value": [
+      1.5707963267948966,
+      0,
+      0
     ]
   }
 ]

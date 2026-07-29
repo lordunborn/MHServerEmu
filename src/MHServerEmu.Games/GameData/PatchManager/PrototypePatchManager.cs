@@ -1,5 +1,6 @@
 ﻿using MHServerEmu.Core.Helpers;
 using MHServerEmu.Core.Logging;
+using MHServerEmu.Core.VectorMath;
 using MHServerEmu.Games.GameData.Prototypes;
 using System.ComponentModel;
 using System.Reflection;
@@ -257,6 +258,13 @@ namespace MHServerEmu.Games.GameData.PatchManager
                         return GameDatabase.GetPrototype<Prototype>((PrototypeId)dataId);
                 }
             }
+
+            // MarkerPrototype.Rotation is an Orientation (Yaw/Pitch/Roll), not a Vector3, but there's no
+            // dedicated "Orientation" ValueType in patch data - JSON authors reuse ValueType:Vector3 for it
+            // (same 3-float array shape), which used to fail here since Vector3 doesn't implement
+            // IConvertible and there's no TypeConverter between the two distinct structs.
+            if (targetType == typeof(Orientation) && rawValue is Vector3 vec)
+                return new Orientation(vec.X, vec.Y, vec.Z);
 
             TypeConverter converter = TypeDescriptor.GetConverter(targetType);
             if (converter != null && converter.CanConvertFrom(rawValue.GetType()))
