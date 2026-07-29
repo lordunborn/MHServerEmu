@@ -1,0 +1,22 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[30].EntityGuid",
+    "Description": "[EG Patrols] Midtown teleporter - place Misty Knight's own real NPC prototype (Entity/Characters/NPCs/MistyKnight.prototype, already DesignState:Live with a real UnrealClass, confirmed unused elsewhere live) at this marker slot. NOT the borrowed HKRooftopVendorArmor vendor-skin guid used in the earlier, now-shelved vendor-reskin experiment (see Off/PatchDataMod_Vendors_Legendaries.json) - same slot, different guid, no vendor entanglement.",
+    "ValueType": "PrototypeGuid",
+    "Value": 4227756442550214266
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[30].Position",
+    "Description": "[EG Patrols] Midtown teleporter position - reusing the exact spot the user already scoped out in Avengers Tower this morning.",
+    "ValueType": "Vector3",
+    "Value": [
+      -1241.375,
+      1944.625,
+      128
+    ]
+  }
+]

@@ -4303,6 +4303,8 @@ namespace MHServerEmu.Games.Entities.Avatars
                 transition.UseTransition(player);
             else if (interactableObject.PrototypeDataRef == ShannaPortalGuideRef)
                 UseShannaPortalGuide(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == MistyKnightMidtownTeleporterRef)
+                UseMistyKnightMidtownTeleporter(player, interactableObject);
 
             interactableObject.OnInteractedWith(this);
 
@@ -4349,6 +4351,83 @@ namespace MHServerEmu.Games.Entities.Avatars
                 teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Transition);
                 teleporter.DifficultyTierRef = UESvsDinosDifficultyTierRef;
                 teleporter.TeleportToTarget(UESvsDinosEntryTargetRef);
+            }
+        }
+
+        // [EG Patrols] First of the T4/T5 patrol teleporter NPCs, replacing the !patrol chat command with an
+        // in-world interact. Entity/Characters/NPCs/MistyKnight.prototype - her own real NPC prototype (already
+        // DesignState:Live, real UnrealClass), not the vendor-skin reuse from an earlier, now-shelved attempt
+        // (see Off/PatchDataMod_Vendors_Legendaries.json) - no VendorType entanglement to fight since she was
+        // never a vendor prototype to begin with. Same Teleporter+forced-DifficultyTierRef mechanism the
+        // !patrol midtown command already uses (MiscCommands.cs) - this is the reusable template for the
+        // Hightown/ICP teleporters that follow.
+        private static readonly PrototypeId MistyKnightMidtownTeleporterRef = (PrototypeId)1753661696525930987;
+
+        // Two failed attempts before this one, both confirmed live:
+        // 1) One of Misty Knight's own DialogTextList entries - bled our travel text into her separate
+        //    native ambient "greeting" dialog (the random "I need your 'A' game, sugah." style lines),
+        //    which also rotates through that same list.
+        // 2) Localization/Translations/Dialogs/TravelConfirm.prototype's LocaleStringId - looked unclaimed
+        //    via --findlocalestringref (only 1 self-reference from its own named TranslationPrototype
+        //    wrapper), but turned out to be a shared client-side template MANY native NPCs use for their
+        //    own "Travel to X?" prompts - confirmed live it also overwrote Havok's real "Travel to Xavier's
+        //    School?" dialog text (buttons unaffected, since his buttons aren't driven by our code at all).
+        // This LocaleStringId ("Go to Midtown Patrol.") has ZERO prototype references at all, not even a
+        // self-reference from a named reusable template - it's a narrow, single-purpose mission/waypoint
+        // text field, the same structural category as ShannaDinosaurFlavorTextRef (a real one-off line,
+        // not a generic reusable UI string), which is why that one never had this problem.
+        private static readonly LocaleStringId MistyKnightFlavorTextRef = (LocaleStringId)122452516185048397;
+
+        // User wants custom "Cosmic 2"/"Omega 1" labels rather than the tiers' own native UIDisplayName -
+        // that text is a GLOBAL string shared by the real difficulty-tier UI elsewhere, so overriding it
+        // would relabel Tier4Cosmic/Tier5Omega1 everywhere in the game, not just this dialog (first attempt
+        // at this used Misty Knight's own DialogTextList entries instead, which turned out to bleed into her
+        // separate native ambient greeting dialog - see MistyKnightFlavorTextRef's comment). Using
+        // Localization/Translations/Dialogs/Accept.prototype / Decline.prototype's LocaleStringIds instead -
+        // confirmed via --findlocalestringref to be referenced by nothing else in the game's prototype data,
+        // same reasoning as YesButtonRef/NoButtonRef/MistyKnightFlavorTextRef.
+        private static readonly LocaleStringId Tier4ButtonRef = (LocaleStringId)12378794891046159615;
+        private static readonly LocaleStringId Tier5ButtonRef = (LocaleStringId)9600681375364285697;
+
+        private static readonly PrototypeId Tier4CosmicRef = (PrototypeId)1087474643293441873;
+        private static readonly PrototypeId Tier5Omega1Ref = (PrototypeId)424700179461639950;
+
+        // Regions/EndGame/TierX/PatrolMidtown/ConnectionTargets/XManhattanEntryTarget01.prototype - same target
+        // the !patrol midtown command uses.
+        private static readonly PrototypeId MidtownPatrolTargetRef = (PrototypeId)549317465236120347;
+
+        private static void UseMistyKnightMidtownTeleporter(Player player, WorldEntity mistyKnight)
+        {
+            Game game = player.Game;
+
+            GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
+            dialog.OnResponse = OnMistyKnightMidtownTeleporterDialogResponse;
+            dialog.Message.LocaleString = MistyKnightFlavorTextRef;
+            dialog.Options = DialogOptionEnum.WorldClick;
+            dialog.TargetId = mistyKnight.Id;
+            dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive);
+
+            game.GameDialogManager.ShowDialog(dialog);
+
+            void OnMistyKnightMidtownTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            {
+                PrototypeId difficultyTierRef = response.ButtonIndex switch
+                {
+                    GameDialogResultEnum.eGDR_Option1 => Tier4CosmicRef,
+                    GameDialogResultEnum.eGDR_Option2 => Tier5Omega1Ref,
+                    _ => PrototypeId.Invalid
+                };
+                if (difficultyTierRef == PrototypeId.Invalid) return;
+
+                Player responsePlayer = game.EntityManager.GetEntityByDbGuid<Player>(playerGuid);
+                if (responsePlayer == null) return;
+
+                using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+                teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
+                teleporter.DifficultyTierRef = difficultyTierRef;
+                teleporter.TeleportToTarget(MidtownPatrolTargetRef);
             }
         }
 

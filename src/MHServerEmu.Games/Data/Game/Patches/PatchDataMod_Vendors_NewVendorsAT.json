@@ -21,36 +21,6 @@
   },
   {
     "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[30].EntityGuid",
-    "Description": "Add MistyKnight",
-    "ValueType": "PrototypeGuid",
-    "Value": 16515306148303751715
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[30].Position",
-    "Description": "Change Misty Knight position",
-    "ValueType": "Vector3",
-    "Value": [
-      -1241.375,
-      1944.625,
-      128
-    ]
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Entity/Characters/Vendors/Prototypes/CH01HellsKitchen/HKRooftopVendorArmor.prototype",
-    "Path": "Properties",
-    "Description": "Set Vendor Type to Legendary",
-    "ValueType": "Properties",
-    "Value": {
-        "VendorType": 16660856751085590967
-    }
-  },
-  {
-    "Enabled": true,
     "Prototype": "Loot/Tables/Vendor/EternitySplinter/VendorEternitySplinterLoot.prototype",
     "Path": "Choices[1].Item",
     "Description": "Add Random Costume Box to Adam Warlock",
