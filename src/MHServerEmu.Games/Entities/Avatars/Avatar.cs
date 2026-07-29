@@ -4330,7 +4330,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
             dialog.OnResponse = OnShannaPortalGuideDialogResponse;
             dialog.Message.LocaleString = ShannaDinosaurFlavorTextRef;
-            dialog.Options = DialogOptionEnum.ScreenBottom | DialogOptionEnum.WorldClick;
+            dialog.Options = DialogOptionEnum.WorldClick;
             dialog.TargetId = shanna.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
             dialog.AddButton(GameDialogResultEnum.eGDR_Option1, YesButtonRef, ButtonStyle.SecondaryPositive);
