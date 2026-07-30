@@ -185,6 +185,14 @@ namespace MHServerEmu.Games.Entities
         public int PowerSpecIndexUnlocked { get => Properties[PropertyEnum.PowerSpecIndexUnlocked]; }
         public ulong TeamUpSynergyConditionId { get; set; }
 
+        // Set alongside OnRecordPlayerDeath() whenever this player's avatar actually dies, so a
+        // polling check elsewhere (e.g. IncursionEnemyController's RogueNemesis loss check) can
+        // verify a SPECIFIC entity actually caused the current death instead of just trusting
+        // "is the avatar dead right now" - an invader that never landed a hit was previously
+        // getting credited with defeating a player who died to something else entirely, because
+        // nothing tied the death back to who (if anyone) that specific invader actually killed.
+        public ulong LastDeathKillerId { get; set; }
+
         public override ulong PartyId { get => _partyId.Get(); }
         public bool IsInParty { get => PartyId != 0; }
         public List<PrototypeId> PartyFilters { get; } = new();

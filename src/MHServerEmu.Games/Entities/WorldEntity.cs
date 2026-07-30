@@ -2311,6 +2311,8 @@ namespace MHServerEmu.Games.Entities
                 if (this is Avatar killedAvatar)
                 {
                     var killedPlayer = GetOwnerOfType<Player>();
+                    if (killedPlayer != null)
+                        killedPlayer.LastDeathKillerId = ultimateOwner?.Id ?? 0;
                     region?.OnRecordPlayerDeath(killedPlayer, killedAvatar, ultimateOwner);
 
                     killedPlayer.OnScoringEvent(new(ScoringEventType.AvatarDeath));

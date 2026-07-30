@@ -1470,11 +1470,28 @@ namespace MHServerEmu.Games.Entities.IncursionEntity
                 Avatar targetAvatar = targetPlayer?.CurrentAvatar;
                 if (targetAvatar != null && targetAvatar.IsDead)
                 {
-                    if (SpawnReason == IncursionSpawnReason.Incursion)
-                        Game.IncursionManager.MarkRecentlyHunted(TargetPlayerId);
-                    else if (SpawnReason == IncursionSpawnReason.RogueNemesis)
-                        Game.RogueNemesisManager?.RecordNemesisLoss(targetPlayer, EnemyShorthand);
-                    Game.IncursionManager.RequestRemoval(this, "target defeated - mission accomplished");
+                    // IsDead alone isn't enough - it just means the avatar's Health hit 0 for
+                    // SOME reason, not that THIS invader is what caused it. An invader that never
+                    // landed a hit (e.g. one stuck failing its own ability/movement recovery loop
+                    // the whole encounter) was previously still getting "mission accomplished" and
+                    // a RogueNemesis win credited to it whenever the target happened to die to a
+                    // completely unrelated enemy or hazard elsewhere while the hunt was still
+                    // active. LastDeathKillerId is stamped by WorldEntity.OnKilled's death branch
+                    // with whoever ACTUALLY landed the killing blow, so compare that against this
+                    // invader's own agent id before crediting anything.
+                    if (targetPlayer.LastDeathKillerId == AgentId)
+                    {
+                        if (SpawnReason == IncursionSpawnReason.Incursion)
+                            Game.IncursionManager.MarkRecentlyHunted(TargetPlayerId);
+                        else if (SpawnReason == IncursionSpawnReason.RogueNemesis)
+                            Game.RogueNemesisManager?.RecordNemesisLoss(targetPlayer, EnemyShorthand);
+                        Game.IncursionManager.RequestRemoval(this, "target defeated - mission accomplished");
+                        return;
+                    }
+
+                    // Target is dead, but not to this invader - don't despawn or chase a corpse.
+                    // Just wait; IsDead will clear on revive and normal hunting resumes then.
+                    ScheduleNextThink();
                     return;
                 }
 
