@@ -11,22 +11,22 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[30].Position",
-    "Description": "[EG Patrols] Midtown teleporter - final placement position in Avengers Tower (previous value was a testing-cluster spot, easy to reach all 3 at once).",
+    "Description": "[EG Patrols] Midtown teleporter - moved to Cloak's exact position (marker 31). All three EG Patrol NPCs now share one physical spot, since only one is ever visible at a time (see LiveTuningDataGlobal.json base eWETV_Visible=0.0 + each patrol's own LiveTuning file setting its own NPC to 1.0 during its event night) - clears up floor space in the hub.",
     "ValueType": "Vector3",
     "Value": [
-      294.25,
-      858.375,
-      372
+      1147.125,
+      1034.25,
+      371
     ]
   },
   {
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[30].Rotation",
-    "Description": "[EG Patrols] Misty Knight's native rotation at this marker was (3.83, 0, 0), not zero - explicitly zeroed out per user's request so the correct final rotation can be judged fresh from a known (0,0,0) baseline, same as Cloak (whose native rotation already happened to be zero).",
+    "Description": "[EG Patrols] Midtown teleporter - moved to Cloak's exact rotation (marker 31), same reasoning as the position change above.",
     "ValueType": "Vector3",
     "Value": [
-      0,
+      -2.356194490192345,
       0,
       0
     ]
@@ -91,11 +91,11 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[32].Position",
-    "Description": "[EG Patrols] Hightown teleporter - final placement position in Avengers Tower (previous value was a testing-cluster spot, easy to reach all 3 at once).",
+    "Description": "[EG Patrols] Hightown teleporter - moved to Cloak's exact position (marker 31), same reasoning as Midtown's move above.",
     "ValueType": "Vector3",
     "Value": [
-      758.857,
-      580.75,
+      1147.125,
+      1034.25,
       371
     ]
   },
@@ -103,10 +103,10 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[32].Rotation",
-    "Description": "[EG Patrols] Doctor Strange final rotation - 90 degrees clockwise from the zeroed (0,0,0) baseline. Assuming the same sign convention confirmed for Cloak's marker (negative=CCW, so positive=CW) - flip the sign if it turns out backwards live, same as the earlier Cloak sign flip.",
+    "Description": "[EG Patrols] Hightown teleporter - moved to Cloak's exact rotation (marker 31), same reasoning as Midtown's move above.",
     "ValueType": "Vector3",
     "Value": [
-      1.5707963267948966,
+      -2.356194490192345,
       0,
       0
     ]

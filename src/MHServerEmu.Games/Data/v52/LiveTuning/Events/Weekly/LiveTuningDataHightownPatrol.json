@@ -533,5 +533,11 @@
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossHightown.prototype",
     "Setting": "eWETV_MobDropRarity",
     "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/NPCs/DoctorStrange.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "[EG Patrols] Hightown Patrol teleporter - visible only during Hightown Patrol night, off by default in LiveTuningData.json",
+    "Value": 1.0
   }
 ]

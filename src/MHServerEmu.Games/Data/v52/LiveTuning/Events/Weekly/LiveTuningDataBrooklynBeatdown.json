@@ -713,5 +713,11 @@
     "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossBrooklyn.prototype",
     "Setting": "eWETV_MobDropRarity",
     "Value": 3.0
+  },
+  {
+    "Prototype": "Entity/Characters/NPCs/HubNPCs/CivilWarCaptainAmericaHubNPCs/CivilWarCloak.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "[EG Patrols] ICP Patrol teleporter - visible only during ICP Patrol night, off by default in LiveTuningData.json",
+    "Value": 1.0
   }
 ]
