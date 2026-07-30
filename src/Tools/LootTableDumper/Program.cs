@@ -251,6 +251,13 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--findunusednpcs")
+            {
+                string pathPrefix = args.Length > 1 ? args[1] : "Entity/Characters/NPCs/";
+                FindUnusedNpcs(pathPrefix);
+                return;
+            }
+
             if (args.Length > 0 && args[0] == "--findunusedconsumables")
             {
                 string pathPrefix = args.Length > 1 ? args[1] : "Entity/Items/Consumables/";
@@ -943,6 +950,67 @@ namespace LootTableDumper
 
             Console.WriteLine();
             Console.WriteLine($"-- {disabled} of {total} region prototypes have EnableAvatarSwap=False --");
+        }
+
+        /// <summary>
+        /// Finds every AgentPrototype under pathPrefix (default Entity/Characters/NPCs/) that has zero
+        /// existing cell-marker placements anywhere in the game - candidates safe to repurpose as a
+        /// standing dialog NPC (same reuse pattern as Misty Knight/Cloak/Doctor Strange/Domino). Does NOT
+        /// check client UPK model availability - that can only be confirmed by looking at the client
+        /// assets directly, not from server-side data alone (confirmed via Manifold/Songbird, whose
+        /// server data looked identical to working candidates but had no cooked model client-side).
+        /// </summary>
+        private static void FindUnusedNpcs(string pathPrefix)
+        {
+            Console.WriteLine($"==================== Unused NPC candidates under '{pathPrefix}' (zero cell-marker placements) ====================");
+
+            var placedRefs = new HashSet<PrototypeId>();
+            foreach (PrototypeId cellRef in DataDirectory.Instance.IteratePrototypesInHierarchy<CellPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                CellPrototype cell = GameDatabase.GetPrototype<CellPrototype>(cellRef);
+                if (cell == null) continue;
+
+                CollectPlacedEntityRefs(cell.MarkerSet, placedRefs);
+                CollectPlacedEntityRefs(cell.InitializeSet, placedRefs);
+            }
+
+            int checkedCount = 0;
+            int unusedCount = 0;
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IteratePrototypesInHierarchy<AgentPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                string name = SafeGetName(protoRef);
+                if (name.StartsWith(pathPrefix, StringComparison.OrdinalIgnoreCase) == false) continue;
+
+                AgentPrototype proto = GameDatabase.GetPrototype<Prototype>(protoRef) as AgentPrototype;
+                if (proto == null) continue;
+
+                checkedCount++;
+                if (placedRefs.Contains(protoRef)) continue;
+
+                unusedCount++;
+                AssetId unrealClass = proto.UnrealClass;
+                string unrealClassName = unrealClass != AssetId.Invalid ? GameDatabase.GetAssetName(unrealClass) : "none";
+                Console.WriteLine($"  {name} (Ref={(ulong)protoRef}) Allegiance={proto.Allegiance} DesignState={proto.DesignState} UnrealClass={unrealClassName}");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {unusedCount} of {checkedCount} checked NPC prototype(s) have zero cell-marker placements --");
+            Console.WriteLine("-- Model presence in the client UPKs is NOT verified here - check each candidate against the client assets before using it --");
+        }
+
+        private static void CollectPlacedEntityRefs(MarkerSetPrototype markerSet, HashSet<PrototypeId> placedRefs)
+        {
+            if (markerSet?.Markers == null) return;
+
+            foreach (var marker in markerSet.Markers)
+            {
+                if (marker is not EntityMarkerPrototype entityMarker) continue;
+                if (entityMarker.EntityGuid == PrototypeGuid.Invalid) continue;
+
+                PrototypeId entityRef = GameDatabase.GetDataRefByPrototypeGuid(entityMarker.EntityGuid);
+                if (entityRef != PrototypeId.Invalid)
+                    placedRefs.Add(entityRef);
+            }
         }
 
         private static void LookupString(string locoDir, string idStr)
