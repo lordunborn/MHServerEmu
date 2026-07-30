@@ -245,6 +245,14 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--findunusedconsumables")
+            {
+                string pathPrefix = args.Length > 1 ? args[1] : "Entity/Items/Consumables/";
+                int maxDepth = args.Length > 2 && int.TryParse(args[2], out int ucd) ? ucd : 10;
+                FindUnusedConsumables(pathPrefix, maxDepth);
+                return;
+            }
+
             string[] tablePaths = args.Length > 0 ? args : new[]
             {
                 "Loot/Tables/Mob/Bosses/PatrolHightown/CrossbonesHightownTable.prototype",
@@ -811,6 +819,98 @@ namespace LootTableDumper
                         if (item is Prototype itemProto)
                             FindProtoRefInGraph(itemProto, targetRef, $"{childPath}[{i}]", depth + 1, maxDepth, hits);
                         i++;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds concrete item prototypes under a given path prefix (default: Entity/Items/Consumables/)
+        /// that are never referenced anywhere inside any loot table's data graph - candidates for reuse,
+        /// same "confirmed unused" check used for NPCs/portals but scoped to loot table references only
+        /// (vendor stock, crafting recipes, etc. are NOT loot tables and are not checked here).
+        /// </summary>
+        private static void FindUnusedConsumables(string pathPrefix, int maxDepth)
+        {
+            Console.WriteLine($"==================== Finding item prototypes under '{pathPrefix}' NOT referenced in any loot table ====================");
+
+            HashSet<PrototypeId> referencedRefs = new();
+            int lootTableCount = 0;
+            foreach (PrototypeId lootTableRef in DataDirectory.Instance.IteratePrototypesInHierarchy<LootTablePrototype>(PrototypeIterateFlags.NoAbstractApprovedOnly))
+            {
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(lootTableRef);
+                if (proto == null) continue;
+
+                lootTableCount++;
+                VisitedInChain.Clear();
+                CollectPrototypeIdRefsInGraph(proto, 0, maxDepth, referencedRefs);
+            }
+
+            Console.WriteLine($"Scanned {lootTableCount} loot tables, collected {referencedRefs.Count} distinct PrototypeId references (depth<={maxDepth}).");
+            Console.WriteLine();
+
+            int checkedCount = 0;
+            List<(string Name, PrototypeId Ref)> unused = new();
+
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                string name = SafeGetName(protoRef);
+                if (name == "(unnamed)" || name.EndsWith(".prototype", StringComparison.OrdinalIgnoreCase) == false) continue;
+                if (name.StartsWith(pathPrefix, StringComparison.OrdinalIgnoreCase) == false) continue;
+
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto is not ItemPrototype) continue;
+
+                checkedCount++;
+                if (referencedRefs.Contains(protoRef) == false)
+                    unused.Add((name, protoRef));
+            }
+
+            foreach (var (name, protoRef) in unused.OrderBy(u => u.Name, StringComparer.OrdinalIgnoreCase))
+                Console.WriteLine($"  {name} (Ref={(ulong)protoRef}) [{GameDatabase.GetPrototype<Prototype>(protoRef).GetType().Name}]");
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {checkedCount} item prototype(s) checked under '{pathPrefix}', {unused.Count} NOT referenced in any loot table --");
+        }
+
+        private static void CollectPrototypeIdRefsInGraph(object obj, int depth, int maxDepth, HashSet<PrototypeId> refs)
+        {
+            if (obj == null || depth > maxDepth) return;
+
+            Type type = obj.GetType();
+            if (type.IsValueType == false)
+            {
+                if (VisitedInChain.Contains(obj)) return;
+                VisitedInChain.Add(obj);
+            }
+
+            foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (prop.GetIndexParameters().Length > 0) continue;
+                object value;
+                try { value = prop.GetValue(obj); }
+                catch { continue; }
+                if (value == null) continue;
+
+                if (value is PrototypeId pid)
+                {
+                    if (pid != PrototypeId.Invalid) refs.Add(pid);
+                }
+                else if (value is PrototypeId[] pidArr)
+                {
+                    foreach (PrototypeId p in pidArr)
+                        if (p != PrototypeId.Invalid) refs.Add(p);
+                }
+                else if (value is Prototype nestedProto)
+                {
+                    CollectPrototypeIdRefsInGraph(nestedProto, depth + 1, maxDepth, refs);
+                }
+                else if (value is System.Collections.IEnumerable enumerable && value is not string)
+                {
+                    foreach (var item in enumerable)
+                    {
+                        if (item is Prototype itemProto)
+                            CollectPrototypeIdRefsInGraph(itemProto, depth + 1, maxDepth, refs);
                     }
                 }
             }
