@@ -1,0 +1,154 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/HubNPCs/Domino.prototype",
+    "Path": "DesignState",
+    "Description": "[Raid Teleporters] Domino - Age of Ultron teleporter. Native DesignState is NotInGame, same class of blocker as Cloak/Doctor Strange - flip to Live so our custom interact dialog fires. Confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere.",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[0].EntityGuid",
+    "Description": "[Raid Teleporters] Age of Ultron teleporter - place Domino at this marker slot. Marker 0's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV3.prototype - a generic encounter spawn placeholder, same reusable category as markers 30/31/32 (already repurposed for the EG Patrol teleporters), not a fixed named NPC.",
+    "ValueType": "PrototypeGuid",
+    "Value": 12222155132991259485
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[0].Position",
+    "Description": "[Raid Teleporters] Age of Ultron teleporter - placed in a new row alongside the existing EG Patrol teleporters (markers 30-32), easy to reach all together. Live position/rotation may need adjustment after in-game verification, same as the EG Patrol teleporters were iterated on.",
+    "ValueType": "Vector3",
+    "Value": [
+      400,
+      1300,
+      372
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[0].Rotation",
+    "Description": "[Raid Teleporters] Age of Ultron teleporter - rotation zeroed out per the same convention as the EG Patrol teleporters, so the correct final rotation can be judged fresh from a known (0,0,0) baseline.",
+    "ValueType": "Vector3",
+    "Value": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/Manifold.prototype",
+    "Path": "DesignState",
+    "Description": "[Raid Teleporters] Manifold - Axis Raid teleporter (Manifold's own power is teleportation, thematically fitting). Native DesignState is NotInGame - flip to Live. Confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere.",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[19].EntityGuid",
+    "Description": "[Raid Teleporters] Axis Raid teleporter - place Manifold at this marker slot. Marker 19's native LastKnownEntityName was SpawnMarkers/Types/EncounterSmall.prototype - a generic encounter spawn placeholder, not a fixed named NPC.",
+    "ValueType": "PrototypeGuid",
+    "Value": 14966366693705335658
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[19].Position",
+    "Description": "[Raid Teleporters] Axis Raid teleporter - placed in a new row alongside the Age of Ultron/Surtur Raid teleporters. Live position/rotation may need adjustment after in-game verification.",
+    "ValueType": "Vector3",
+    "Value": [
+      750,
+      1300,
+      372
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[19].Rotation",
+    "Description": "[Raid Teleporters] Axis Raid teleporter - rotation zeroed out per the same convention as the EG Patrol teleporters.",
+    "ValueType": "Vector3",
+    "Value": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/Songbird.prototype",
+    "Path": "DesignState",
+    "Description": "[Raid Teleporters] Songbird - Surtur Raid teleporter. Native DesignState is NotInGame - flip to Live. Confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere.",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[23].EntityGuid",
+    "Description": "[Raid Teleporters] Surtur Raid teleporter - place Songbird at this marker slot. Marker 23's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV2.prototype - a generic encounter spawn placeholder, not a fixed named NPC.",
+    "ValueType": "PrototypeGuid",
+    "Value": 2407990860318591371
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[23].Position",
+    "Description": "[Raid Teleporters] Surtur Raid teleporter - placed in a new row alongside the Age of Ultron/Axis Raid teleporters. Live position/rotation may need adjustment after in-game verification.",
+    "ValueType": "Vector3",
+    "Value": [
+      1100,
+      1300,
+      372
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[23].Rotation",
+    "Description": "[Raid Teleporters] Surtur Raid teleporter - rotation zeroed out per the same convention as the EG Patrol teleporters.",
+    "ValueType": "Vector3",
+    "Value": [
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/RAIDS/AxisRaid/AxisRaidRegionGreen.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Axis Raid] Native AccessDifficulties only grants Tier2Heroic. Same fix as UltronRaidRegionCosmic's AccessDifficulties patch (PatchDataMod_Difficulty_Raid_AgeofUltron.json) - appends Tier4Cosmic access so the new Axis Raid teleporter's forced T4 entry survives the internal stage-to-boss-arena transition (TeleportContext_Transition), not just the initial debug-teleport bypass on entry.",
+    "ValueType": "PrototypeId",
+    "Value": 1087474643293441873
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/RAIDS/AxisRaid/AxisRaidRegionGreen.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Axis Raid] Same fix as the Tier4Cosmic entry above - appends Tier5Omega1 access so the T5 option survives the internal transition too.",
+    "ValueType": "PrototypeId",
+    "Value": 424700179461639950
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/RAIDS/MuspelheimRaid/SurturRaidRegionGreen.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Surtur Raid] Native AccessDifficulties grants Tier2Heroic/Tier3Superheroic. Same fix as UltronRaidRegionCosmic's AccessDifficulties patch - appends Tier4Cosmic access so the new Surtur Raid teleporter's forced T4 entry survives the internal stage-to-boss-arena transition, not just the initial debug-teleport bypass on entry.",
+    "ValueType": "PrototypeId",
+    "Value": 1087474643293441873
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/RAIDS/MuspelheimRaid/SurturRaidRegionGreen.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Surtur Raid] Same fix as the Tier4Cosmic entry above - appends Tier5Omega1 access so the T5 option survives the internal transition too.",
+    "ValueType": "PrototypeId",
+    "Value": 424700179461639950
+  }
+]

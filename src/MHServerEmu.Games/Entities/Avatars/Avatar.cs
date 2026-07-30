@@ -4547,6 +4547,12 @@ namespace MHServerEmu.Games.Entities.Avatars
                 UseCloakICPTeleporter(player, interactableObject);
             else if (interactableObject.PrototypeDataRef == DoctorStrangeHightownTeleporterRef)
                 UseDoctorStrangeHightownTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == DominoAgeOfUltronTeleporterRef)
+                UseDominoAgeOfUltronTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == ManifoldAxisRaidTeleporterRef)
+                UseManifoldAxisRaidTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == SongbirdSurturRaidTeleporterRef)
+                UseSongbirdSurturRaidTeleporter(player, interactableObject);
 
             interactableObject.OnInteractedWith(this);
 
@@ -4776,6 +4782,159 @@ namespace MHServerEmu.Games.Entities.Avatars
                 teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
                 teleporter.DifficultyTierRef = difficultyTierRef;
                 teleporter.TeleportToTarget(HightownPatrolTargetRef);
+            }
+        }
+
+        // [Raid Teleporters] First of three T4/T5 raid teleporter NPCs, replacing the !ultron/!axis/!surtur-
+        // style debug commands with an in-world interact - same template as the EG Patrol teleporters above.
+        // Entity/Characters/NPCs/HubNPCs/Domino.prototype - confirmed unused elsewhere: 0 prototype-data
+        // references anywhere in the game, 0 cell-marker placements anywhere. Native DesignState was
+        // NotInGame, flipped to Live via patch same as Cloak/Doctor Strange.
+        private static readonly PrototypeId DominoAgeOfUltronTeleporterRef = (PrototypeId)18406092074029683415;
+
+        // Zero prototype-data references (--findlocalestringref) - found the same way as MistyKnightFlavorTextRef.
+        private static readonly LocaleStringId UltronRaidFlavorTextRef = (LocaleStringId)704374693054776637;
+
+        // Regions/EndGame/TierX/UltronGameMode/ConnectionNodes/UltronRaidEntryTargetCOSMIC.prototype - same
+        // target the !Ultron command uses (MiscCommands.cs). UltronRaidRegionCosmic's own AccessDifficulties
+        // already grants Tier3Superheroic/Tier4Cosmic/Tier5Omega1 (see PatchDataMod_Difficulty_Raid_AgeofUltron.json),
+        // so no additional AccessDifficulties patch was needed here.
+        private static readonly PrototypeId UltronRaidTargetRef = (PrototypeId)6101407482858775734;
+
+        private static void UseDominoAgeOfUltronTeleporter(Player player, WorldEntity domino)
+        {
+            Game game = player.Game;
+
+            GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
+            dialog.OnResponse = OnDominoAgeOfUltronTeleporterDialogResponse;
+            dialog.Message.LocaleString = UltronRaidFlavorTextRef;
+            dialog.Options = DialogOptionEnum.WorldClick;
+            dialog.TargetId = domino.Id;
+            dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+
+            game.GameDialogManager.ShowDialog(dialog);
+
+            void OnDominoAgeOfUltronTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            {
+                PrototypeId difficultyTierRef = response.ButtonIndex switch
+                {
+                    GameDialogResultEnum.eGDR_Option1 => Tier4CosmicRef,
+                    GameDialogResultEnum.eGDR_Option2 => Tier5Omega1Ref,
+                    _ => PrototypeId.Invalid
+                };
+                if (difficultyTierRef == PrototypeId.Invalid) return;
+
+                Player responsePlayer = game.EntityManager.GetEntityByDbGuid<Player>(playerGuid);
+                if (responsePlayer == null) return;
+
+                using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+                teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
+                teleporter.DifficultyTierRef = difficultyTierRef;
+                teleporter.TeleportToTarget(UltronRaidTargetRef);
+            }
+        }
+
+        // [Raid Teleporters] Second raid teleporter NPC (Axis Raid), same template as Domino's.
+        // Entity/Characters/NPCs/Manifold.prototype - confirmed unused elsewhere: 0 prototype-data
+        // references anywhere in the game, 0 cell-marker placements anywhere. Native DesignState was
+        // NotInGame, flipped to Live via patch.
+        private static readonly PrototypeId ManifoldAxisRaidTeleporterRef = (PrototypeId)8660305704156795002;
+
+        // Zero prototype-data references (--findlocalestringref).
+        private static readonly LocaleStringId AxisRaidFlavorTextRef = (LocaleStringId)642891540374291729;
+
+        // Regions/RAIDS/AxisRaid/ConnectionNodes/AxisRaidEntryTarget.prototype - AxisRaidRegionGreen's own
+        // StartTarget (the "3-man tuned" variant using the custom Raid2AxisGreen difficulty table). Native
+        // AccessDifficulties only granted Tier2Heroic - extended via PatchDataMod_Content_RaidTeleporters.json
+        // to also accept Tier4Cosmic/Tier5Omega1, same fix as Ultron's AccessDifficulties patch, so the
+        // forced tier survives the internal stage-to-boss-arena transition and not just entry.
+        private static readonly PrototypeId AxisRaidTargetRef = (PrototypeId)15320584991240166307;
+
+        private static void UseManifoldAxisRaidTeleporter(Player player, WorldEntity manifold)
+        {
+            Game game = player.Game;
+
+            GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
+            dialog.OnResponse = OnManifoldAxisRaidTeleporterDialogResponse;
+            dialog.Message.LocaleString = AxisRaidFlavorTextRef;
+            dialog.Options = DialogOptionEnum.WorldClick;
+            dialog.TargetId = manifold.Id;
+            dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+
+            game.GameDialogManager.ShowDialog(dialog);
+
+            void OnManifoldAxisRaidTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            {
+                PrototypeId difficultyTierRef = response.ButtonIndex switch
+                {
+                    GameDialogResultEnum.eGDR_Option1 => Tier4CosmicRef,
+                    GameDialogResultEnum.eGDR_Option2 => Tier5Omega1Ref,
+                    _ => PrototypeId.Invalid
+                };
+                if (difficultyTierRef == PrototypeId.Invalid) return;
+
+                Player responsePlayer = game.EntityManager.GetEntityByDbGuid<Player>(playerGuid);
+                if (responsePlayer == null) return;
+
+                using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+                teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
+                teleporter.DifficultyTierRef = difficultyTierRef;
+                teleporter.TeleportToTarget(AxisRaidTargetRef);
+            }
+        }
+
+        // [Raid Teleporters] Third raid teleporter NPC (Surtur Raid), same template as the previous two.
+        // Entity/Characters/NPCs/Songbird.prototype - confirmed unused elsewhere: 0 prototype-data
+        // references anywhere in the game, 0 cell-marker placements anywhere. Native DesignState was
+        // NotInGame, flipped to Live via patch.
+        private static readonly PrototypeId SongbirdSurturRaidTeleporterRef = (PrototypeId)13805316752550924424;
+
+        // Zero prototype-data references (--findlocalestringref).
+        private static readonly LocaleStringId SurturRaidFlavorTextRef = (LocaleStringId)108578792560919878;
+
+        // Regions/RAIDS/MuspelheimRaid/ConnectionNodes/SurturRaidEntryTarget.prototype - SurturRaidRegionGreen's
+        // own StartTarget (the "3-man tuned" variant using the custom Raid1Surtur difficulty table). Native
+        // AccessDifficulties granted Tier2Heroic/Tier3Superheroic - extended via
+        // PatchDataMod_Content_RaidTeleporters.json to also accept Tier4Cosmic/Tier5Omega1, same reasoning
+        // as Axis Raid above.
+        private static readonly PrototypeId SurturRaidTargetRef = (PrototypeId)8401366757050162983;
+
+        private static void UseSongbirdSurturRaidTeleporter(Player player, WorldEntity songbird)
+        {
+            Game game = player.Game;
+
+            GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
+            dialog.OnResponse = OnSongbirdSurturRaidTeleporterDialogResponse;
+            dialog.Message.LocaleString = SurturRaidFlavorTextRef;
+            dialog.Options = DialogOptionEnum.WorldClick;
+            dialog.TargetId = songbird.Id;
+            dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+
+            game.GameDialogManager.ShowDialog(dialog);
+
+            void OnSongbirdSurturRaidTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            {
+                PrototypeId difficultyTierRef = response.ButtonIndex switch
+                {
+                    GameDialogResultEnum.eGDR_Option1 => Tier4CosmicRef,
+                    GameDialogResultEnum.eGDR_Option2 => Tier5Omega1Ref,
+                    _ => PrototypeId.Invalid
+                };
+                if (difficultyTierRef == PrototypeId.Invalid) return;
+
+                Player responsePlayer = game.EntityManager.GetEntityByDbGuid<Player>(playerGuid);
+                if (responsePlayer == null) return;
+
+                using Teleporter teleporter = ObjectPoolManager.Instance.Get<Teleporter>();
+                teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
+                teleporter.DifficultyTierRef = difficultyTierRef;
+                teleporter.TeleportToTarget(SurturRaidTargetRef);
             }
         }
 
