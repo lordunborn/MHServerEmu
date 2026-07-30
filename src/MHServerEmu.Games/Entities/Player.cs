@@ -109,8 +109,10 @@ namespace MHServerEmu.Games.Entities
         private ReplicatedPropertyCollection _avatarProperties = new();
         private ulong _shardId;     // This was probably used for database sharding, we don't need this
         private RepVar_string _playerName = new();
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         private InlineArray2<ulong> _consoleAccountIds;
         private RepVar_string _secondaryPlayerName = new();
+#endif
 
         // NOTE: EmailVerified and AccountCreationTimestamp are set in NetMessageGiftingRestrictionsUpdate that
         // should be sent in the packet right after logging in. NetMessageGetCurrencyBalanceResponse should be
@@ -179,8 +181,12 @@ namespace MHServerEmu.Games.Entities
         public ulong DialogTargetId { get; private set; }
         public ulong DialogInteractorId { get; private set; }
         public PrototypeId CurrentOpenStashPagePrototypeRef { get; set; }
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public long InfinityXP { get => Properties[PropertyEnum.InfinityXP]; }
+#endif
+#if !GAME_VERSION_1_53
         public long OmegaXP { get => Properties[PropertyEnum.OmegaXP]; }
+#endif
         public long GazillioniteBalance { get => PlayerConnection.GazillioniteBalance; set => PlayerConnection.GazillioniteBalance = value; }
         public int PowerSpecIndexUnlocked { get => Properties[PropertyEnum.PowerSpecIndexUnlocked]; }
         public ulong TeamUpSynergyConditionId { get; set; }
@@ -269,6 +275,7 @@ namespace MHServerEmu.Games.Entities
 
             switch (id.Enum)
             {
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                 case PropertyEnum.TeamUpsAtMaxLevelPersistent:
                     var avatar = CurrentAvatar;
                     if (avatar != null && avatar.IsInWorld)
@@ -282,6 +289,7 @@ namespace MHServerEmu.Games.Entities
                         }
                     }
                     break;
+#endif
 
                 case PropertyEnum.PowerCooldownDuration:
                 {
@@ -415,9 +423,11 @@ namespace MHServerEmu.Games.Entities
             {
                 success &= Serializer.Transfer(archive, ref _shardId);
                 success &= Serializer.Transfer(archive, ref _playerName);
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                 success &= Serializer.Transfer(archive, ref _consoleAccountIds[0]);
                 success &= Serializer.Transfer(archive, ref _consoleAccountIds[1]);
                 success &= Serializer.Transfer(archive, ref _secondaryPlayerName);
+#endif
                 success &= Serializer.Transfer(archive, MatchQueueStatus);
                 success &= Serializer.Transfer(archive, ref _emailVerified);
                 success &= Serializer.Transfer(archive, ref _accountCreationTimestamp);
@@ -581,6 +591,7 @@ namespace MHServerEmu.Games.Entities
             base.OnDeallocate();
         }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         /// <summary>
         /// Returns the name of the player for the specified <see cref="PlayerAvatarIndex"/>.
         /// </summary>
@@ -593,7 +604,14 @@ namespace MHServerEmu.Games.Entities
 
             return _playerName.Get();
         }
+#else
+        public string GetName()
+        {
+            return _playerName.Get();
+        }
+#endif
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         /// <summary>
         /// Returns the console account id for the specified <see cref="PlayerAvatarIndex"/>.
         /// </summary>
@@ -604,6 +622,7 @@ namespace MHServerEmu.Games.Entities
 
             return _consoleAccountIds[(int)avatarIndex];
         }
+#endif
 
         public void SetGameplayOptions(NetMessageSetPlayerGameplayOptions clientOptions)
         {
@@ -660,7 +679,11 @@ namespace MHServerEmu.Games.Entities
             return PlayerConnection?.AOI?.Region;
         }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public bool CanEnterRegion(PrototypeId regionProtoRef, PrototypeId difficultyTierProtoRef, bool isPartyTeleport)
+#else
+        public bool CanEnterRegion(PrototypeId regionProtoRef, bool isPartyTeleport)
+#endif
         {
             RegionPrototype regionProto = regionProtoRef.As<RegionPrototype>();
             if (!Verify.IsNotNull(regionProto)) return false;
@@ -685,7 +708,11 @@ namespace MHServerEmu.Games.Entities
                 }
             }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
             if (regionProto.RunEvalAccessRestriction(this, avatar, difficultyTierProtoRef) == false)
+#else
+            if (regionProto.RunEvalAccessRestriction(this, avatar) == false)
+#endif
             {
                 SendBannerMessage(GameDatabase.UIGlobalsPrototype.MessageRegionRestricted);
                 return false;
@@ -1465,7 +1492,12 @@ namespace MHServerEmu.Games.Entities
 
             SendMessage(NetMessageGrantGToPlayerNotification.CreateBuilder()
                 .SetDidSucceed(true)
+#if GAME_VERSION_1_53
+                .SetBalance(NetMessageGetCurrencyBalanceResponse.CreateBuilder()
+                    .SetCurrencyBalance(balance))
+#else
                 .SetCurrentCurrencyBalance(balance)
+#endif
                 .Build());
 
             return true;
@@ -1496,6 +1528,7 @@ namespace MHServerEmu.Games.Entities
             return gAmount;
         }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public bool AwardBonusItemFindPoints(int amount, LootInputSettings settings)
         {
             if (amount <= 0)
@@ -1526,6 +1559,7 @@ namespace MHServerEmu.Games.Entities
             Properties[PropertyEnum.BonusItemFindPoints] = points;
             return true;
         }
+#endif
 
         public bool InitPowerFromCreationItem(Item item)
         {
@@ -2046,7 +2080,11 @@ namespace MHServerEmu.Games.Entities
                 PrototypeId avatarProtoRef = avatar.PrototypeDataRef;
 
                 // AvatarLibraryLevel will be set by running the level up logic in the avatar (see OnAvatarCharacterLevelChanged())
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                 Properties[PropertyEnum.AvatarLibraryCostume, 0, avatarProtoRef] = avatar.Properties[PropertyEnum.CostumeCurrent];
+#else
+                Properties[PropertyEnum.AvatarLibraryCostume, 0, avatarProtoRef] = avatar.EquippedCostumeRef;
+#endif
                 Properties[PropertyEnum.AvatarLibraryTeamUp, 0, avatarProtoRef] = avatar.Properties[PropertyEnum.AvatarTeamUpAgent];
 
                 // Update max level
@@ -2067,6 +2105,7 @@ namespace MHServerEmu.Games.Entities
             Properties[PropertyEnum.PvPLosses] = pvpLosses;
         }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public void SetTeamUpLibraryProperties()
         {
             if (Properties.HasProperty(PropertyEnum.TeamUpsAtMaxLevelPersistent))
@@ -2092,6 +2131,7 @@ namespace MHServerEmu.Games.Entities
             if (teamUpsAtMaxLevel > 0)
                 Properties[PropertyEnum.TeamUpsAtMaxLevelPersistent] = teamUpsAtMaxLevel;
         }
+#endif
 
         public void OnChangeActiveAvatar(int avatarIndex, ulong lastCurrentAvatarId)
         {
@@ -2355,8 +2395,13 @@ namespace MHServerEmu.Games.Entities
             RegionPrototype regionProto = region.Prototype;
 
             // Run eval checks
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
             if (regionProto.RunEvalAccessRestriction(this, avatarToSwitchTo, region.DifficultyTierRef) == false)
                 return CanSwitchAvatarResult.NotAllowedInRegion;
+#else
+            if (regionProto.RunEvalAccessRestriction(this, avatarToSwitchTo) == false)
+                return CanSwitchAvatarResult.NotAllowedInRegion;
+#endif
 
             // Check roster restriction
             if (region.IsRestrictedRosterEnabled)
@@ -2461,6 +2506,7 @@ namespace MHServerEmu.Games.Entities
 
         #region Alternate Advancement (Omega and Infinity)
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public long GetTotalInfinityPoints()
         {
             long infinityPoints = 0;
@@ -2544,7 +2590,8 @@ namespace MHServerEmu.Games.Entities
             long points = (long)Math.Sqrt(xp / AdvancementGlobalsPrototype.InfinityXPFactor);
             return Math.Min(points, GameDatabase.AdvancementGlobalsPrototype.InfinityPointsCap);
         }
-
+#endif
+#if !GAME_VERSION_1_53
         public long GetOmegaPoints()
         {
             return Properties[PropertyEnum.OmegaPoints];
@@ -2555,7 +2602,11 @@ namespace MHServerEmu.Games.Entities
             if (amount <= 0)
                 return;
 
+#if GAME_VERSION_1_52
             long omegaXP = Math.Min(OmegaXP + amount, GameDatabase.AdvancementGlobalsPrototype.InfinityXPCap);
+#else
+            long omegaXP = OmegaXP + amount;    // V48_FIXME: OmegaXPCap?
+#endif
             Properties[PropertyEnum.OmegaXP] = omegaXP;
 
             TryOmegaLevelUp(notifyClient);
@@ -2590,11 +2641,13 @@ namespace MHServerEmu.Games.Entities
             int points = MathHelper.RoundToInt(Math.Sqrt(xp / AdvancementGlobalsPrototype.OmegaXPFactor));
             return Math.Min(points, GameDatabase.AdvancementGlobalsPrototype.OmegaPointsCap);
         }
+#endif
 
         #endregion
 
         #region Difficulty
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public bool CanChangeDifficulty(PrototypeId difficultyTierProtoRef)
         {
             DifficultyTierPrototype difficultyTierProto = difficultyTierProtoRef.As<DifficultyTierPrototype>();
@@ -2664,6 +2717,7 @@ namespace MHServerEmu.Games.Entities
             ServiceMessage.PartyOperationRequest message = new(request);
             ServerManager.Instance.SendMessageToService(GameServiceType.PlayerManager, message);
         }
+#endif
 
         #endregion
 
@@ -2674,7 +2728,12 @@ namespace MHServerEmu.Games.Entities
             //Logger.Trace($"OnFullscreenMovieStarted {GameDatabase.GetFormattedPrototypeName(movieRef)} for {_playerName}");
             var movieProto = GameDatabase.GetPrototype<FullscreenMoviePrototype>(movieRef);
             if (movieProto == null) return;
+
+#if GAME_VERSION_1_53
+            if (movieProto.CinematicType == CinematicType.FullscreenMovie)
+#else
             if (movieProto.MovieType == MovieType.Cinematic)
+#endif
             {
                 Properties[PropertyEnum.FullScreenMovieSession] = Game.Random.Next();
                 Properties[PropertyEnum.FullScreenMoviePlaying] = true;
@@ -2690,7 +2749,11 @@ namespace MHServerEmu.Games.Entities
             var movieProto = GameDatabase.GetPrototype<FullscreenMoviePrototype>(movieRef);
             if (movieProto == null) return;
 
+#if GAME_VERSION_1_53
+            if (movieProto.CinematicType == CinematicType.FullscreenMovie)
+#else
             if (movieProto.MovieType == MovieType.Cinematic)
+#endif
             {
                 FullScreenMovieDequeued(movieRef);
                 GetRegion()?.CinematicFinishedEvent.Invoke(new(this, movieRef));
@@ -2711,7 +2774,11 @@ namespace MHServerEmu.Games.Entities
             var movieProto = GameDatabase.GetPrototype<FullscreenMoviePrototype>(movieRef);
             if (movieProto == null) return;
 
+#if GAME_VERSION_1_53
+            if (movieProto.CinematicType == CinematicType.FullscreenMovie)
+#else
             if (movieProto.MovieType == MovieType.Cinematic)
+#endif
                 FullScreenMovieQueued(movieRef);
 
             SendMessage(NetMessageQueueFullscreenMovie.CreateBuilder()
@@ -2766,9 +2833,18 @@ namespace MHServerEmu.Games.Entities
 
         public bool HasBodysliderProperties()
         {
-            return Properties[PropertyEnum.BodySliderRegionId] != 0ul &&
-                   Properties[PropertyEnum.BodySliderRegionRef] != PrototypeId.Invalid &&
-                   Properties[PropertyEnum.BodySliderDifficultyRef] != PrototypeId.Invalid;
+            if (Properties[PropertyEnum.BodySliderRegionId] == 0L)
+                return false;
+
+            if (Properties[PropertyEnum.BodySliderRegionRef] == PrototypeId.Invalid)
+                return false;
+
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
+            if (Properties[PropertyEnum.BodySliderDifficultyRef] == PrototypeId.Invalid)
+                return false;
+#endif
+
+            return true;
         }
 
         public void RemoveBodysliderProperties()
@@ -2800,7 +2876,7 @@ namespace MHServerEmu.Games.Entities
             return true;
         }
 
-        #endregion
+#endregion
 
         #region Match Queue
 
@@ -2825,7 +2901,9 @@ namespace MHServerEmu.Games.Entities
                 switch (status)
                 {
                     case RegionRequestQueueUpdateVar.eRRQ_RaidNotAllowed:
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                     case RegionRequestQueueUpdateVar.eRRQ_PartyTooLarge:
+#endif
                         SendBannerMessage(GameDatabase.UIGlobalsPrototype.MessageQueueNotAvailableInRaid);
                         break;
 
@@ -2869,7 +2947,9 @@ namespace MHServerEmu.Games.Entities
             var builder = NetMessageMatchQueueUpdateClient.CreateBuilder()
                 .SetPlayerGuid(playerGuid)
                 .SetRegionProtoId((ulong)regionRef)
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                 .SetDifficultyTierProtoId((ulong)difficultyTierRef)
+#endif
                 .SetRegionRequestGroupId(groupId)
                 .SetStatus(status);
 
@@ -3533,6 +3613,7 @@ namespace MHServerEmu.Games.Entities
 
         #region Missions and Chapters
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public void InitializeMissionTrackerFilters()
         {
             foreach (PrototypeId filterRef in GameDatabase.DataDirectory.IteratePrototypesInHierarchy<MissionTrackerFilterPrototype>(PrototypeIterateFlags.NoAbstractApprovedOnly))
@@ -3542,6 +3623,7 @@ namespace MHServerEmu.Games.Entities
                     Properties[PropertyEnum.MissionTrackerFilter, filterRef] = true;
             }
         }
+#endif
 
         public void SetActiveChapter(PrototypeId chapterRef)
         {
@@ -3821,6 +3903,9 @@ namespace MHServerEmu.Games.Entities
                         || indicatorType == HUDEntityOverheadIcon.MissionAdvancer)
                     {
                         var message = NetMessageMissionInteractRepeat.CreateBuilder()
+#if GAME_VERSION_1_53
+                            .SetAvatarIndex(0)  // V53_NOTE: need proper avatar index here for coop
+#endif
                             .SetTargetEntityId(targetId)
                             .SetMissionPrototypeId(0).Build(); // client not use MissionPrototype
 
@@ -3910,6 +3995,7 @@ namespace MHServerEmu.Games.Entities
             return true;
         }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public void SendWaypointNotification(PrototypeId waypointRef, bool show = true)
         {
             if (waypointRef == PrototypeId.Invalid) return;
@@ -3918,6 +4004,7 @@ namespace MHServerEmu.Games.Entities
                 .SetShow(show).Build();
             SendMessage(message);
         }
+#endif
 
         public void SendStoryNotification(StoryNotificationPrototype storyNotification, PrototypeId missionRef = PrototypeId.Invalid)
         {
@@ -4761,9 +4848,13 @@ namespace MHServerEmu.Games.Entities
             Properties[PropertyEnum.TutorialHasSeenTip, tipDataRef] = true;
         }
 
+        // V48_TODO: TutorialSystem::ShowTip() for TipPrototype separate from ShowHUDTutorial
+
         public void ShowHUDTutorial(HUDTutorialPrototype hudTutorialProto)
         {
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
             if (hudTutorialProto != null && hudTutorialProto.ShouldShowTip(this) == false) return;
+#endif
 
             if (CurrentHUDTutorial != hudTutorialProto)
             {
@@ -4959,7 +5050,9 @@ namespace MHServerEmu.Games.Entities
             Avatar avatar = CurrentAvatar;
 
             ulong currentRegionRefId = 0;
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
             ulong currentDifficultyRefId = 0;
+#endif
             ulong avatarRefId = 0;
             ulong costumeRefId = 0;
             uint level = 0;
@@ -4968,7 +5061,9 @@ namespace MHServerEmu.Games.Entities
             if (region != null)
             {
                 currentRegionRefId = (ulong)region.PrototypeDataRef;
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                 currentDifficultyRefId = (ulong)region.DifficultyTierRef;
+#endif
             }
 
             if (avatar != null)
@@ -4979,15 +5074,23 @@ namespace MHServerEmu.Games.Entities
                 prestigeLevel = (uint)avatar.PrestigeLevel;
             }
 
+
             return CommunityMemberBroadcast.CreateBuilder()
                 .SetMemberPlayerDbId(DatabaseUniqueId)
                 .SetCurrentRegionRefId(currentRegionRefId)
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                 .SetCurrentDifficultyRefId(currentDifficultyRefId)
                 .AddSlots(CommunityMemberAvatarSlot.CreateBuilder()
                     .SetAvatarRefId(avatarRefId)
                     .SetCostumeRefId(costumeRefId)
                     .SetLevel(level)
                     .SetPrestigeLevel(prestigeLevel))
+#else
+                .SetCurrentAvatarRefId(avatarRefId)
+                .SetCurrentCostumeRefId(costumeRefId)
+                .SetCurrentCharacterLevel(level)
+                .SetCurrentPrestigeLevel(prestigeLevel)
+#endif
                 .SetCurrentPlayerName(GetName())
                 .SetIsOnline(1)
                 .Build();
@@ -5040,15 +5143,29 @@ namespace MHServerEmu.Games.Entities
             int i = 0;
             foreach (CommunityMember member in Community.IterateMembers(partyCircle))
             {
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                 AvatarSlotInfo slot = member.GetAvatarSlotInfo();
-                if (slot == null || slot.AvatarRef == PrototypeId.Invalid || slot.CostumeRef == PrototypeId.Invalid)
+                if (slot == null)
                     continue;
 
-                AvatarPrototype avatarProto = slot.AvatarRef.As<AvatarPrototype>();
+                PrototypeId avatarRef = slot.AvatarRef;
+                PrototypeId costumeRef = slot.CostumeRef;
+#else
+                PrototypeId avatarRef = member.AvatarRef;
+                PrototypeId costumeRef = member.CostumeRef;
+
+#endif
+                if (avatarRef == PrototypeId.Invalid)
+                    continue;
+
+                if (costumeRef == PrototypeId.Invalid)
+                    continue;
+
+                AvatarPrototype avatarProto = avatarRef.As<AvatarPrototype>();
                 if (!Verify.IsNotNull(avatarProto))
                     continue;
 
-                CostumePrototype costumeProto = slot.CostumeRef.As<CostumePrototype>();
+                CostumePrototype costumeProto = costumeRef.As<CostumePrototype>();
                 if (!Verify.IsNotNull(costumeProto))
                     continue;
 
@@ -5312,12 +5429,20 @@ namespace MHServerEmu.Games.Entities
             if (member != null)
             {
                 targetRegionProtoRef = member.RegionRef;
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
                 PrototypeId difficultyProtoRef = member.DifficultyRef;
                 if (targetRegionProtoRef != PrototypeId.Invalid && difficultyProtoRef != PrototypeId.Invalid)
                 {
                     if (CanEnterRegion(targetRegionProtoRef, difficultyProtoRef, true) == false)
                         return false;
                 }
+#else
+                if (targetRegionProtoRef != PrototypeId.Invalid)
+                {
+                    if (CanEnterRegion(targetRegionProtoRef, true) == false)
+                        return false;
+                }
+#endif
             }
 
             // Request queue if we are teleporting to a player in a different region, and it is a match region.
@@ -5601,9 +5726,11 @@ namespace MHServerEmu.Games.Entities
             sb.AppendLine($"{nameof(_avatarProperties)}: {_avatarProperties}");
             sb.AppendLine($"{nameof(_shardId)}: {_shardId}");
             sb.AppendLine($"{nameof(_playerName)}: {_playerName}");
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
             sb.AppendLine($"{nameof(_consoleAccountIds)}[0]: {_consoleAccountIds[0]}");
             sb.AppendLine($"{nameof(_consoleAccountIds)}[1]: {_consoleAccountIds[1]}");
             sb.AppendLine($"{nameof(_secondaryPlayerName)}: {_secondaryPlayerName}");
+#endif
             sb.AppendLine($"{nameof(MatchQueueStatus)}: {MatchQueueStatus}");
             sb.AppendLine($"{nameof(_emailVerified)}: {_emailVerified}");
             sb.AppendLine($"{nameof(_accountCreationTimestamp)}: {Clock.UnixTimeToDateTime(_accountCreationTimestamp)}");

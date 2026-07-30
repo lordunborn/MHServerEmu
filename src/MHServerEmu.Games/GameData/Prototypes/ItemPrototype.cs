@@ -101,7 +101,13 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public PrototypeId SortCategory { get; protected set; }
         public PrototypeId SortSubCategory { get; protected set; }
         public ItemInstrumentedDropGroup InstrumentedDropGroup { get; protected set; }
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public bool IsContainer { get; protected set; }
+#endif
+#if GAME_VERSION_1_53
+        public bool IsMTXItem { get; protected set; }
+        public LocaleStringId ShortDescription { get; protected set; }
+#endif
 
         // ---
 
@@ -779,6 +785,9 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public int RequiredCharLevelOverride { get; protected set; }
         public bool AutoStackWhenAddedToInventory { get; protected set; }
         public bool StacksCanBeSplit { get; protected set; }
+#if GAME_VERSION_1_53
+        public int NumOfStacksToConsumeOnUse { get; protected set; }
+#endif
     }
 
     public class ItemActionBasePrototype : Prototype
@@ -875,6 +884,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public override ItemActionType ActionType { get => ItemActionType.UsePower; }
     }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
     public class ItemActionUnlockPermaBuffPrototype : ItemActionPrototype
     {
         public PrototypeId PermaBuff { get; protected set; }
@@ -883,6 +893,18 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
         public override ItemActionType ActionType { get => ItemActionType.UnlockPermaBuff; }
     }
+#endif
+
+#if GAME_VERSION_1_53
+    public class ItemActionAwardAvatarXPPrototype : ItemActionPrototype
+    {
+        public int XP { get; protected set; }
+
+        //---
+
+        public override ItemActionType ActionType { get => ItemActionType.AwardAvatarXP; }
+    }
+#endif
 
     public class ItemActionAwardTeamUpXPPrototype : ItemActionPrototype
     {
@@ -908,19 +930,27 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public override ItemActionType ActionType { get => ItemActionType.OpenUIPanel; }
     }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
     public class CategorizedAffixEntryPrototype : Prototype
     {
         [PrototypeField(PrototypeFieldType.PrototypeRefPtr)]
         public AffixCategoryPrototype Category { get; protected set; }
         public short MinAffixes { get; protected set; }
     }
+#endif
 
     public class AffixLimitsPrototype : Prototype
     {
         public LootContext[] AllowedContexts { get; protected set; }
         public PrototypeId ItemRarity { get; protected set; }
+#if GAME_VERSION_1_48
+        public short MaxPrefixPlusSuffixTotal { get; protected set; }
+#endif
         public short MaxPrefixes { get; protected set; }
         public short MaxSuffixes { get; protected set; }
+#if GAME_VERSION_1_48
+        public short MinPrefixPlusSuffixTotal { get; protected set; }
+#endif
         public short MinPrefixes { get; protected set; }
         public short MinSuffixes { get; protected set; }
         public short NumCosmics { get; protected set; }
@@ -939,7 +969,9 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public int RegionDifficultyIndex { get; protected set; }
         public float DamageRegionMobToPlayer { get; protected set; }
         public float DamageRegionPlayerToMob { get; protected set; }
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public CategorizedAffixEntryPrototype[] CategorizedAffixes { get; protected set; }
+#endif
 
         // ---
 
@@ -980,6 +1012,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
             return GetLimit(affixPosition, true, settings);
         }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public short GetMax(AffixCategoryPrototype affixCategoryProto, LootRollSettings settings)
         {
             if (CategorizedAffixes.IsNullOrEmpty())
@@ -1000,6 +1033,7 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
             return short.MaxValue;
         }
+#endif
 
         public short GetLimit(AffixPosition affixPosition, bool getMax, LootRollSettings settings)
         {
@@ -1207,7 +1241,13 @@ namespace MHServerEmu.Games.GameData.Prototypes
         public LocaleStringId AvatarDisplayNameShort { get; protected set; }
         public bool EquipTriggersVO { get; protected set; }
         public AssetId PortraitIconPathHiRes { get; protected set; }
+#if GAME_VERSION_1_52
         public PrototypeId FulfillmentDuplicateItem { get; protected set; }
+#elif GAME_VERSION_1_53
+        public PrototypeId FulfillmentDuplicateItemConsole { get; protected set; }
+        public CostumeSpecialEffectEntryPrototype[] CostumeSpecialEffects { get; protected set; }
+        public PrototypeId FulfillmentDuplicateItemPC { get; protected set; }
+#endif
 
         //---
 
@@ -1219,10 +1259,20 @@ namespace MHServerEmu.Games.GameData.Prototypes
             AvatarPrototype avatar = GameDatabase.GetPrototype<AvatarPrototype>(UsableBy);
             if (!Verify.IsNotNull(avatar)) return false;
 
+#if GAME_VERSION_1_53
+            // V53_TODO: FulfillmentDuplicateItemConsole
+            ItemPrototype itemProto = GameDatabase.GetPrototype<ItemPrototype>(FulfillmentDuplicateItemPC);
+            if (!Verify.IsTrue(itemProto != null && itemProto != this)) return false;
+
+            return avatar.ApprovedForUse() && itemProto.ApprovedForUse();
+#elif GAME_VERSION_1_52
             ItemPrototype itemProto = GameDatabase.GetPrototype<ItemPrototype>(FulfillmentDuplicateItem);
             if (!Verify.IsTrue(itemProto != null && itemProto != this)) return false;
 
             return avatar.ApprovedForUse() && itemProto.ApprovedForUse();
+#else
+            return avatar.ApprovedForUse();
+#endif
         }
 
         public override bool IsUsableByAgent(AgentPrototype agentProto)
@@ -1234,6 +1284,42 @@ namespace MHServerEmu.Games.GameData.Prototypes
 
     public class LegendaryPrototype : ItemPrototype
     {
+#if GAME_VERSION_1_53
+        public CurveId ItemAffixLevelingCurve { get; protected set; }
+#endif
+
+        //---
+
+        // V53_NOTE: 1.53 added per legendary leveling curves instead of a single global one.
+#if GAME_VERSION_1_53
+        public int GetItemAffixLevelCap()
+        {
+            Curve levelingCurve = GetItemAffixLevelingCurve();
+            if (!Verify.IsNotNull(levelingCurve)) return 0;
+
+            return levelingCurve.MaxPosition;
+        }
+#endif
+
+#if GAME_VERSION_1_53
+        public long GetItemAffixLevelUpXPRequirement(int level)
+        {
+            if (level < 0)
+                return AdvancementGlobalsPrototype.InvalidXPRequirement;
+
+            Curve levelingCurve = GetItemAffixLevelingCurve();
+            if (!Verify.IsNotNull(levelingCurve)) return AdvancementGlobalsPrototype.InvalidXPRequirement;
+
+            return AdvancementGlobalsPrototype.GetLevelUpXPRequirementFromCurve(level, levelingCurve);
+        }
+#endif
+
+#if GAME_VERSION_1_53
+        private Curve GetItemAffixLevelingCurve()
+        {
+            return CurveDirectory.Instance.GetCurve(ItemAffixLevelingCurve);
+        }
+#endif
     }
 
     public class MedalPrototype : ItemPrototype
@@ -1278,4 +1364,30 @@ namespace MHServerEmu.Games.GameData.Prototypes
     {
         public EvalPrototype EvalAvatarProperties { get; protected set; }
     }
+
+#if GAME_VERSION_1_53
+    public class CostumeSpecialEffectEntryPrototype : Prototype
+    {
+        public PrototypeId SpecialEffect { get; protected set; }
+        public AssetId SpecialEffectUnrealClass { get; protected set; }
+    }
+#endif
+
+#if GAME_VERSION_1_53
+    public class CostumeSpecialEffectPrototype : Prototype
+    {
+        public DesignWorkflowState DesignState { get; protected set; }
+        public DesignWorkflowState DesignStatePS4 { get; protected set; }
+        public DesignWorkflowState DesignStateXboxOne { get; protected set; }
+        public LocaleStringId DisplayName { get; protected set; }
+        public LocaleStringId UnlockRequirementDisplayName { get; protected set; }
+    }
+#endif
+
+#if GAME_VERSION_1_53
+    public class OmegaPrestigeUnlockPrototype : ItemPrototype
+    {
+        public PrototypeId Avatar { get; protected set; }
+    }
+#endif
 }

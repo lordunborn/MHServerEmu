@@ -10,92 +10,25 @@ namespace MHServerEmu.Games.GameData.PatchManager
 {
     public class PrototypePatchManager
     {
-
         private static readonly Logger Logger = LogManager.CreateLogger();
-        private Stack<PrototypeId> _protoStack = new();
+        
         private readonly Dictionary<PrototypeId, List<PrototypePatchEntry>> _patchDict = new();
-        private Dictionary<Prototype, string> _pathDict = new ();
+        private PatchContext _context = new();
         private bool _initialized = false;
 
         public static PrototypePatchManager Instance { get; } = new();
 
         /// <summary>
-        /// Loads patches before Globals are loaded.
-        /// </summary>
-        public void PreInitialize(bool enablePatchManager)
-        {
-            if (enablePatchManager == false) return;
-
-            // Set this before loading rather than after: a patch entry that appends an existing
-            // PrototypeId into a Prototype-typed array (GetElementValue() below) force-constructs
-            // that target prototype immediately, as a side effect, while this loop is still parsing
-            // OTHER patch files. A prototype's own PostProcess()/PreCheck()/PostOverride() sequence
-            // only ever runs once (at first construction, then cached) - if that first construction
-            // happens to land inside this same loop, PreCheck() needs _initialized already true to
-            // find and apply whatever is already registered in _patchDict for it, even though the
-            // overall load pass isn't finished yet. Confirmed via a real case (Tahiti's SSB removal
-            // patch): SHIELDSupplyBoost.prototype got eagerly constructed here as a side effect of an
-            // unrelated loot-table entry appending its own PrototypeId elsewhere, permanently and
-            // silently skipping SHIELDSupplyBoost's own ActionsTriggeredOnItemEvent.Choices[0].Power
-            // patch - no warning, no trace, since PreCheck() bailed on _initialized instead of ever
-            // consulting _patchDict. This flag now covers both the PrePatchData pass here and the
-            // PatchData pass in Initialize() below, since it's set once and never cleared.
-            _initialized = true;
-            LoadPatchDataFromDisk("PrePatchData");
-            ReapplyPatchesToAlreadyConstructedPrototypes();
-        }
-
-        /// <summary>
-        /// Loads patches after Globals are loaded.
+        /// Loads patches. Must run before Globals are loaded - the patcher fully populates
+        /// <see cref="_patchDict"/> in one pass here before any prototype construction can consult it
+        /// (see also <see cref="JsonPrototype"/>'s lazy instance construction and the subcontext
+        /// reset in <see cref="ConvertValue"/>), so every downstream GetPrototype() call - including
+        /// eager sub-prototype construction that happens as a side effect of loading GlobalsPrototype
+        /// itself - goes through the normal PreCheck()/PostOverride() flow already patched-and-ready.
         /// </summary>
         public void Initialize(bool enablePatchManager)
         {
-            if (enablePatchManager == false) return;
-
-            LoadPatchDataFromDisk("PatchData");
-            ReapplyPatchesToAlreadyConstructedPrototypes();
-        }
-
-        /// <summary>
-        /// A patch entry can permanently miss its own PreCheck()/PostOverride() window regardless of
-        /// file processing order: ParseJsonPrototype() (used for "Prototype"/"Prototype[]" values that
-        /// embed an existing PrototypeId, e.g. adding an existing item into another table's Choices[])
-        /// force-constructs that referenced prototype immediately, during raw JSON deserialization of
-        /// whatever OTHER patch file happens to contain it - which can construct still more prototypes
-        /// transitively (e.g. the referenced item's own native LootTable field). A prototype's
-        /// PreCheck()/PostOverride() sequence only ever runs once, at first construction, so if that
-        /// first construction happens before its own dedicated patch file is even parsed, its entries
-        /// are stuck unpatched forever - no warning, no trace, since nothing ever revisits it.
-        ///
-        /// Confirmed via a real case (Tahiti's ICPLeader.json "Add SSB" entries, which reference
-        /// BonusItemFindBox.prototype - whose own native data uses BonusItemFindTable.prototype as its
-        /// loot table): this eagerly built BonusItemFindTable ~40 files before SSBOptimization.json/
-        /// SSBRemovalPatch.json ever got parsed, permanently losing their entries despite the
-        /// _initialized-ordering fix above (which only covers the reverse case: the target's own
-        /// patches already registered before something else force-constructs it).
-        ///
-        /// Runs once, after every patch file has been parsed and _patchDict is fully populated. For any
-        /// prototype that still has unpatched entries, GetPrototype() below is a harmless no-op if nothing
-        /// has touched it yet (normal lazy construction then proceeds through the standard, now-correct
-        /// PreCheck()/PostOverride() flow) - the only case where entries can STILL be unpatched afterward
-        /// is a prototype that was already built earlier, which is exactly the case this needs to catch.
-        /// Forcing PostProcessContainedPrototypes() directly (rather than PostProcess()) re-runs only the
-        /// patch-application traversal, not whatever extra one-time setup a subclass's PostProcess()
-        /// override does for itself - though that does still run again for every CONTAINED prototype
-        /// touched during the retraversal, since those go through their own ordinary PostProcess() calls.
-        /// </summary>
-        private void ReapplyPatchesToAlreadyConstructedPrototypes()
-        {
-            foreach (var kvp in _patchDict)
-            {
-                if (NotPatched(kvp.Value) == false) continue;
-
-                Prototype prototype = GameDatabase.GetPrototype<Prototype>(kvp.Key);
-                if (prototype == null) continue;
-
-                if (NotPatched(kvp.Value))
-                    GameDatabase.PrototypeClassManager.PostProcessContainedPrototypes(prototype);
-            }
+            if (enablePatchManager) _initialized |= LoadPatchDataFromDisk("PatchData");
         }
 
         private bool LoadPatchDataFromDisk(string prefix)
@@ -174,10 +107,10 @@ namespace MHServerEmu.Games.GameData.PatchManager
             if (protoRef != PrototypeId.Invalid && _patchDict.TryGetValue(protoRef, out var list))
             {
                 if (NotPatched(list))
-                    _protoStack.Push(protoRef);
+                    _context.ProtoStack.Push(protoRef);
             }
 
-            return _protoStack.Count > 0;
+            return _context.ProtoStack.Count > 0;
         }
 
         private static bool NotPatched(List<PrototypePatchEntry> list)
@@ -189,18 +122,18 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
         public void PostOverride(Prototype prototype)
         {
-            if (_protoStack.Count == 0) return;
+            if (_context.ProtoStack.Count == 0) return;
 
             string currentPath = string.Empty;
             if (prototype.DataRef == PrototypeId.Invalid
-                && _pathDict.TryGetValue(prototype, out currentPath) == false) return;
+                && _context.PathDict.TryGetValue(prototype, out currentPath) == false) return;
 
-            PrototypeId patchProtoRef = _protoStack.Peek();
+            PrototypeId patchProtoRef = _context.ProtoStack.Peek();
             if (prototype.DataRef != PrototypeId.Invalid)
             {
                 if (prototype.DataRef != patchProtoRef) return;
                 if (_patchDict.ContainsKey(prototype.DataRef))
-                    patchProtoRef = _protoStack.Pop();
+                    patchProtoRef = _context.ProtoStack.Pop();
             }
 
             if (_patchDict.TryGetValue(patchProtoRef, out var list) == false) return;
@@ -209,8 +142,8 @@ namespace MHServerEmu.Games.GameData.PatchManager
                 if (entry.Patched == false)
                     CheckAndUpdate(entry, prototype, currentPath);
 
-            if (_protoStack.Count == 0)
-                _pathDict.Clear();
+            if (_context.ProtoStack.Count == 0)
+                _context.PathDict.Clear();
         }
 
         private static bool CheckAndUpdate(PrototypePatchEntry entry, Prototype prototype, string currentPath)
@@ -268,13 +201,22 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
             if (targetType.IsSubclassOf(typeof(Prototype)))
             {
+                PrototypeId? protoRef = null;
                 switch (rawValue)
                 {
-                    case PrototypeId protoRef:
-                        return GameDatabase.GetPrototype<Prototype>(protoRef);
+                    case PrototypeId protoId:   protoRef = protoId; break;
+                    case ulong dataId:          protoRef = (PrototypeId)dataId; break;
+                }
 
-                    case ulong dataId:
-                        return GameDatabase.GetPrototype<Prototype>((PrototypeId)dataId);
+                if (protoRef.HasValue)
+                {
+                    PatchContext contextBefore = Instance.CreateSubContext();
+
+                    Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef.Value);
+
+                    Instance.RestoreContext(contextBefore);
+
+                    return proto;
                 }
             }
 
@@ -408,8 +350,16 @@ namespace MHServerEmu.Games.GameData.PatchManager
         {
             if (elementType.IsClass && valueEntry is PrototypeId dataRef)
             {
-                var prototype = GameDatabase.GetPrototype<Prototype>(dataRef) 
-                    ?? throw new InvalidOperationException($"DataRef {dataRef} is not Prototype.");
+                // Same subcontext isolation as ConvertValue()'s Prototype-by-id case: constructing this
+                // referenced prototype (e.g. appending an existing item into another table's Choices[])
+                // can recursively trigger its own PreCheck()/PostOverride() if it has pending patches of
+                // its own, which must not interact with the outer prototype's in-progress ProtoStack/PathDict.
+                PatchContext contextBefore = Instance.CreateSubContext();
+                Prototype prototype = GameDatabase.GetPrototype<Prototype>(dataRef);
+                Instance.RestoreContext(contextBefore);
+
+                if (prototype == null)
+                    throw new InvalidOperationException($"DataRef {dataRef} is not Prototype.");
                 valueEntry = prototype;
             }
 
@@ -422,18 +372,42 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
         public void SetPath(Prototype parent, Prototype child, string fieldName)
         {
-            string parentPath = _pathDict.TryGetValue(parent, out var path) ? path : string.Empty;
+            string parentPath = _context.PathDict.TryGetValue(parent, out var path) ? path : string.Empty;
             if (parent.DataRef != PrototypeId.Invalid && _patchDict.ContainsKey(parent.DataRef))
                 parentPath = string.Empty;
-            _pathDict[child] = $"{parentPath}.{fieldName}";
+            _context.PathDict[child] = $"{parentPath}.{fieldName}";
         }
 
         public void SetPathIndex(Prototype parent, Prototype child, string fieldName, int index)
         {
-            string parentPath = _pathDict.TryGetValue(parent, out var path) ? path : string.Empty;
+            string parentPath = _context.PathDict.TryGetValue(parent, out var path) ? path : string.Empty;
             if (parent.DataRef != PrototypeId.Invalid && _patchDict.ContainsKey(parent.DataRef))
                 parentPath = string.Empty;
-            _pathDict[child] = $"{parentPath}.{fieldName}[{index}]";
+            _context.PathDict[child] = $"{parentPath}.{fieldName}[{index}]";
+        }
+
+        private PatchContext CreateSubContext()
+        {
+            PatchContext oldContext = _context;
+            _context = new();
+            return oldContext;
+        }
+
+        private void RestoreContext(in PatchContext context)
+        {
+            _context = context;
+        }
+
+        private readonly struct PatchContext
+        {
+            public readonly Stack<PrototypeId> ProtoStack;
+            public readonly Dictionary<Prototype, string> PathDict;
+
+            public PatchContext()
+            {
+                ProtoStack = new();
+                PathDict = new();
+            }
         }
 
         /// <summary>

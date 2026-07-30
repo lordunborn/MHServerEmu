@@ -64,9 +64,15 @@ namespace MHServerEmu.Games.GameData
         public static PowerVisualsGlobalsPrototype PowerVisualsGlobalsPrototype { get => GlobalsPrototype?.PowerVisualsGlobals; }
         public static KeywordGlobalsPrototype KeywordGlobalsPrototype { get => GlobalsPrototype?.KeywordGlobals; }
         public static CurrencyGlobalsPrototype CurrencyGlobalsPrototype { get => GlobalsPrototype?.CurrencyGlobals; }
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public static GamepadGlobalsPrototype GamepadGlobalsPrototype { get => GlobalsPrototype?.GamepadGlobals; }
+#else
+        public static ControllerGlobalsPrototype ControllerGlobalsPrototype { get => GlobalsPrototype?.ControllerGlobals; }
+#endif
         public static DifficultyGlobalsPrototype DifficultyGlobalsPrototype { get => GlobalsPrototype?.DifficultyGlobals; }
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
         public static ConsoleGlobalsPrototype ConsoleGlobalsPrototype { get => GlobalsPrototype?.ConsoleGlobals; }
+#endif
         
         public static InteractionManager InteractionManager { get; private set; }
 
@@ -98,34 +104,27 @@ namespace MHServerEmu.Games.GameData
             PropertyInfoTable = new();
             PropertyInfoTable.Initialize();
 
-            // Load patches that should apply to globals (limited RefPtr support)
-            PrototypePatchManager.Instance.PreInitialize(config.EnablePatchManager);
+#if GAME_VERSION_1_52
+            // Load prototype patches
+            // NOTE: patches must load before Globals below - the patcher's own architecture now
+            // (as of the "prototype-patcher" rework, see JsonPrototype.cs + PrototypePatchManager's
+            // PatchContext subcontext reset) fully populates its dictionary in one pass before any
+            // prototype construction can consult it, so loading patches first means every downstream
+            // GetPrototype() call - including the eager sub-prototype construction that happens as a
+            // side effect of loading GlobalsPrototype itself below - goes through the normal
+            // PreCheck()/PostOverride() flow already patched-and-ready, no reapply-after-the-fact needed.
+            PrototypePatchManager.Instance.Initialize(config.EnablePatchManager);
+#endif
 
             // Load globals
             PrototypeId globalsProtoRef = GetPrototypeRefByName("Globals/Globals.defaults");
             GlobalsPrototype = GetPrototype<GlobalsPrototype>(globalsProtoRef);
 
-            // Initialize PrototypePatchManager
-            // NOTE: Must run after Globals are resolved above - patch entries using ValueType "Prototype"/"PrototypeArray"
-            // (e.g. custom loot table construction) trigger CopyPrototypeDataRefFields(), which can force early
-            // deserialization of LootTablePrototype instances. LootTablePrototype.PostProcess() needs
-            // GameDatabase.LootGlobalsPrototype to compute LootTablePrototypeEnumValue - if patches load first,
-            // that Verify fails (harmless fallback to DefaultTuningVarValue, but permanently caches a bad enum
-            // value on whatever got force-loaded, silently disabling LiveTuning overrides for it for the
-            // lifetime of the process). No existing patch file targets a Globals-family prototype, so moving
-            // this here is safe.
-            PrototypePatchManager.Instance.Initialize(config.EnablePatchManager);
-
-            // GlobalsPrototype's own PrototypeRefPtr/VectorPrototypeRefPtr fields (AdvancementGlobals,
-            // DifficultyGlobals, plus the VectorPrototypeRefPtr DifficultyTiers[], etc.) get eagerly dereferenced and
-            // fully constructed as a side effect of loading GlobalsPrototype ABOVE - before the patch
-            // manager's dictionary was even populated. Any patch targeting one of those already-built
-            // prototypes silently never applies (e.g. Difficulty/Tiers/Tier3Superheroic, the only tier
-            // natively occupying the global Cosmic slot in Globals.defaults' DifficultyTiers[] - patches
-            // to it were confirmed missing from the "Patch Prototype:" startup trace entirely, while
-            // Tier4Cosmic/Tier5Omega1, which aren't part of that native array and get constructed later,
-            // applied fine). Re-run the same PreCheck/PostOverride pair PrototypeClassManager normally
-            // calls during construction, directly against these already-built instances, to catch up.
+            // Safety net for the case above: kept from before the patcher rework, in case a Globals
+            // sub-prototype still manages to construct ahead of _patchDict being ready for it. Harmless
+            // no-op (GetPrototype()/PostProcessContainedPrototypes() on an already-fully-patched
+            // prototype does nothing) if the ordering above already covers everything - confirm via
+            // Trace logs whether this ever actually catches anything before considering removing it.
             ReapplyPatchesToEagerlyLoadedGlobals();
 
             // initializeKeywordPrototypes
@@ -194,9 +193,15 @@ namespace MHServerEmu.Games.GameData
             ReapplyPatch(PowerVisualsGlobalsPrototype);
             ReapplyPatch(KeywordGlobalsPrototype);
             ReapplyPatch(CurrencyGlobalsPrototype);
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
             ReapplyPatch(GamepadGlobalsPrototype);
+#else
+            ReapplyPatch(ControllerGlobalsPrototype);
+#endif
             ReapplyPatch(DifficultyGlobalsPrototype);
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
             ReapplyPatch(ConsoleGlobalsPrototype);
+#endif
 
             if (GlobalsPrototype?.DifficultyTiers != null)
             {
