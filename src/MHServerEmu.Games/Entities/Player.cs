@@ -2381,8 +2381,15 @@ namespace MHServerEmu.Games.Entities
             Region region = GetRegion();
             if (!Verify.IsNotNull(region)) return CanSwitchAvatarResult.NotAllowedUnknown;
 
-            // Region lock
-            if (region.AvatarSwapEnabled == false && CurrentHUDTutorial?.HighlightAvatars.HasValue() == false)
+            // Region lock - CurrentHUDTutorial highlighting specific avatars is a deliberate exception
+            // (e.g. a tutorial walking the player through trying out a highlighted roster), not a
+            // precondition for the lock itself. Written as "== false" against a nullable bool, the
+            // previous version only ever blocked a player who was ALSO mid-tutorial-with-no-highlighted-
+            // avatars - for every normal (non-tutorial, CurrentHUDTutorial == null) player, "null == false"
+            // is false, so the whole && collapsed to false and this region lock never actually fired,
+            // regardless of the region's own AvatarSwapEnabled value.
+            bool hudTutorialHighlightsAvatars = CurrentHUDTutorial?.HighlightAvatars.HasValue() == true;
+            if (region.AvatarSwapEnabled == false && hudTutorialHighlightsAvatars == false)
                 return CanSwitchAvatarResult.NotAllowedInRegion;
 
             RegionPrototype regionProto = region.Prototype;

@@ -245,6 +245,12 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--findavatarswapoff")
+            {
+                FindRegionsWithAvatarSwapDisabled();
+                return;
+            }
+
             if (args.Length > 0 && args[0] == "--findunusedconsumables")
             {
                 string pathPrefix = args.Length > 1 ? args[1] : "Entity/Items/Consumables/";
@@ -914,6 +920,29 @@ namespace LootTableDumper
                     }
                 }
             }
+        }
+
+        private static void FindRegionsWithAvatarSwapDisabled()
+        {
+            Console.WriteLine("==================== Regions with EnableAvatarSwap=False ====================");
+
+            int total = 0;
+            int disabled = 0;
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IteratePrototypesInHierarchy<RegionPrototype>(PrototypeIterateFlags.NoAbstract))
+            {
+                RegionPrototype proto = GameDatabase.GetPrototype<Prototype>(protoRef) as RegionPrototype;
+                if (proto == null) continue;
+
+                total++;
+                if (proto.EnableAvatarSwap == false)
+                {
+                    disabled++;
+                    Console.WriteLine($"  {SafeGetName(protoRef)} (Behavior={proto.Behavior})");
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- {disabled} of {total} region prototypes have EnableAvatarSwap=False --");
         }
 
         private static void LookupString(string locoDir, string idStr)
