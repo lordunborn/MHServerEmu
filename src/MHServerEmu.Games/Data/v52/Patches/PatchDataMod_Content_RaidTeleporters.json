@@ -19,12 +19,12 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[0].Position",
-    "Description": "[Raid Teleporters] Age of Ultron teleporter - placed in a new row alongside the existing EG Patrol teleporters (markers 30-32), easy to reach all together. Live position/rotation may need adjustment after in-game verification, same as the EG Patrol teleporters were iterated on.",
+    "Description": "[Raid Teleporters] Age of Ultron teleporter - final placement position in Avengers Tower, confirmed live.",
     "ValueType": "Vector3",
     "Value": [
-      400,
-      1300,
-      372
+      -375.625,
+      1009.75,
+      185
     ]
   },
   {
@@ -59,12 +59,12 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[19].Position",
-    "Description": "[Raid Teleporters] Axis Raid teleporter - placed in a new row alongside the Age of Ultron/Surtur Raid teleporters. Live position/rotation may need adjustment after in-game verification.",
+    "Description": "[Raid Teleporters] Axis Raid teleporter - final placement position in Avengers Tower, confirmed live.",
     "ValueType": "Vector3",
     "Value": [
-      750,
-      1300,
-      372
+      -383.5,
+      839.5,
+      185
     ]
   },
   {
@@ -99,12 +99,12 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[23].Position",
-    "Description": "[Raid Teleporters] Surtur Raid teleporter - placed in a new row alongside the Age of Ultron/Axis Raid teleporters. Live position/rotation may need adjustment after in-game verification.",
+    "Description": "[Raid Teleporters] Surtur Raid teleporter - final placement position in Avengers Tower, confirmed live.",
     "ValueType": "Vector3",
     "Value": [
-      1100,
-      1300,
-      372
+      -374.625,
+      685.375,
+      185
     ]
   },
   {
