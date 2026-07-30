@@ -1231,11 +1231,7 @@ namespace MHServerEmu.Games.Entities
                 slot = inventory.GetFreeSlot(item, true, isAdding);
                 if (slot == Inventory.InvalidSlot)
                 {
-                    SendMessage(NetMessageInventoryFull.CreateBuilder()
-                        .SetPlayerID(Id)
-                        .SetItemID(InvalidId)
-                        .Build());
-
+                    SendInventoryFullMessage(InvalidId, inventory.PrototypeDataRef);
                     return false;
                 }
             }
@@ -1245,6 +1241,17 @@ namespace MHServerEmu.Games.Entities
             bool canMove = item.PlayerCanMove(this, ref invLoc, out InventoryResult canMoveResult, out PropertyEnum canMoveResultProperty, out _);
             if (!Verify.IsTrue(canMove, $"PlayerCanMove check failed, player=[{this}], item={item}, canMoveResult={canMoveResult}, canMoveResultProperty=[{canMoveResultProperty}]"))
                 return false;
+
+#if GAME_VERSION_1_53
+            // Special handling for when a player tries to equip a legacy costume item in 1.53.
+            if (item.Prototype is CostumePrototype && inventory.ConvenienceLabel == InventoryConvenienceLabel.Costume)
+            {
+                Avatar avatar = CurrentAvatar;
+                if (!Verify.IsNotNull(avatar)) return false;
+
+                return avatar.UseInteractableObject(item.Id, PrototypeId.Invalid);
+            }
+#endif
 
             // Move
             ulong? stackEntityId = InvalidId;
@@ -1288,12 +1295,7 @@ namespace MHServerEmu.Games.Entities
             InventoryResult result = item.SplitStack(ref invLoc, 1);
 
             if (result == InventoryResult.InventoryFull)
-            {
-                SendMessage(NetMessageInventoryFull.CreateBuilder()
-                    .SetPlayerID(Id)
-                    .SetItemID(InvalidId)
-                    .Build());
-            }
+                SendInventoryFullMessage(InvalidId, inventory.PrototypeDataRef);
 
             return result == InventoryResult.Success;
         }
@@ -2255,6 +2257,12 @@ namespace MHServerEmu.Games.Entities
                     return true;
             }
 
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
+            // Costume unlocks
+            if (HasCostumeUnlocked(itemProtoRef))
+                return true;
+#endif
+
             return false;
         }
 
@@ -2316,13 +2324,15 @@ namespace MHServerEmu.Games.Entities
             return unlockType;
         }
 
-        public bool UnlockAvatar(PrototypeId avatarRef, bool sendToClient)
+        public bool UnlockAvatar(PrototypeId avatarRef, AvatarUnlockType unlockType, bool sendToClient)
         {
-            AvatarUnlockType currentUnlockType = GetAvatarUnlockType(avatarRef);
-            if (currentUnlockType != AvatarUnlockType.None && currentUnlockType != AvatarUnlockType.Starter)
-                return false;
+            if (!Verify.IsTrue(avatarRef != PrototypeId.Invalid)) return false;
+            if (!Verify.IsTrue(unlockType != AvatarUnlockType.None)) return false;
 
-            Properties[PropertyEnum.AvatarUnlock, avatarRef] = (int)AvatarUnlockType.Type2;
+            AvatarUnlockType currentUnlockType = GetAvatarUnlockType(avatarRef);
+            if (!Verify.IsTrue(currentUnlockType == AvatarUnlockType.None || currentUnlockType == AvatarUnlockType.Starter)) return false;
+
+            Properties[PropertyEnum.AvatarUnlock, avatarRef] = (int)unlockType;
             GetRegion()?.PlayerUnlockedAvatarEvent.Invoke(new(this, avatarRef));
             OnScoringEvent(new(ScoringEventType.AvatarsUnlocked, avatarRef.As<AvatarPrototype>(), 1));
 
@@ -4056,6 +4066,19 @@ namespace MHServerEmu.Games.Entities
             return SendBannerMessage(bannerMessageProtoRef.As<BannerMessagePrototype>());
         }
 
+        public void SendInventoryFullMessage(ulong itemId, PrototypeId inventoryProtoRef = PrototypeId.Invalid)
+        {
+            NetMessageInventoryFull message = NetMessageInventoryFull.CreateBuilder()
+                .SetPlayerID(Id)
+                .SetItemID(itemId)
+#if GAME_VERSION_1_53
+                .SetInventoryPrototypeID((ulong)inventoryProtoRef)
+#endif
+                .Build();
+
+            SendMessage(message);
+        }
+
         #endregion
 
         #region Scoring Events
@@ -4801,7 +4824,7 @@ namespace MHServerEmu.Games.Entities
                 foreach (PrototypeId avatarRef in GameDatabase.DataDirectory.IteratePrototypesInHierarchy<AvatarPrototype>(PrototypeIterateFlags.NoAbstractApprovedOnly))
                 {
                     if (avatarRef == (PrototypeId)6044485448390219466) continue;   //zzzBrevikOLD.prototype
-                    UnlockAvatar(avatarRef, false);
+                    UnlockAvatar(avatarRef, AvatarUnlockType.Default, false);
                 }
             }
 
@@ -4924,6 +4947,27 @@ namespace MHServerEmu.Games.Entities
             if (!Verify.IsTrue(vanityTitleProtoRef != PrototypeId.Invalid)) return false;
             return Properties.HasProperty(new PropertyId(PropertyEnum.VanityTitleUnlocked, vanityTitleProtoRef));
         }
+
+        #endregion
+
+        #region Costumes
+
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
+        public bool HasCostumeUnlocked(PrototypeId costumeProtoRef)
+        {
+            return Properties[PropertyEnum.CostumeUnlock, costumeProtoRef];
+        }
+#endif
+
+#if GAME_VERSION_1_52 || GAME_VERSION_1_53
+        public void UnlockCostume(PrototypeId costumeProtoRef)
+        {
+            CostumePrototype costumeProto = costumeProtoRef.As<CostumePrototype>();
+            if (!Verify.IsNotNull(costumeProto)) return;
+
+            Properties[PropertyEnum.CostumeUnlock, costumeProtoRef] = true;
+        }
+#endif
 
         #endregion
 

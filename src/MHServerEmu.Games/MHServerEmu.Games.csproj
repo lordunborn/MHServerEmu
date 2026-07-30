@@ -18,26 +18,32 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DefineConstants>$(DefineConstants);GAME_VERSION_1_52</DefineConstants>
+    <GameDataFolder>v52</GameDataFolder>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DefineConstants>$(DefineConstants);GAME_VERSION_1_52</DefineConstants>
+    <GameDataFolder>v52</GameDataFolder>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 1.48|x64'">
     <DefineConstants>$(DefineConstants);DEBUG;GAME_VERSION_1_48</DefineConstants>
+    <GameDataFolder>v48</GameDataFolder>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 1.48|x64'">
     <DefineConstants>$(DefineConstants);RELEASE;GAME_VERSION_1_48</DefineConstants>
+    <GameDataFolder>v48</GameDataFolder>
   </PropertyGroup>
 	
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug 1.53|x64'">
     <DefineConstants>$(DefineConstants);DEBUG;GAME_VERSION_1_53</DefineConstants>
+    <GameDataFolder>v53</GameDataFolder>
   </PropertyGroup>
 	
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 1.53|x64'">
     <DefineConstants>$(DefineConstants);RELEASE;GAME_VERSION_1_53</DefineConstants>
+    <GameDataFolder>v53</GameDataFolder>
   </PropertyGroup>
 
   <ItemGroup>
@@ -55,14 +61,12 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Wildcard instead of a hand-maintained per-file list: the old list silently missed any new
-         Data\Game file (50 of 108 git-tracked files under here weren't in it), so a fresh clone +
-         Build.bat never shipped anything added after the list was last updated - binaries built fine,
-         but new patches/achievement overrides/etc. never made it into the build output. -->
-    <None Update="Data\Game\**\*.*">
+  <ItemGroup Condition="'$(GameDataFolder)'!=''">
+    <Content Include="Data\$(GameDataFolder)\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+      <Link>Data\Game\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Visible>false</Visible>
+    </Content>
   </ItemGroup>
 
 </Project>

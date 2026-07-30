@@ -104,7 +104,6 @@ namespace MHServerEmu.Games.GameData
             PropertyInfoTable = new();
             PropertyInfoTable.Initialize();
 
-#if GAME_VERSION_1_52
             // Load prototype patches
             // NOTE: patches must load before Globals below - the patcher's own architecture now
             // (as of the "prototype-patcher" rework, see JsonPrototype.cs + PrototypePatchManager's
@@ -114,7 +113,6 @@ namespace MHServerEmu.Games.GameData
             // side effect of loading GlobalsPrototype itself below - goes through the normal
             // PreCheck()/PostOverride() flow already patched-and-ready, no reapply-after-the-fact needed.
             PrototypePatchManager.Instance.Initialize(config.EnablePatchManager);
-#endif
 
             // Load globals
             PrototypeId globalsProtoRef = GetPrototypeRefByName("Globals/Globals.defaults");
