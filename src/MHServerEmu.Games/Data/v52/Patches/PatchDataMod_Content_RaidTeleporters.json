@@ -1,35 +1,19 @@
 [
   {
     "Enabled": true,
-    "Prototype": "Entity/Characters/Bosses/CivilWar/AllyVersions/CaptainAmericaAlly.prototype",
-    "Path": "BehaviorProfile.Brain",
-    "Description": "[Raid Teleporters] Captain America Ally - Age of Ultron teleporter (replaces Domino, whose model wasn't cooked into the client UPKs - Domino/Manifold/Songbird all confirmed missing client-side despite valid server data). This is real, cut Civil War Ally content - has a genuine cooked model since she was used in an actual escort/ally fight sequence, unlike the fully-cut NPCs tried before. Native BehaviorProfile.Brain points at an active combat AI profile (CaptainAmericaProfileFriendly) that would make her wander/aggro in the hub like the boss/ally she was built as - nulled out to make her passive/idle like Cloak (whose BehaviorProfile has no Brain set at all).",
-    "ValueType": "PrototypeDataRef",
-    "Value": 0
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Entity/Characters/Bosses/CivilWar/AllyVersions/CaptainAmericaAlly.prototype",
-    "Path": "Alliance",
-    "Description": "[Raid Teleporters] Native Alliance is Players.prototype (a full combat ally - hostile to enemies, friendly to players, with WhileConfused/WhileControlled overrides) since she was built to fight alongside players. Repointed to the same Entity/Alliances/NPCNeutral.prototype Cloak uses, so she doesn't try to engage anything in the hub.",
-    "ValueType": "PrototypeDataRef",
-    "Value": 15452561577132953366
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Entity/Characters/Bosses/CivilWar/AllyVersions/CaptainAmericaAlly.prototype",
-    "Path": "Allegiance",
-    "Description": "[Raid Teleporters] Native Allegiance is None - set to Neutral to match Cloak/Misty Knight/Doctor Strange's pattern.",
+    "Prototype": "Entity/Characters/NPCs/SilverSable.prototype",
+    "Path": "DesignState",
+    "Description": "[Raid Teleporters] Silver Sable - Age of Ultron teleporter (replaces Captain America Ally, Domino, Manifold, Songbird - see history: Domino/Manifold/Songbird's models weren't cooked into the client UPKs; Captain America Ally's model IS cooked but her UnrealClass is MarvelAgent_-prefixed, which the client treats as an ally/summon-type entity and never offers the interact prompt for at all, confirmed via a live trace - no client interact request was ever sent for her). Silver Sable's own model (MarvelNPC_SilverSable, confirmed cooked into the client UPKs) was previously only used by SilverSableHelicarrier.prototype (placed on the Helicarrier) and by two of our own Midtown vendor patches (MidtownACCTrainer/MidtownVendorWeapon, both natively skinned as Silver Sable) - those two vendor patches were repointed to MidtownVendorCostume instead (see PatchDataMod_Vendors_AnniversaryVendor.json and Off/PatchDataMod_Vendors_SummerFunVendor.json), freeing this exact prototype (Entity/Characters/NPCs/SilverSable.prototype, the non-Helicarrier variant) for reuse with zero visual duplication anywhere else in the game. Native DesignState is NotInGame - flip to Live.",
     "ValueType": "Enum",
-    "Value": "Neutral"
+    "Value": "Live"
   },
   {
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[0].EntityGuid",
-    "Description": "[Raid Teleporters] Age of Ultron teleporter - place Captain America Ally at this marker slot (previously Domino, removed - see BehaviorProfile.Brain patch above for why). Marker 0's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV3.prototype - a generic encounter spawn placeholder, same reusable category as markers 30/31/32 (already repurposed for the EG Patrol teleporters), not a fixed named NPC.",
+    "Description": "[Raid Teleporters] Age of Ultron teleporter - place Silver Sable at this marker slot. Marker 0's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV3.prototype - a generic encounter spawn placeholder, same reusable category as markers 30/31/32 (already repurposed for the EG Patrol teleporters), not a fixed named NPC.",
     "ValueType": "PrototypeGuid",
-    "Value": 13361160505341729971
+    "Value": 17056502735773574357
   },
   {
     "Enabled": true,
@@ -97,9 +81,9 @@
   },
   {
     "Enabled": true,
-    "Prototype": "Entity/Characters/NPCs/Songbird.prototype",
+    "Prototype": "Entity/Characters/NPCs/Valkyrie.prototype",
     "Path": "DesignState",
-    "Description": "[Raid Teleporters] Songbird - Surtur Raid teleporter. Native DesignState is NotInGame - flip to Live. Confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere.",
+    "Description": "[Raid Teleporters] Valkyrie - Surtur Raid teleporter (replaces Songbird, whose model wasn't cooked into the client UPKs). Valkyrie's model (MarvelNPC_Valkyrie) is confirmed cooked into the client UPKs, thematically fits an Asgard-set raid, and is confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere. Native DesignState is NotInGame - flip to Live.",
     "ValueType": "Enum",
     "Value": "Live"
   },
@@ -107,9 +91,9 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[23].EntityGuid",
-    "Description": "[Raid Teleporters] Surtur Raid teleporter - place Songbird at this marker slot. Marker 23's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV2.prototype - a generic encounter spawn placeholder, not a fixed named NPC.",
+    "Description": "[Raid Teleporters] Surtur Raid teleporter - place Valkyrie at this marker slot. Marker 23's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV2.prototype - a generic encounter spawn placeholder, not a fixed named NPC.",
     "ValueType": "PrototypeGuid",
-    "Value": 2407990860318591371
+    "Value": 902724671843216079
   },
   {
     "Enabled": true,

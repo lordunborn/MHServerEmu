@@ -3,20 +3,20 @@
         "Enabled": true,
         "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
         "Path": "MarkerSet.Markers[13].EntityGuid",
-        "Description": "Change BUXGiver to Silver Sable. NOTE: this marker slot is the single physical 'special event vendor' spot in the hub - Off/PatchDataMod_Vendors_SummerFunVendor.json patches this exact same marker to a different NPC for its own event. Only one of these vendor patches should ever be active (in Patches/, not Off/) at a time - the native SpecialEventVendor.prototype only has one Inventories[] slot, so there's no way for two seasonal vendor events to coexist here even if both patches were enabled simultaneously (last one loaded would silently win)",
+        "Description": "Change BUXGiver to MidtownVendorCostume (was MidtownACCTrainer - both are generic Midtown vendor prototypes, but MidtownACCTrainer's native UnrealClass is MarvelNPC_SilverSable, which duplicated the Silver Sable model already used by SilverSableHelicarrier.prototype on the Helicarrier hub. MidtownVendorCostume's own native model doesn't collide with anything else in use, freeing up Silver Sable's model to be reused elsewhere (see PatchDataMod_Content_RaidTeleporters.json). NOTE: this marker slot is the single physical 'special event vendor' spot in the hub - Off/PatchDataMod_Vendors_SummerFunVendor.json patches this exact same marker to a different NPC for its own event. Only one of these vendor patches should ever be active (in Patches/, not Off/) at a time - the native SpecialEventVendor.prototype only has one Inventories[] slot, so there's no way for two seasonal vendor events to coexist here even if both patches were enabled simultaneously (last one loaded would silently win)",
         "ValueType": "PrototypeGuid",
-        "Value": 6316078327140856161
+        "Value": 1476980439149782173
     },
 	{
 		"Enabled": true,
-		"Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownACCTrainer.prototype",
+		"Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/ItemVendors/MidtownVendorCostume.prototype",
 		"Path": "Properties",
 		"Description": "Set Vendor Type to Event",
 		"ValueType": "Properties",
 		"Value": {
 			"VendorType": 12101943770254220031
 		}
-	},	
+	},
     {
         "Enabled": true,
         "Prototype": "Entity/Characters/Vendors/VendorTypes/SpecialEventVendor.prototype",

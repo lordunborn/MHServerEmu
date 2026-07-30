@@ -4547,12 +4547,12 @@ namespace MHServerEmu.Games.Entities.Avatars
                 UseCloakICPTeleporter(player, interactableObject);
             else if (interactableObject.PrototypeDataRef == DoctorStrangeHightownTeleporterRef)
                 UseDoctorStrangeHightownTeleporter(player, interactableObject);
-            else if (interactableObject.PrototypeDataRef == CaptainAmericaAllyUltronTeleporterRef)
-                UseCaptainAmericaAllyUltronTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == SilverSableUltronTeleporterRef)
+                UseSilverSableUltronTeleporter(player, interactableObject);
             else if (interactableObject.PrototypeDataRef == DominoAxisRaidTeleporterRef)
                 UseDominoAxisRaidTeleporter(player, interactableObject);
-            else if (interactableObject.PrototypeDataRef == SongbirdSurturRaidTeleporterRef)
-                UseSongbirdSurturRaidTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == ValkyrieSurturRaidTeleporterRef)
+                UseValkyrieSurturRaidTeleporter(player, interactableObject);
 
             interactableObject.OnInteractedWith(this);
 
@@ -4787,16 +4787,19 @@ namespace MHServerEmu.Games.Entities.Avatars
 
         // [Raid Teleporters] First of three T4/T5 raid teleporter NPCs, replacing the !ultron/!axis/!surtur-
         // style debug commands with an in-world interact - same template as the EG Patrol teleporters above.
-        // Entity/Characters/Bosses/CivilWar/AllyVersions/CaptainAmericaAlly.prototype - cut Civil War Ally
-        // content (already DesignState:Live natively). Originally tried Domino here first, then Manifold/
-        // Songbird - Manifold and Songbird had zero live references/placements in the SERVER data but their
-        // client models were never actually cooked into the UPKs (loaded with collision but no visible
-        // model); Domino's model IS cooked and renders fine, but got moved to the Axis Raid teleporter below
-        // since she's a better thematic fit there. Captain America Ally is a real used-in-content Ally/boss
-        // variant, so its model is confirmed present client-side. BehaviorProfile.Brain and Alliance patched
-        // to inert/neutral values (see PatchDataMod_Content_RaidTeleporters.json) since her native data has
-        // her as an active combat ally.
-        private static readonly PrototypeId CaptainAmericaAllyUltronTeleporterRef = (PrototypeId)15713071570156330583;
+        // Entity/Characters/NPCs/SilverSable.prototype - replaces Captain America Ally, Domino, Manifold,
+        // Songbird in that order. Domino/Manifold/Songbird's client models were never actually cooked into
+        // the UPKs (loaded with collision but no visible model). Captain America Ally's model IS cooked, but
+        // her UnrealClass is MarvelAgent_-prefixed (an ally/summon-type class) - the client never even sent
+        // an interact request for her (confirmed via a live trace on CanInteract), unlike every working NPC
+        // here which uses a MarvelNPC_-prefixed class. Silver Sable's own model (MarvelNPC_SilverSable) is
+        // confirmed cooked into the client UPKs. This exact prototype (not SilverSableHelicarrier.prototype,
+        // which is placed on the Helicarrier) had zero cell-marker placements, but her model was still being
+        // used indirectly by two of our own Midtown vendor patches (MidtownACCTrainer/MidtownVendorWeapon,
+        // both natively Silver-Sable-skinned) - repointed those to MidtownVendorCostume instead (see
+        // PatchDataMod_Vendors_AnniversaryVendor.json / Off/PatchDataMod_Vendors_SummerFunVendor.json) so
+        // this NPC doesn't visually duplicate anything else in the game.
+        private static readonly PrototypeId SilverSableUltronTeleporterRef = (PrototypeId)10810111766424523212;
 
         // Zero prototype-data references (--findlocalestringref) - found the same way as MistyKnightFlavorTextRef.
         private static readonly LocaleStringId UltronRaidFlavorTextRef = (LocaleStringId)704374693054776637;
@@ -4807,22 +4810,22 @@ namespace MHServerEmu.Games.Entities.Avatars
         // so no additional AccessDifficulties patch was needed here.
         private static readonly PrototypeId UltronRaidTargetRef = (PrototypeId)6101407482858775734;
 
-        private static void UseCaptainAmericaAllyUltronTeleporter(Player player, WorldEntity captainAmerica)
+        private static void UseSilverSableUltronTeleporter(Player player, WorldEntity silverSable)
         {
             Game game = player.Game;
 
             GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
-            dialog.OnResponse = OnCaptainAmericaAllyUltronTeleporterDialogResponse;
+            dialog.OnResponse = OnSilverSableUltronTeleporterDialogResponse;
             dialog.Message.LocaleString = UltronRaidFlavorTextRef;
             dialog.Options = DialogOptionEnum.WorldClick;
-            dialog.TargetId = captainAmerica.Id;
+            dialog.TargetId = silverSable.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
             dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
             dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
-            void OnCaptainAmericaAllyUltronTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            void OnSilverSableUltronTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
             {
                 PrototypeId difficultyTierRef = response.ButtonIndex switch
                 {
@@ -4895,10 +4898,12 @@ namespace MHServerEmu.Games.Entities.Avatars
         }
 
         // [Raid Teleporters] Third raid teleporter NPC (Surtur Raid), same template as the previous two.
-        // Entity/Characters/NPCs/Songbird.prototype - confirmed unused elsewhere: 0 prototype-data
+        // Entity/Characters/NPCs/Valkyrie.prototype - replaces Songbird, whose model was never cooked into
+        // the client UPKs. Valkyrie's model (MarvelNPC_Valkyrie) is confirmed cooked into the client UPKs,
+        // thematically fits an Asgard-set raid, and is confirmed unused elsewhere: 0 prototype-data
         // references anywhere in the game, 0 cell-marker placements anywhere. Native DesignState was
         // NotInGame, flipped to Live via patch.
-        private static readonly PrototypeId SongbirdSurturRaidTeleporterRef = (PrototypeId)13805316752550924424;
+        private static readonly PrototypeId ValkyrieSurturRaidTeleporterRef = (PrototypeId)2188128527025836183;
 
         // Zero prototype-data references (--findlocalestringref).
         private static readonly LocaleStringId SurturRaidFlavorTextRef = (LocaleStringId)108578792560919878;
@@ -4910,22 +4915,22 @@ namespace MHServerEmu.Games.Entities.Avatars
         // as Axis Raid above.
         private static readonly PrototypeId SurturRaidTargetRef = (PrototypeId)8401366757050162983;
 
-        private static void UseSongbirdSurturRaidTeleporter(Player player, WorldEntity songbird)
+        private static void UseValkyrieSurturRaidTeleporter(Player player, WorldEntity valkyrie)
         {
             Game game = player.Game;
 
             GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
-            dialog.OnResponse = OnSongbirdSurturRaidTeleporterDialogResponse;
+            dialog.OnResponse = OnValkyrieSurturRaidTeleporterDialogResponse;
             dialog.Message.LocaleString = SurturRaidFlavorTextRef;
             dialog.Options = DialogOptionEnum.WorldClick;
-            dialog.TargetId = songbird.Id;
+            dialog.TargetId = valkyrie.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
             dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
             dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
-            void OnSongbirdSurturRaidTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            void OnValkyrieSurturRaidTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
             {
                 PrototypeId difficultyTierRef = response.ButtonIndex switch
                 {
@@ -4959,7 +4964,7 @@ namespace MHServerEmu.Games.Entities.Avatars
             }
 
             InteractData data = null;
-            var iteractionStatus = InteractionManager.CallGetInteractionStatus(new EntityDesc(interactableObject), this, 
+            var iteractionStatus = InteractionManager.CallGetInteractionStatus(new EntityDesc(interactableObject), this,
                 InteractionOptimizationFlags.None, InteractionFlags.None, ref data);
             return iteractionStatus != InteractionMethod.None;
         }
