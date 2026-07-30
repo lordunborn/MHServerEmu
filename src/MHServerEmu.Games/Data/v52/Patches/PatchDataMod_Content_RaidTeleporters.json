@@ -1,19 +1,35 @@
 [
   {
     "Enabled": true,
-    "Prototype": "Entity/Characters/NPCs/HubNPCs/Domino.prototype",
-    "Path": "DesignState",
-    "Description": "[Raid Teleporters] Domino - Age of Ultron teleporter. Native DesignState is NotInGame, same class of blocker as Cloak/Doctor Strange - flip to Live so our custom interact dialog fires. Confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere.",
+    "Prototype": "Entity/Characters/Bosses/CivilWar/AllyVersions/CaptainAmericaAlly.prototype",
+    "Path": "BehaviorProfile.Brain",
+    "Description": "[Raid Teleporters] Captain America Ally - Age of Ultron teleporter (replaces Domino, whose model wasn't cooked into the client UPKs - Domino/Manifold/Songbird all confirmed missing client-side despite valid server data). This is real, cut Civil War Ally content - has a genuine cooked model since she was used in an actual escort/ally fight sequence, unlike the fully-cut NPCs tried before. Native BehaviorProfile.Brain points at an active combat AI profile (CaptainAmericaProfileFriendly) that would make her wander/aggro in the hub like the boss/ally she was built as - nulled out to make her passive/idle like Cloak (whose BehaviorProfile has no Brain set at all).",
+    "ValueType": "PrototypeDataRef",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Bosses/CivilWar/AllyVersions/CaptainAmericaAlly.prototype",
+    "Path": "Alliance",
+    "Description": "[Raid Teleporters] Native Alliance is Players.prototype (a full combat ally - hostile to enemies, friendly to players, with WhileConfused/WhileControlled overrides) since she was built to fight alongside players. Repointed to the same Entity/Alliances/NPCNeutral.prototype Cloak uses, so she doesn't try to engage anything in the hub.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 15452561577132953366
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Bosses/CivilWar/AllyVersions/CaptainAmericaAlly.prototype",
+    "Path": "Allegiance",
+    "Description": "[Raid Teleporters] Native Allegiance is None - set to Neutral to match Cloak/Misty Knight/Doctor Strange's pattern.",
     "ValueType": "Enum",
-    "Value": "Live"
+    "Value": "Neutral"
   },
   {
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[0].EntityGuid",
-    "Description": "[Raid Teleporters] Age of Ultron teleporter - place Domino at this marker slot. Marker 0's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV3.prototype - a generic encounter spawn placeholder, same reusable category as markers 30/31/32 (already repurposed for the EG Patrol teleporters), not a fixed named NPC.",
+    "Description": "[Raid Teleporters] Age of Ultron teleporter - place Captain America Ally at this marker slot (previously Domino, removed - see BehaviorProfile.Brain patch above for why). Marker 0's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV3.prototype - a generic encounter spawn placeholder, same reusable category as markers 30/31/32 (already repurposed for the EG Patrol teleporters), not a fixed named NPC.",
     "ValueType": "PrototypeGuid",
-    "Value": 12222155132991259485
+    "Value": 13361160505341729971
   },
   {
     "Enabled": true,
@@ -41,9 +57,9 @@
   },
   {
     "Enabled": true,
-    "Prototype": "Entity/Characters/NPCs/Manifold.prototype",
+    "Prototype": "Entity/Characters/NPCs/HubNPCs/Domino.prototype",
     "Path": "DesignState",
-    "Description": "[Raid Teleporters] Manifold - Axis Raid teleporter (Manifold's own power is teleportation, thematically fitting). Native DesignState is NotInGame - flip to Live. Confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere.",
+    "Description": "[Raid Teleporters] Domino - Axis Raid teleporter (moved here from Age of Ultron - her model IS cooked into the client UPKs and she renders fine, just thematically fits an X-Men-affiliated raid better than Ultron). Native DesignState is NotInGame - flip to Live. Confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere.",
     "ValueType": "Enum",
     "Value": "Live"
   },
@@ -51,9 +67,9 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[19].EntityGuid",
-    "Description": "[Raid Teleporters] Axis Raid teleporter - place Manifold at this marker slot. Marker 19's native LastKnownEntityName was SpawnMarkers/Types/EncounterSmall.prototype - a generic encounter spawn placeholder, not a fixed named NPC.",
+    "Description": "[Raid Teleporters] Axis Raid teleporter - place Domino at this marker slot (previously Manifold, whose model wasn't cooked into the client UPKs). Marker 19's native LastKnownEntityName was SpawnMarkers/Types/EncounterSmall.prototype - a generic encounter spawn placeholder, not a fixed named NPC.",
     "ValueType": "PrototypeGuid",
-    "Value": 14966366693705335658
+    "Value": 12222155132991259485
   },
   {
     "Enabled": true,

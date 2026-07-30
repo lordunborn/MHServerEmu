@@ -4547,10 +4547,10 @@ namespace MHServerEmu.Games.Entities.Avatars
                 UseCloakICPTeleporter(player, interactableObject);
             else if (interactableObject.PrototypeDataRef == DoctorStrangeHightownTeleporterRef)
                 UseDoctorStrangeHightownTeleporter(player, interactableObject);
-            else if (interactableObject.PrototypeDataRef == DominoAgeOfUltronTeleporterRef)
-                UseDominoAgeOfUltronTeleporter(player, interactableObject);
-            else if (interactableObject.PrototypeDataRef == ManifoldAxisRaidTeleporterRef)
-                UseManifoldAxisRaidTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == CaptainAmericaAllyUltronTeleporterRef)
+                UseCaptainAmericaAllyUltronTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == DominoAxisRaidTeleporterRef)
+                UseDominoAxisRaidTeleporter(player, interactableObject);
             else if (interactableObject.PrototypeDataRef == SongbirdSurturRaidTeleporterRef)
                 UseSongbirdSurturRaidTeleporter(player, interactableObject);
 
@@ -4787,10 +4787,16 @@ namespace MHServerEmu.Games.Entities.Avatars
 
         // [Raid Teleporters] First of three T4/T5 raid teleporter NPCs, replacing the !ultron/!axis/!surtur-
         // style debug commands with an in-world interact - same template as the EG Patrol teleporters above.
-        // Entity/Characters/NPCs/HubNPCs/Domino.prototype - confirmed unused elsewhere: 0 prototype-data
-        // references anywhere in the game, 0 cell-marker placements anywhere. Native DesignState was
-        // NotInGame, flipped to Live via patch same as Cloak/Doctor Strange.
-        private static readonly PrototypeId DominoAgeOfUltronTeleporterRef = (PrototypeId)18406092074029683415;
+        // Entity/Characters/Bosses/CivilWar/AllyVersions/CaptainAmericaAlly.prototype - cut Civil War Ally
+        // content (already DesignState:Live natively). Originally tried Domino here first, then Manifold/
+        // Songbird - Manifold and Songbird had zero live references/placements in the SERVER data but their
+        // client models were never actually cooked into the UPKs (loaded with collision but no visible
+        // model); Domino's model IS cooked and renders fine, but got moved to the Axis Raid teleporter below
+        // since she's a better thematic fit there. Captain America Ally is a real used-in-content Ally/boss
+        // variant, so its model is confirmed present client-side. BehaviorProfile.Brain and Alliance patched
+        // to inert/neutral values (see PatchDataMod_Content_RaidTeleporters.json) since her native data has
+        // her as an active combat ally.
+        private static readonly PrototypeId CaptainAmericaAllyUltronTeleporterRef = (PrototypeId)15713071570156330583;
 
         // Zero prototype-data references (--findlocalestringref) - found the same way as MistyKnightFlavorTextRef.
         private static readonly LocaleStringId UltronRaidFlavorTextRef = (LocaleStringId)704374693054776637;
@@ -4801,22 +4807,22 @@ namespace MHServerEmu.Games.Entities.Avatars
         // so no additional AccessDifficulties patch was needed here.
         private static readonly PrototypeId UltronRaidTargetRef = (PrototypeId)6101407482858775734;
 
-        private static void UseDominoAgeOfUltronTeleporter(Player player, WorldEntity domino)
+        private static void UseCaptainAmericaAllyUltronTeleporter(Player player, WorldEntity captainAmerica)
         {
             Game game = player.Game;
 
             GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
-            dialog.OnResponse = OnDominoAgeOfUltronTeleporterDialogResponse;
+            dialog.OnResponse = OnCaptainAmericaAllyUltronTeleporterDialogResponse;
             dialog.Message.LocaleString = UltronRaidFlavorTextRef;
             dialog.Options = DialogOptionEnum.WorldClick;
-            dialog.TargetId = domino.Id;
+            dialog.TargetId = captainAmerica.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
             dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
             dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
-            void OnDominoAgeOfUltronTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            void OnCaptainAmericaAllyUltronTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
             {
                 PrototypeId difficultyTierRef = response.ButtonIndex switch
                 {
@@ -4836,11 +4842,12 @@ namespace MHServerEmu.Games.Entities.Avatars
             }
         }
 
-        // [Raid Teleporters] Second raid teleporter NPC (Axis Raid), same template as Domino's.
-        // Entity/Characters/NPCs/Manifold.prototype - confirmed unused elsewhere: 0 prototype-data
-        // references anywhere in the game, 0 cell-marker placements anywhere. Native DesignState was
-        // NotInGame, flipped to Live via patch.
-        private static readonly PrototypeId ManifoldAxisRaidTeleporterRef = (PrototypeId)8660305704156795002;
+        // [Raid Teleporters] Second raid teleporter NPC (Axis Raid), same template as the Ultron one.
+        // Entity/Characters/NPCs/HubNPCs/Domino.prototype - moved here from Age of Ultron (her model IS
+        // cooked into the client UPKs and renders fine, just fits an X-Men-affiliated raid thematically
+        // better). Confirmed unused elsewhere: 0 prototype-data references anywhere in the game, 0
+        // cell-marker placements anywhere. Native DesignState was NotInGame, flipped to Live via patch.
+        private static readonly PrototypeId DominoAxisRaidTeleporterRef = (PrototypeId)18406092074029683415;
 
         // Zero prototype-data references (--findlocalestringref).
         private static readonly LocaleStringId AxisRaidFlavorTextRef = (LocaleStringId)642891540374291729;
@@ -4852,22 +4859,22 @@ namespace MHServerEmu.Games.Entities.Avatars
         // forced tier survives the internal stage-to-boss-arena transition and not just entry.
         private static readonly PrototypeId AxisRaidTargetRef = (PrototypeId)15320584991240166307;
 
-        private static void UseManifoldAxisRaidTeleporter(Player player, WorldEntity manifold)
+        private static void UseDominoAxisRaidTeleporter(Player player, WorldEntity domino)
         {
             Game game = player.Game;
 
             GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
-            dialog.OnResponse = OnManifoldAxisRaidTeleporterDialogResponse;
+            dialog.OnResponse = OnDominoAxisRaidTeleporterDialogResponse;
             dialog.Message.LocaleString = AxisRaidFlavorTextRef;
             dialog.Options = DialogOptionEnum.WorldClick;
-            dialog.TargetId = manifold.Id;
+            dialog.TargetId = domino.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
             dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
             dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
-            void OnManifoldAxisRaidTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            void OnDominoAxisRaidTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
             {
                 PrototypeId difficultyTierRef = response.ButtonIndex switch
                 {
