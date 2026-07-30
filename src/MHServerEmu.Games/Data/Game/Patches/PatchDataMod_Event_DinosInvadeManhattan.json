@@ -1020,5 +1020,13 @@
     "Description": "[Dinos Invade Manhattan] Native value here was an un-rebalanced 0.7 (a leftover flat-era number, never bumped to 8.0 like Phase1-6 since the boss phase doesn't use the same wave-power-up flow the same way) - now explicitly set to the same 0.25 fraction as the wave phases so the boss phase's orb (if one spawns) behaves consistently rather than keeping a stale, much smaller flat-era value reinterpreted as an oddly tiny 70% cut",
     "ValueType": "Float",
     "Value": 0.3
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype",
+    "Path": "EnableAvatarSwap",
+    "Description": "[Dinos Invade Manhattan] Native value is True, letting a player swap to a stronger/fresh avatar mid-run despite the event's difficulty scaling assuming the same avatar plays out the whole run. Overridden to False here - Player.CanSwitchAvatars() already checks Region.AvatarSwapEnabled (itself just a copy of this exact field, see Region.cs) and blocks the switch when false, so no C# code changes were needed for this - a prior attempt added a whole separate code path + config option for this same behavior before realizing the native field already does the job via a plain data patch.",
+    "ValueType": "Boolean",
+    "Value": false
   }
 ]

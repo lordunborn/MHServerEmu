@@ -87,12 +87,6 @@ namespace MHServerEmu.Games.Entities
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
 
-        // Regions/EndGame/TierX/Redacted/DinosInvadeManhattan/UESvsDinosRegion.prototype - natively
-        // has EnableAvatarSwap=True, but swapping to a stronger/fresh avatar mid-run undermines the
-        // event's own difficulty scaling (which assumes the same avatar plays out the whole run).
-        // Blocked here regardless of the region's own native setting, unless DinoAllowAvatarSwap is on.
-        private static readonly PrototypeId UESvsDinosRegionRef = (PrototypeId)13643380196511063922;
-
         private readonly EventPointer<SwitchAvatarEvent> _switchAvatarEvent = new();
         private readonly EventPointer<CheckHoursPlayedEvent> _checkHoursPlayedEvent = new();
         private readonly EventPointer<ItemAutoPickupEvent> _itemAutoPickupEvent = new();
@@ -2393,10 +2387,6 @@ namespace MHServerEmu.Games.Entities
 
             RegionPrototype regionProto = region.Prototype;
             if (!Verify.IsNotNull(regionProto)) return CanSwitchAvatarResult.NotAllowedUnknown;
-
-            // Dinos Invade Manhattan overrides its own native EnableAvatarSwap=True unless explicitly allowed
-            if (regionProto.DataRef == UESvsDinosRegionRef && Game.CustomGameOptions.DinoAllowAvatarSwap == false)
-                return CanSwitchAvatarResult.NotAllowedInRegion;
 
             if (regionProto.Behavior == RegionBehavior.PrivateStory)
                 return CanSwitchAvatarResult.NotAllowedInPrivateInstance;
