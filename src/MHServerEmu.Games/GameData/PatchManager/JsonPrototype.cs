@@ -27,7 +27,13 @@ namespace MHServerEmu.Games.GameData.PatchManager
             {
                 string fieldName = jsonProperty.Name;
 
-                if (fieldName == "ParentDataRef")
+                // "ParentDataRef" is consumed above. "Description" isn't a real field on any prototype
+                // class - patch authors use it as an inline human-readable comment on individual array
+                // elements (see e.g. PatchDataMod_Vendors_OftH_VendorItems.json), the same way the outer
+                // PrototypePatchEntry has its own top-level Description. Skip both silently rather than
+                // failing the GetProperty() lookup below and logging a Verify warning for something that's
+                // working as intended.
+                if (fieldName == "ParentDataRef" || fieldName == "Description")
                     continue;
 
                 System.Reflection.PropertyInfo fieldInfo = classType.GetProperty(fieldName);
