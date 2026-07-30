@@ -181,12 +181,13 @@ namespace MHServerEmu.Games.MetaGames.GameModes
                 // Register every in-world player as a participant (not just one random pick) so the
                 // run's log gets flushed under every real participant's own name on EndRun() - lets
                 // support find a specific player's run by name instead of opening every file in the
-                // folder. Re-registering an already-known participant on later phases is a no-op.
+                // folder. Re-registering an already-known participant on later phases just refreshes
+                // their label (e.g. after a level-up) rather than creating a second entry.
                 foreach (Player player in MetaGame.Players)
                 {
                     Avatar avatar = player?.CurrentAvatar;
                     if (avatar != null && avatar.IsInWorld)
-                        DinosWaveBattleLogCollator.AddParticipant(Game.Id, MetaGame.Id, $"{player.GetName()}_L{avatar.CharacterLevel}");
+                        DinosWaveBattleLogCollator.AddParticipant(Game.Id, MetaGame.Id, player.DatabaseUniqueId, $"{player.GetName()}_L{avatar.CharacterLevel}");
                 }
             }
 
