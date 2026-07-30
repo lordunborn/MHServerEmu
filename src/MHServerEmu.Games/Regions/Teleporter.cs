@@ -261,9 +261,9 @@ namespace MHServerEmu.Games.Regions
                     return false;
 #endif
 
-                if (destinationRegionProto.IsQueueRegion)
-                    return BeginTeleportToQueueTarget(regionProtoRef);
-
+                // This server doesn't implement real matchmaking, so IsQueueRegion destinations always
+                // teleport directly instead of going through BeginTeleportToQueueTarget()'s native
+                // "join queue" flow (which would show a queue banner/prompt with nothing behind it).
                 return TeleportToRemoteTarget(regionProtoRef, areaProtoRef, cellProtoRef, entityProtoRef);
             }
         }
@@ -419,54 +419,6 @@ namespace MHServerEmu.Games.Regions
 
             ChangePositionResult result = Player.CurrentAvatar.ChangeRegionPosition(position, orientation, ChangePositionFlags.Teleport);
             return result == ChangePositionResult.PositionChanged || result == ChangePositionResult.Teleport;
-        }
-
-        private bool BeginTeleportToQueueTarget(PrototypeId regionProtoRef)
-        {
-            RegionPrototype destinationRegionProto = regionProtoRef.As<RegionPrototype>();
-            if (destinationRegionProto == null) return Logger.WarnReturn(false, "BeginTeleportToQueueTarget(): destinationRegionProto == null");
-
-            if (Player.MatchQueueStatus.IsOwnerInQueue())
-            {
-                Player.SendBannerMessage(GameDatabase.UIGlobalsPrototype.MessageAlreadyInQueue);
-                return false;
-            }
-
-            RegionPrototype currentRegionProto = Player.GetRegion()?.Prototype;
-            if (currentRegionProto != null && currentRegionProto.IsQueueRegion)
-            {
-                Player.SendBannerMessage(GameDatabase.UIGlobalsPrototype.MessageCantQueueInQueueRegion);
-                return false;
-            }
-
-            Party party = Player.GetParty();
-            if (party != null && party.IsLeader(Player) == false)
-            {
-                Player.SendBannerMessage(GameDatabase.UIGlobalsPrototype.MessageOnlyPartyLeaderCanQueue);
-                return false;
-            }
-
-            // Queue up straight away if there is nothing to choose (queue bypass is not allowed and we are not in a party).
-            if (destinationRegionProto.AllowsQueueBypass == false && party == null)
-            {
-#if GAME_VERSION_1_52 || GAME_VERSION_1_53
-                Player.SendRegionRequestQueueCommandToPlayerManager(regionProtoRef, DifficultyTierRef, RegionRequestQueueCommandVar.eRRQC_AddToQueueSolo);
-#else
-                Player.SendRegionRequestQueueCommandToPlayerManager(regionProtoRef, PrototypeId.Invalid, RegionRequestQueueCommandVar.eRRQC_AddToQueueSolo);
-#endif
-                return true;
-            }
-
-            // Ask the player to choose whether to queue solo or not.
-#if GAME_VERSION_1_52 || GAME_VERSION_1_53
-            Player.SendMatchQueueUpdate(Player.DatabaseUniqueId, regionProtoRef, DifficultyTierRef, 0,
-                RegionRequestQueueUpdateVar.eRRQ_SelectQueueMethod, Player.GetName());
-#else
-            Player.SendMatchQueueUpdate(Player.DatabaseUniqueId, regionProtoRef, PrototypeId.Invalid, 0,
-                RegionRequestQueueUpdateVar.eRRQ_SelectQueueMethod, Player.GetName());
-#endif
-
-            return true;
         }
 
         private bool TeleportToRemoteTarget(PrototypeId regionProtoRef, PrototypeId areaProtoRef, PrototypeId cellProtoRef, PrototypeId entityProtoRef)

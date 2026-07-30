@@ -4801,8 +4801,9 @@ namespace MHServerEmu.Games.Entities.Avatars
         // this NPC doesn't visually duplicate anything else in the game.
         private static readonly PrototypeId SilverSableUltronTeleporterRef = (PrototypeId)10810111766424523212;
 
-        // Zero prototype-data references (--findlocalestringref) - found the same way as MistyKnightFlavorTextRef.
-        private static readonly LocaleStringId UltronRaidFlavorTextRef = (LocaleStringId)704374693054776637;
+        // "Age of Ultron" - only referenced once (Difficulty/AgeOfUltron.prototype's own internal Name
+        // field, not player-visible UI elsewhere), same low-risk pattern as the Axis/Surtur strings below.
+        private static readonly LocaleStringId UltronRaidFlavorTextRef = (LocaleStringId)1154693527137355031;
 
         // Regions/EndGame/TierX/UltronGameMode/ConnectionNodes/UltronRaidEntryTargetCOSMIC.prototype - same
         // target the !Ultron command uses (MiscCommands.cs). UltronRaidRegionCosmic's own AccessDifficulties
@@ -4852,8 +4853,9 @@ namespace MHServerEmu.Games.Entities.Avatars
         // cell-marker placements anywhere. Native DesignState was NotInGame, flipped to Live via patch.
         private static readonly PrototypeId DominoAxisRaidTeleporterRef = (PrototypeId)18406092074029683415;
 
-        // Zero prototype-data references (--findlocalestringref).
-        private static readonly LocaleStringId AxisRaidFlavorTextRef = (LocaleStringId)642891540374291729;
+        // "Axis Raid" - only referenced once (StoryStructure/.../AxisRaidChapterInfo.prototype's own
+        // internal ChapterName field, not player-visible UI elsewhere).
+        private static readonly LocaleStringId AxisRaidFlavorTextRef = (LocaleStringId)4593147239391495439;
 
         // Regions/RAIDS/AxisRaid/ConnectionNodes/AxisRaidEntryTarget.prototype - AxisRaidRegionGreen's own
         // StartTarget (the "3-man tuned" variant using the custom Raid2AxisGreen difficulty table). Native
@@ -4905,8 +4907,10 @@ namespace MHServerEmu.Games.Entities.Avatars
         // NotInGame, flipped to Live via patch.
         private static readonly PrototypeId ValkyrieSurturRaidTeleporterRef = (PrototypeId)2188128527025836183;
 
-        // Zero prototype-data references (--findlocalestringref).
-        private static readonly LocaleStringId SurturRaidFlavorTextRef = (LocaleStringId)108578792560919878;
+        // "Muspelheim Raid" (Surtur's raid is internally named after Muspelheim, not Surtur) - only
+        // referenced once (StoryStructure/.../RAIDSurturGreenChapterInfo.prototype's own internal
+        // ChapterName field, not player-visible UI elsewhere).
+        private static readonly LocaleStringId SurturRaidFlavorTextRef = (LocaleStringId)2228718599972324655;
 
         // Regions/RAIDS/MuspelheimRaid/ConnectionNodes/SurturRaidEntryTarget.prototype - SurturRaidRegionGreen's
         // own StartTarget (the "3-man tuned" variant using the custom Raid1Surtur difficulty table). Native
