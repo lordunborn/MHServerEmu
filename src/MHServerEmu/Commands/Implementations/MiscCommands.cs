@@ -241,6 +241,7 @@ namespace MHServerEmu.Commands.Implementations
         {
             [DefaultCommand]
             [CommandUsage("Ultron [t3|t4|t5]")]
+            [CommandUserLevel(AccountUserLevel.Admin)]
             [CommandInvokerType(CommandInvokerType.Client)]
             public string Ultron(string[] @params, NetClient client)
             {
@@ -284,6 +285,7 @@ namespace MHServerEmu.Commands.Implementations
         {
             [DefaultCommand]
             [CommandUsage("patrol [hightown|midtown|icp] [t4|t5]")]
+            [CommandUserLevel(AccountUserLevel.Admin)]
             [CommandInvokerType(CommandInvokerType.Client)]
             public string Patrol(string[] @params, NetClient client)
             {
@@ -332,6 +334,7 @@ namespace MHServerEmu.Commands.Implementations
         {
             [DefaultCommand]
             [CommandUsage("difficulty [status|t1|t2|t3|t4|t5]")]
+            [CommandUserLevel(AccountUserLevel.Admin)]
             [CommandInvokerType(CommandInvokerType.Client)]
             public string Difficulty(string[] @params, NetClient client)
             {
