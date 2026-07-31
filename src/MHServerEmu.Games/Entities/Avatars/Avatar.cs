@@ -4626,20 +4626,30 @@ namespace MHServerEmu.Games.Entities.Avatars
         // not a generic reusable UI string), which is why that one never had this problem.
         private static readonly LocaleStringId MistyKnightFlavorTextRef = (LocaleStringId)122452516185048397;
 
-        // User wants custom "Cosmic 2"/"Omega 1" labels rather than the tiers' own native UIDisplayName -
-        // that text is a GLOBAL string shared by the real difficulty-tier UI elsewhere, so overriding it
-        // would relabel Tier4Cosmic/Tier5Omega1 everywhere in the game, not just this dialog (first attempt
-        // at this used Misty Knight's own DialogTextList entries instead, which turned out to bleed into her
-        // separate native ambient greeting dialog - see MistyKnightFlavorTextRef's comment). Using
-        // Localization/Translations/Dialogs/Accept.prototype / Decline.prototype's LocaleStringIds instead -
-        // confirmed via --findlocalestringref to be referenced by nothing else in the game's prototype data,
-        // same reasoning as YesButtonRef/NoButtonRef/MistyKnightFlavorTextRef.
-        private static readonly LocaleStringId Tier4ButtonRef = (LocaleStringId)12378794891046159615;
-        private static readonly LocaleStringId Tier5ButtonRef = (LocaleStringId)9600681375364285697;
+        // BUG (found live 2026-07-31): these tier-choice dialogs originally used a SEPARATE pair of
+        // LocaleStringIds - Localization/Translations/Dialogs/Accept.prototype / Decline.prototype -
+        // confirmed via --findlocalestringref to be referenced by nothing else in the game's PROTOTYPE
+        // data. That check wasn't sufficient: those two strings turned out to be tied to a native
+        // client-side difficulty-tier confirmation flow, and using them here leaked into the completely
+        // unrelated native "join party" invite dialog, replacing its normal Yes/No buttons with the raid
+        // tier names ("Cosmic 2"/"Omega 1") instead. Reusing YesButtonRef/NoButtonRef (Shanna's portal
+        // guide dialog's pair, confirmed live for a long time with no such bleed) instead, below.
 
         private static readonly PrototypeId Tier3SuperheroicRef = (PrototypeId)586640101754933627;
         private static readonly PrototypeId Tier4CosmicRef = (PrototypeId)1087474643293441873;
         private static readonly PrototypeId Tier5Omega1Ref = (PrototypeId)424700179461639950;
+
+        // Tier-choice button labels for the raid/patrol teleporters, restored after the Accept/Decline
+        // incident above. These 3 reuse the DisplayName LocaleStringId of 3 confirmed-unused (zero loot
+        // table references, never actually granted) consumable items - BirthdayFlourish1/2, BodySlider -
+        // each confirmed via --findlocalestringref to be referenced by exactly 1 prototype (its own item),
+        // a narrower/more obscure category than the "generic dialog button" strings that caused the
+        // Accept/Decline bleed, but still not provably 100% safe without a live test. Overridden via
+        // Data/v52/Achievements/AchievementStringMap_98_EGPatrols.json to say "Cosmic" / "Cosmic II" /
+        // "Omega I" (matching Tier5Omega1's own native Roman-numeral naming convention).
+        private static readonly LocaleStringId Cosmic1ButtonRef = (LocaleStringId)8202235037338895627;
+        private static readonly LocaleStringId Cosmic2ButtonRef = (LocaleStringId)6855069934509819149;
+        private static readonly LocaleStringId Omega1ButtonRef = (LocaleStringId)14732595320400184570;
 
         // Regions/EndGame/TierX/PatrolMidtown/ConnectionTargets/XManhattanEntryTarget01.prototype - same target
         // the !patrol midtown command uses.
@@ -4655,8 +4665,8 @@ namespace MHServerEmu.Games.Entities.Avatars
             dialog.Options = DialogOptionEnum.WorldClick;
             dialog.TargetId = mistyKnight.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Cosmic2ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Omega1ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
@@ -4705,8 +4715,8 @@ namespace MHServerEmu.Games.Entities.Avatars
             dialog.Options = DialogOptionEnum.WorldClick;
             dialog.TargetId = cloak.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Cosmic2ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Omega1ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
@@ -4761,8 +4771,8 @@ namespace MHServerEmu.Games.Entities.Avatars
             dialog.Options = DialogOptionEnum.WorldClick;
             dialog.TargetId = doctorStrange.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Cosmic2ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Omega1ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
@@ -4827,8 +4837,8 @@ namespace MHServerEmu.Games.Entities.Avatars
             // only recognizes the "Red" (Heroic) mask regardless of what's appended to the array, so T3 is
             // otherwise completely unreachable through the standard waypoint for this raid. Reusing the
             // generic Accept/Decline button labels since they're just plain text either way.
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Cosmic1ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Cosmic2ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
@@ -4885,8 +4895,8 @@ namespace MHServerEmu.Games.Entities.Avatars
             // AccessDifficulties only ever granted Heroic access and never had Tier3Superheroic added at all
             // (unlike Ultron, which at least had T3 in the array), so T3 is otherwise completely unreachable
             // for this raid through any means. Reusing the generic Accept/Decline button labels.
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Cosmic1ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Cosmic2ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
@@ -4940,8 +4950,8 @@ namespace MHServerEmu.Games.Entities.Avatars
             dialog.Options = DialogOptionEnum.WorldClick;
             dialog.TargetId = valkyrie.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
-            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Cosmic2ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Omega1ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
             game.GameDialogManager.ShowDialog(dialog);
 
