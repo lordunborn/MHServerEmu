@@ -92,7 +92,7 @@
   },
   "MidtownMadness": {
     "DisplayName": "Midtown Madness",
-    "FilePath": "Events/LiveTuningDataMidtownMadness.json",
+    "FilePath": "Events/Weekly/LiveTuningDataMidtownMadness.json",
     "DailyGift": "Entity/Items/Consumables/Prototypes/DailyGift/DailyGiftMidtownMadness.prototype",
     "Leaderboards": [
       "Leaderboards/Prototypes/Leaderboards/GameModes/MidtownPatrol/PatrolMidtownMobs.prototype",
@@ -159,6 +159,18 @@
     "DisplayName": "Friday Nights On the Town",
     "FilePath": "Events/Weekly/LiveTuningDataHightownPatrol.json",
     "DailyGift": "Entity/Items/Consumables/Prototypes/FortuneCard/SecretInvasionFortuneCard.prototype"
+  },
+  "EnhancedRaidUltron": {
+    "DisplayName": "Enhanced Raid: Age of Ultron",
+    "FilePath": "Events/Weekly/LiveTuningDataEnhancedRaidUltron.json"
+  },
+  "EnhancedRaidAxis": {
+    "DisplayName": "Enhanced Raid: Axis Raid",
+    "FilePath": "Events/Weekly/LiveTuningDataEnhancedRaidAxis.json"
+  },
+  "EnhancedRaidMuspelheim": {
+    "DisplayName": "Enhanced Raid: Muspelheim Raid",
+    "FilePath": "Events/Weekly/LiveTuningDataEnhancedRaidMuspelheim.json"
   },
   "SaturdayPatrol": {
     "DisplayName": "Saturday Crime Wave",

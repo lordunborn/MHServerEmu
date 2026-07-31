@@ -27,24 +27,6 @@
     "Value": 0.0
   },
   {
-    "Prototype": "Entity/Characters/NPCs/MistyKnight.prototype",
-    "Setting": "eWETV_Visible",
-    "Description": "[EG Patrols] Off by default - Midtown Patrol teleporter, turned on for Midtown Patrol night by LiveTuning/Events/LiveTuningDataMidtownMadness.json",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Entity/Characters/NPCs/HubNPCs/CivilWarCaptainAmericaHubNPCs/CivilWarCloak.prototype",
-    "Setting": "eWETV_Visible",
-    "Description": "[EG Patrols] Off by default - ICP Patrol teleporter, turned on for ICP Patrol night by LiveTuning/Events/Weekly/LiveTuningDataBrooklynBeatdown.json",
-    "Value": 0.0
-  },
-  {
-    "Prototype": "Entity/Characters/NPCs/DoctorStrange.prototype",
-    "Setting": "eWETV_Visible",
-    "Description": "[EG Patrols] Off by default - Hightown Patrol teleporter, turned on for Hightown Patrol night by LiveTuning/Events/Weekly/LiveTuningDataHightownPatrol.json",
-    "Value": 0.0
-  },
-  {
     "Prototype": "Entity/Characters/NPCs/ShannaA.prototype",
     "Setting": "eWETV_Visible",
     "Value": 1.0

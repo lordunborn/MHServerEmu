@@ -1,0 +1,8 @@
+[
+  {
+    "Prototype": "Entity/Characters/NPCs/Valkyrie.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "[Enhanced Raids] Muspelheim Raid teleporter - visible only during its featured Saturday, off by default in LiveTuningData_01ResetRaids.json",
+    "Value": 1.0
+  }
+]

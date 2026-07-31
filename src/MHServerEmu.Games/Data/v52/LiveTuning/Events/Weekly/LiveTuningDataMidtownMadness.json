@@ -1,0 +1,727 @@
+[
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedMidtownMADNESS.prototype",
+    "Setting": "eLTTV_Enabled",
+    "Description": "[Enhanced Patrols] Midtown Madness Chests - the event's own chest loot table.",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedMidtownMADNESS.prototype",
+    "Setting": "eLTTV_Rolls",
+    "Value": 1
+  },
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolMidtown/XManhattanRegionBand.prototype",
+    "Setting": "eRT_BonusXPPct",
+    "Description": "[Enhanced Patrols] Region Wide 125% XP Bonus.",
+    "Value": 1.25
+  },
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolMidtown/XManhattanRegionBand.prototype",
+    "Setting": "eRT_XPBuffDisplay",
+    "Value": 1.0
+  },
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolMidtown/AltRegions/XManhattanRegion1to60.prototype",
+    "Setting": "eRT_BonusXPPct",
+    "Description": "[Enhanced Patrols] Region Wide 125% XP Bonus.",
+    "Value": 1.25
+  },
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolMidtown/AltRegions/XManhattanRegion1to60.prototype",
+    "Setting": "eRT_XPBuffDisplay",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolMidtown/AltRegions/XManhattanRegion60Cosmic.prototype",
+    "Setting": "eRT_BonusXPPct",
+    "Description": "[Enhanced Patrols] Region Wide 125% XP Bonus.",
+    "Value": 1.25
+  },
+  {
+    "Prototype": "Regions/EndGame/TierX/PatrolMidtown/AltRegions/XManhattanRegion60Cosmic.prototype",
+    "Setting": "eRT_XPBuffDisplay",
+    "Value": 2.0
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLivingLaser.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLivingLaser.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLivingLaser.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventTaskmaster.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventTaskmaster.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventTaskmaster.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSentinel.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSentinel.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSentinel.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV2.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV2.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV2.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV3.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV3.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV3.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV4.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV4.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/Redacted/MidtownEventSentinelV4.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventElectro.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventElectro.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventElectro.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventJuggernaut.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventJuggernaut.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventJuggernaut.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMagneto.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMagneto.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMagneto.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMisterSinister.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMisterSinister.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMisterSinister.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventElektra.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventElektra.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventElektra.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGreenGoblin.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGreenGoblin.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGreenGoblin.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKronanRifleman.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKronanRifleman.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKronanRifleman.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKraven.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKraven.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKraven.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorOctopus.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorOctopus.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventRhino.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventRhino.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventRhino.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventHood.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventHood.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventHood.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLizard.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLizard.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLizard.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventPyro.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventPyro.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventPyro.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMegaSentinel.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMegaSentinel.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMegaSentinel.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSabretooth.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSabretooth.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSabretooth.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKurse.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKurse.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventKurse.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMalekith.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMalekith.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventMalekith.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventRockTrollHammer.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventRockTrollHammer.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventRockTrollHammer.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneCyclops.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneCyclops.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneCyclops.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneWolverine.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneWolverine.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneWolverine.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneColossus.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneColossus.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventCloneColossus.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventBullseye.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventBullseye.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventBullseye.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventWizard.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventWizard.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventWizard.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventTombstone.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventTombstone.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventTombstone.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorDoomMini.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorDoomMini.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorDoomMini.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGorgon.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGorgon.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGorgon.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorDoom.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorDoom.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventDoctorDoom.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGrimReaper.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGrimReaper.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventGrimReaper.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventVenom.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventVenom.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventVenom.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventBlob.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventBlob.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventBlob.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLadyDeathstrike.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLadyDeathstrike.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventLadyDeathstrike.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSauron.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSauron.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/MidtownEventSauron.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventMoleMan.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventMoleMan.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventMoleMan.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventManApe.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventManApe.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventManApe.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventBlackCat.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventBlackCat.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownEventBlackCat.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemLavaheart.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemHeraldOfAsh.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/PatrolMidtown/SideBosses/MidtownMysticMayhemTheDeceiver.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossMidtown.prototype",
+    "Setting": "eWETV_MobDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossMidtown.prototype",
+    "Setting": "eWETV_MobSpecialDropRate",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/Bosses/CivilWar/CrossbonesPatrolBossMidtown.prototype",
+    "Setting": "eWETV_MobDropRarity",
+    "Value": 1.5
+  },
+  {
+    "Prototype": "Entity/Characters/NPCs/MistyKnight.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "[EG Patrols] Midtown Patrol teleporter - visible only during Midtown Patrol night, off by default in LiveTuningData.json",
+    "Value": 1.0
+  }
+]

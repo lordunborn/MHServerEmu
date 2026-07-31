@@ -19,22 +19,22 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[0].Position",
-    "Description": "[Raid Teleporters] Age of Ultron teleporter - final placement position in Avengers Tower, confirmed live.",
+    "Description": "[Raid Teleporters] Age of Ultron teleporter - moved to Cloak's exact position (marker 31 in PatchDataMod_Content_EGPatrols.json). All raid teleporters now share this one spot with the EG Patrol teleporters, since only one raid event NPC is ever meant to be visible at a time (gated off by default via LiveTuningData.json eWETV_Visible=0.0, turned on per raid event as those events are built) - one consistent 'event teleporter' landmark in the hub.",
     "ValueType": "Vector3",
     "Value": [
-      -375.625,
-      1009.75,
-      185
+      1147.125,
+      1034.25,
+      371
     ]
   },
   {
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[0].Rotation",
-    "Description": "[Raid Teleporters] Age of Ultron teleporter - rotation zeroed out per the same convention as the EG Patrol teleporters, so the correct final rotation can be judged fresh from a known (0,0,0) baseline.",
+    "Description": "[Raid Teleporters] Age of Ultron teleporter - moved to Cloak's exact rotation, same reasoning as the position change above.",
     "ValueType": "Vector3",
     "Value": [
-      0,
+      -2.356194490192345,
       0,
       0
     ]
@@ -59,22 +59,22 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[19].Position",
-    "Description": "[Raid Teleporters] Axis Raid teleporter - final placement position in Avengers Tower, confirmed live.",
+    "Description": "[Raid Teleporters] Axis Raid teleporter - moved to Cloak's exact position (marker 31 in PatchDataMod_Content_EGPatrols.json), same reasoning as the Age of Ultron teleporter's move above.",
     "ValueType": "Vector3",
     "Value": [
-      -383.5,
-      839.5,
-      185
+      1147.125,
+      1034.25,
+      371
     ]
   },
   {
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[19].Rotation",
-    "Description": "[Raid Teleporters] Axis Raid teleporter - rotation zeroed out per the same convention as the EG Patrol teleporters.",
+    "Description": "[Raid Teleporters] Axis Raid teleporter - moved to Cloak's exact rotation, same reasoning as the Age of Ultron teleporter's move above.",
     "ValueType": "Vector3",
     "Value": [
-      0,
+      -2.356194490192345,
       0,
       0
     ]
@@ -99,22 +99,22 @@
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[23].Position",
-    "Description": "[Raid Teleporters] Surtur Raid teleporter - final placement position in Avengers Tower, confirmed live.",
+    "Description": "[Raid Teleporters] Surtur Raid teleporter - moved to Cloak's exact position (marker 31 in PatchDataMod_Content_EGPatrols.json), same reasoning as the Age of Ultron teleporter's move above.",
     "ValueType": "Vector3",
     "Value": [
-      -374.625,
-      685.375,
-      185
+      1147.125,
+      1034.25,
+      371
     ]
   },
   {
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[23].Rotation",
-    "Description": "[Raid Teleporters] Surtur Raid teleporter - rotation zeroed out per the same convention as the EG Patrol teleporters.",
+    "Description": "[Raid Teleporters] Surtur Raid teleporter - moved to Cloak's exact rotation, same reasoning as the Age of Ultron teleporter's move above.",
     "ValueType": "Vector3",
     "Value": [
-      0,
+      -2.356194490192345,
       0,
       0
     ]

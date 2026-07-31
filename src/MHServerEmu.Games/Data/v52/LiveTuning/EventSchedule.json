@@ -26,11 +26,22 @@
   },
   {
     "Name": "Saturday Patrol",
-    "IsEnabled": true,
+    "IsEnabled": false,
     "Type": "DayOfWeek",
     "StartDayOfWeek": "Saturday",
     "Events": [
       "SaturdayPatrol"
+    ]
+  },
+  {
+    "Name": "Enhanced Raids",
+    "IsEnabled": true,
+    "Type": "DayOfWeekRotation",
+    "StartDayOfWeek": "Saturday",
+    "Events": [
+      "EnhancedRaidUltron",
+      "EnhancedRaidAxis",
+      "EnhancedRaidMuspelheim"
     ]
   },
   {

@@ -1,0 +1,20 @@
+[
+  {
+    "Prototype": "Entity/Characters/NPCs/SilverSable.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "[Enhanced Raids] Off by default - Age of Ultron teleporter, turned on for its featured Saturday by LiveTuning/Events/Weekly/LiveTuningDataEnhancedRaidUltron.json",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Entity/Characters/NPCs/HubNPCs/Domino.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "[Enhanced Raids] Off by default - Axis Raid teleporter, turned on for its featured Saturday by LiveTuning/Events/Weekly/LiveTuningDataEnhancedRaidAxis.json",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Entity/Characters/NPCs/Valkyrie.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "[Enhanced Raids] Off by default - Muspelheim Raid teleporter, turned on for its featured Saturday by LiveTuning/Events/Weekly/LiveTuningDataEnhancedRaidMuspelheim.json",
+    "Value": 0.0
+  }
+]

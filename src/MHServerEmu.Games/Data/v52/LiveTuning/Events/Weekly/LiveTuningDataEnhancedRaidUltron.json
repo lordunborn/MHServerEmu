@@ -1,0 +1,8 @@
+[
+  {
+    "Prototype": "Entity/Characters/NPCs/SilverSable.prototype",
+    "Setting": "eWETV_Visible",
+    "Description": "[Enhanced Raids] Age of Ultron teleporter - visible only during its featured Saturday, off by default in LiveTuningData_01ResetRaids.json",
+    "Value": 1.0
+  }
+]
