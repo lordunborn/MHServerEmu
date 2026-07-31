@@ -1,0 +1,945 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01BronzeNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02BronzeNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03BronzeNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04BronzeNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2838096304585315867
+  },
+
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/MikesMissionDrop.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Cosmic Arties] Repurposed dead Test loot table - Ultron Encephalo-Beam (Art279Cosmic).",
+    "ValueType": "PrototypeId",
+    "Value": 14609971071158592378
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/MikesMissionDrop.prototype",
+    "Path": "Choices[0].Weight",
+    "Description": "[TAHITI/AOU Cosmic Arties] Fix weight to 100.",
+    "ValueType": "Integer",
+    "Value": 100
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/MikesMissionDrop.prototype",
+    "Path": "Modifiers[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 9219955363352285908,
+      "Choices": [
+        586640101754933627
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/MikesMissionDrop.prototype",
+    "Path": "NoDropPercent",
+    "Description": "[TAHITI/AOU Cosmic Arties] No-drop percent for the Cosmic Ultron artifact.",
+    "ValueType": "Float",
+    "Value": 0.99
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Set Cosmic Ultron Arties table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10707955230249390472
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Set Cosmic Ultron Arties table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10707955230249390472
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Set Cosmic Ultron Arties table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10707955230249390472
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Set Cosmic Ultron Arties table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10707955230249390472
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Set Cosmic Ultron Arties table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10707955230249390472
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Set Cosmic Ultron Arties table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10707955230249390472
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Set Cosmic Ultron Arties table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10707955230249390472
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Cosmic Arties] Set Cosmic Ultron Arties table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10707955230249390472
+  },
+
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestArtifacts.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Table1] Repurposed dead Test loot table - Heroic Commendations.",
+    "ValueType": "PrototypeId",
+    "Value": 15193072982075775728
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestArtifacts.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Table1] Drop 2x Heroic Commendations.",
+    "ValueType": "Integer",
+    "Value": 2
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestArtifacts.prototype",
+    "Path": "Modifiers[]",
+    "Description": "[TAHITI/AOU Table1] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 9219955363352285908,
+      "Choices": [
+        586640101754933627
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set TestArtifacts table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2456131226114723897
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set CreditsFlat10000LT droppable for Silver chests.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set TestArtifacts table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2456131226114723897
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set CreditsFlat10000LT droppable for Silver chests.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set TestArtifacts table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2456131226114723897
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set CreditsFlat10000LT droppable for Silver chests.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set TestArtifacts table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2456131226114723897
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04SilverNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set CreditsFlat10000LT droppable for Silver chests.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set TestArtifacts table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2456131226114723897
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set CreditsFlat10000LT droppable for Gold chests.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set TestArtifacts table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2456131226114723897
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set CreditsFlat10000LT droppable for Gold chests.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set TestArtifacts table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2456131226114723897
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set CreditsFlat10000LT droppable for Gold chests.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set TestArtifacts table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 2456131226114723897
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table1] Set CreditsFlat10000LT droppable for Gold chests.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestRelics.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Table2-FC] Repurposed dead Test loot table - AOU Fortune Card.",
+    "ValueType": "PrototypeId",
+    "Value": 15254461210072522943
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestRelics.prototype",
+    "Path": "NumMin",
+    "Description": "[TAHITI/AOU Table2-FC] Drop only 1 Fortune Card.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestRelics.prototype",
+    "Path": "NoDropPercent",
+    "Description": "[TAHITI/AOU Table2-FC] No-drop percent.",
+    "ValueType": "Float",
+    "Value": 0.0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestRelics.prototype",
+    "Path": "Modifiers[]",
+    "Description": "[TAHITI/AOU Table2-FC] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 9219955363352285908,
+      "Choices": [
+        586640101754933627
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-FC] Set TestRelics (Fortune Card) table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 14095692588341661434
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-FC] Set TestRelics (Fortune Card) table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 14095692588341661434
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-FC] Set TestRelics (Fortune Card) table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 14095692588341661434
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-FC] Set TestRelics (Fortune Card) table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 14095692588341661434
+  },
+
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Table2-Gold] Protector Commendation.",
+    "ValueType": "PrototypeId",
+    "Value": 810646464305634596
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Table2-Gold] Drop 2x Protector Commendation.",
+    "ValueType": "Integer",
+    "Value": 2
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "PickMethod",
+    "Description": "[TAHITI/AOU Table2-Gold] Pick all choices (only one real choice remains after the fix below).",
+    "ValueType": "Enum",
+    "Value": "PickAll"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Modifiers[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 9219955363352285908,
+      "Choices": [
+        586640101754933627
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Set TestIndivCharDropLootGroup table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13675358437730489808
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Set CreditsFlat10000LT droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Set TestIndivCharDropLootGroup table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13675358437730489808
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Set CreditsFlat10000LT droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Set TestIndivCharDropLootGroup table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13675358437730489808
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Set CreditsFlat10000LT droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Set TestIndivCharDropLootGroup table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13675358437730489808
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table2-Gold] Set CreditsFlat10000LT droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13736146105435888682
+  },
+
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[1].Item",
+    "Description": "[TAHITI/AOU Table3-Gold] Insignia Defaults.",
+    "ValueType": "PrototypeId",
+    "Value": 9201731338803351668
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[1].NumMin",
+    "Description": "[TAHITI/AOU Table3-Gold] Drop 5x Insignia.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[1].Modifiers[]",
+    "Description": "[TAHITI/AOU Table3-Gold] Add SetRarity modifier (Epic).",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 2629776241329573335,
+      "Choices": [
+        9254498193264414304
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[1].Modifiers[]",
+    "Description": "[TAHITI/AOU Table3-Gold] Add OffsetLevel modifier for insignia to 6 (level 69).",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 16903335966772366991,
+      "LevelOffset": 6
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[1].Modifiers[]",
+    "Description": "[TAHITI/AOU Table3-Gold] Add SetUsable modifier.",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 7386301686671674808,
+      "Usable": 1
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Modifiers[]",
+    "Description": "[TAHITI/AOU Table3-Gold] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "ValueType": "Prototype",
+    "Value": {
+      "ParentDataRef": 9219955363352285908,
+      "Choices": [
+        586640101754933627
+      ]
+    }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table3-Gold] Set TestVFX table droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 13665781565478407628
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Table3-Gold] Set Credits Flat 20000LT droppable.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 17094190423530806315
+  },
+
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/XPBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Fragments.",
+    "ValueType": "PrototypeId",
+    "Value": 7673467884753852264
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/XPBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Fortune Card] Drop 1x Cosmic Fragment.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/XPBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Fortune Card] Add 9x Cosmic Fragment as LootDropItemPrototype.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 7673467884753852264,
+        "NumMin": 9
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/CurrencyBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Fragments.",
+    "ValueType": "PrototypeId",
+    "Value": 7673467884753852264
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/CurrencyBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Fortune Card] Drop 1x Cosmic Fragment.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/CurrencyBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[1].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Alternate Reality Rune.",
+    "ValueType": "PrototypeId",
+    "Value": 6469298340060272223
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/CurrencyBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Fortune Card] Add UltronFCIngredient as LootDropItemPrototype.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 1893263250250014062
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/ComboBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Fragments.",
+    "ValueType": "PrototypeId",
+    "Value": 7673467884753852264
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/ComboBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Fortune Card] Drop 1x Cosmic Fragment.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/ComboBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[1].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Mysterious Blue Box.",
+    "ValueType": "PrototypeId",
+    "Value": 2402158487882899471
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/ComboBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Fortune Card] Add UltronFCIngredient as LootDropItemPrototype.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 1893263250250014062
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/InfinityOrbsAgeOfUltronTable.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Fragments.",
+    "ValueType": "PrototypeId",
+    "Value": 7673467884753852264
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/InfinityOrbsAgeOfUltronTable.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Fortune Card] Drop 1x Cosmic Fragment.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/InfinityOrbsAgeOfUltronTable.prototype",
+    "Path": "Choices[1].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Box of Relics.",
+    "ValueType": "PrototypeId",
+    "Value": 2134123732470406578
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/InfinityOrbsAgeOfUltronTable.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Fortune Card] Add UltronFCIngredient as LootDropItemPrototype.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 1893263250250014062
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronSprayTable.prototype",
+    "Path": "Choices[0].Choices[1].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Fragment.",
+    "ValueType": "PrototypeId",
+    "Value": 7673467884753852264
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronSprayTable.prototype",
+    "Path": "Choices[0].Choices[1].NumMin",
+    "Description": "[TAHITI/AOU Fortune Card] Drop 1x Cosmic Fragment.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronSprayTable.prototype",
+    "Path": "Choices[0].PickMethod",
+    "Description": "[TAHITI/AOU Fortune Card] Pick both options.",
+    "ValueType": "Enum",
+    "Value": "PickAll"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronSprayTable.prototype",
+    "Path": "Choices[0].Choices[]",
+    "Description": "[TAHITI/AOU Fortune Card] Add UltronSprayPaint as LootDropItemPrototype.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 1143115853458056002
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronFCPets.prototype",
+    "Path": "Choices[0].Choices[0].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Fragment.",
+    "ValueType": "PrototypeId",
+    "Value": 7673467884753852264
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronFCPets.prototype",
+    "Path": "Choices[0].PickMethod",
+    "Description": "[TAHITI/AOU Fortune Card] Pick both options.",
+    "ValueType": "Enum",
+    "Value": "PickAll"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronFCPets.prototype",
+    "Path": "Choices[0].Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Fortune Card] Drop 1x Cosmic Fragment.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronFCPets.prototype",
+    "Path": "Choices[1].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Catalyst Box.",
+    "ValueType": "PrototypeId",
+    "Value": 7379438892196111289
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronFCPets.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Fortune Card] Add UltronFCIngredient as LootDropItemPrototype.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 1893263250250014062
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/AgeOfUltronFCCostumes.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Fortune Card] Add Ultron pet head, 6x Cosmic Fragment, UltronFCIngredient as LootDropItemPrototype.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 11642810628209709399
+      },
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 7673467884753852264,
+        "NumMin": 6
+      },
+      {
+        "ParentDataRef": 1071992662862269383,
+        "Item": 1893263250250014062
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/BoxOfSplinters.prototype",
+    "Path": "Choices[0].Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Fortune Card] Add 10x MansionChunk.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/BoxOfSplinters.prototype",
+    "Path": "Choices[0].Choices[0].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add 10x MansionChunk.",
+    "ValueType": "PrototypeId",
+    "Value": 14167170168771517783
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/BIFBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Fragment.",
+    "ValueType": "PrototypeId",
+    "Value": 7673467884753852264
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/BIFBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Fortune Card] Drop 1x Cosmic Fragment.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/BIFBoostAgeOfUltronTable.prototype",
+    "Path": "Choices[]",
+    "Description": "[TAHITI/AOU Fortune Card] Add BoxOfSplinters as loot table to receive rewards.",
+    "ValueType": "PrototypeDataRef",
+    "Value": 10623545481499054266
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/AgeOfUltronFortuneCard.prototype",
+    "Path": "ActionsTriggeredOnItemEvent.Choices[0].Weight",
+    "Description": "[TAHITI/AOU Fortune Card] Set BIF Boost table weight.",
+    "ValueType": "Integer",
+    "Value": 50
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/AgeOfUltronFortuneCard.prototype",
+    "Path": "ActionsTriggeredOnItemEvent.Choices[1].Weight",
+    "Description": "[TAHITI/AOU Fortune Card] Set XP Boost table weight.",
+    "ValueType": "Integer",
+    "Value": 4
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/AgeOfUltronFortuneCard.prototype",
+    "Path": "ActionsTriggeredOnItemEvent.Choices[3].Weight",
+    "Description": "[TAHITI/AOU Fortune Card] Set Combo Boost table weight.",
+    "ValueType": "Integer",
+    "Value": 6
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/AgeOfUltronFortuneCard.prototype",
+    "Path": "ActionsTriggeredOnItemEvent.Choices[4].Weight",
+    "Description": "[TAHITI/AOU Fortune Card] Set Infinity Orb table weight.",
+    "ValueType": "Integer",
+    "Value": 6
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/AgeOfUltronFortuneCard.prototype",
+    "Path": "ActionsTriggeredOnItemEvent.Choices[5].Weight",
+    "Description": "[TAHITI/AOU Fortune Card] Set AgeOfUltronSpray table weight.",
+    "ValueType": "Integer",
+    "Value": 4
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/AgeOfUltronFortuneCard.prototype",
+    "Path": "ActionsTriggeredOnItemEvent.Choices[7].Weight",
+    "Description": "[TAHITI/AOU Fortune Card] Set AgeOfUltronFCCostumes table weight.",
+    "ValueType": "Integer",
+    "Value": 2
+  }
+]

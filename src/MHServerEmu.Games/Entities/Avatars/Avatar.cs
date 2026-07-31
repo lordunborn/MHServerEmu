@@ -4637,6 +4637,7 @@ namespace MHServerEmu.Games.Entities.Avatars
         private static readonly LocaleStringId Tier4ButtonRef = (LocaleStringId)12378794891046159615;
         private static readonly LocaleStringId Tier5ButtonRef = (LocaleStringId)9600681375364285697;
 
+        private static readonly PrototypeId Tier3SuperheroicRef = (PrototypeId)586640101754933627;
         private static readonly PrototypeId Tier4CosmicRef = (PrototypeId)1087474643293441873;
         private static readonly PrototypeId Tier5Omega1Ref = (PrototypeId)424700179461639950;
 
@@ -4821,6 +4822,11 @@ namespace MHServerEmu.Games.Entities.Avatars
             dialog.Options = DialogOptionEnum.WorldClick;
             dialog.TargetId = silverSable.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            // Buttons offer Tier3Superheroic/Tier4Cosmic here, not the usual Tier4/Tier5 - Ultron's native
+            // AccessDifficulties only ever granted Heroic access, and the native queue/access-check system
+            // only recognizes the "Red" (Heroic) mask regardless of what's appended to the array, so T3 is
+            // otherwise completely unreachable through the standard waypoint for this raid. Reusing the
+            // generic Accept/Decline button labels since they're just plain text either way.
             dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
             dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
@@ -4830,8 +4836,8 @@ namespace MHServerEmu.Games.Entities.Avatars
             {
                 PrototypeId difficultyTierRef = response.ButtonIndex switch
                 {
-                    GameDialogResultEnum.eGDR_Option1 => Tier4CosmicRef,
-                    GameDialogResultEnum.eGDR_Option2 => Tier5Omega1Ref,
+                    GameDialogResultEnum.eGDR_Option1 => Tier3SuperheroicRef,
+                    GameDialogResultEnum.eGDR_Option2 => Tier4CosmicRef,
                     _ => PrototypeId.Invalid
                 };
                 if (difficultyTierRef == PrototypeId.Invalid) return;
@@ -4860,8 +4866,9 @@ namespace MHServerEmu.Games.Entities.Avatars
         // Regions/RAIDS/AxisRaid/ConnectionNodes/AxisRaidEntryTarget.prototype - AxisRaidRegionGreen's own
         // StartTarget (the "3-man tuned" variant using the custom Raid2AxisGreen difficulty table). Native
         // AccessDifficulties only granted Tier2Heroic - extended via PatchDataMod_Content_RaidTeleporters.json
-        // to also accept Tier4Cosmic/Tier5Omega1, same fix as Ultron's AccessDifficulties patch, so the
-        // forced tier survives the internal stage-to-boss-arena transition and not just entry.
+        // to also accept Tier3Superheroic/Tier4Cosmic (Tier5Omega1 was appended too but is no longer offered
+        // by this teleporter - see the buttons below), so the forced tier survives the internal
+        // stage-to-boss-arena transition and not just entry.
         private static readonly PrototypeId AxisRaidTargetRef = (PrototypeId)15320584991240166307;
 
         private static void UseDominoAxisRaidTeleporter(Player player, WorldEntity domino)
@@ -4874,6 +4881,10 @@ namespace MHServerEmu.Games.Entities.Avatars
             dialog.Options = DialogOptionEnum.WorldClick;
             dialog.TargetId = domino.Id;
             dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            // Buttons offer Tier3Superheroic/Tier4Cosmic here, not the usual Tier4/Tier5 - Axis's native
+            // AccessDifficulties only ever granted Heroic access and never had Tier3Superheroic added at all
+            // (unlike Ultron, which at least had T3 in the array), so T3 is otherwise completely unreachable
+            // for this raid through any means. Reusing the generic Accept/Decline button labels.
             dialog.AddButton(GameDialogResultEnum.eGDR_Option1, Tier4ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
             dialog.AddButton(GameDialogResultEnum.eGDR_Option2, Tier5ButtonRef, ButtonStyle.SecondaryPositive, hold: false);
 
@@ -4883,8 +4894,8 @@ namespace MHServerEmu.Games.Entities.Avatars
             {
                 PrototypeId difficultyTierRef = response.ButtonIndex switch
                 {
-                    GameDialogResultEnum.eGDR_Option1 => Tier4CosmicRef,
-                    GameDialogResultEnum.eGDR_Option2 => Tier5Omega1Ref,
+                    GameDialogResultEnum.eGDR_Option1 => Tier3SuperheroicRef,
+                    GameDialogResultEnum.eGDR_Option2 => Tier4CosmicRef,
                     _ => PrototypeId.Invalid
                 };
                 if (difficultyTierRef == PrototypeId.Invalid) return;

@@ -123,7 +123,15 @@
     "Enabled": true,
     "Prototype": "Regions/RAIDS/AxisRaid/AxisRaidRegionGreen.prototype",
     "Path": "AccessDifficulties[]",
-    "Description": "[Axis Raid] Native AccessDifficulties only grants Tier2Heroic. Same fix as UltronRaidRegionCosmic's AccessDifficulties patch (PatchDataMod_Difficulty_Raid_AgeofUltron.json) - appends Tier4Cosmic access so the new Axis Raid teleporter's forced T4 entry survives the internal stage-to-boss-arena transition (TeleportContext_Transition), not just the initial debug-teleport bypass on entry.",
+    "Description": "[Axis Raid] Native AccessDifficulties only grants Tier2Heroic, and unlike Ultron never had Tier3Superheroic appended either - appends it now so the teleporter's Tier3 button (see Avatar.cs UseDominoAxisRaidTeleporter) survives the internal stage-to-boss-arena transition (TeleportContext_Transition), not just the initial debug-teleport bypass on entry.",
+    "ValueType": "PrototypeId",
+    "Value": 586640101754933627
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/RAIDS/AxisRaid/AxisRaidRegionGreen.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Axis Raid] Native AccessDifficulties only grants Tier2Heroic. Same fix as UltronRaidRegionCosmic's AccessDifficulties patch (PatchDataMod_Difficulty_Raid_AgeofUltron.json) - appends Tier4Cosmic access so the Axis Raid teleporter's forced T4 entry survives the internal stage-to-boss-arena transition (TeleportContext_Transition), not just the initial debug-teleport bypass on entry.",
     "ValueType": "PrototypeId",
     "Value": 1087474643293441873
   },
