@@ -1,0 +1,186 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Cooldowns/Channels/EyeOfDemonfireChannelCount.prototype",
+    "Path": "MaxDrops",
+    "Description": "[TAHITI/SSBRemoval] Raise the weekly Hero's Commendation drop cap from the native 250 to 500 (per the currency's own tooltip: 'You can acquire up to 250 each week' - this is that limit, tracked/displayed live via !commendations).",
+    "ValueType": "Integer",
+    "Value": 500
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Cooldowns/Channels/HeartOfDemonfireChannelCount.prototype",
+    "Path": "MaxDrops",
+    "Description": "[TAHITI/SSBRemoval] Raise the weekly Protector's Commendation drop cap from the native 250 to 500, same reasoning as EyeOfDemonfireChannelCount above.",
+    "ValueType": "Integer",
+    "Value": 500
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/DrStrangeSharedQuest.prototype",
+    "Path": "Choices[1].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/DrStrangeSharedQuest.prototype",
+    "Path": "Choices[1].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/SharedQuest1.prototype",
+    "Path": "Choices[7].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/SharedQuest1.prototype",
+    "Path": "Choices[7].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/SharedQuest2.prototype",
+    "Path": "Choices[7].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/SharedQuest2.prototype",
+    "Path": "Choices[7].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/SharedQuest2HoloSim.prototype",
+    "Path": "Choices[5].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/SharedQuest2HoloSim.prototype",
+    "Path": "Choices[5].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/SharedQuest3.prototype",
+    "Path": "Choices[7].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/MissionRewards/SharedQuest/SharedQuest3.prototype",
+    "Path": "Choices[7].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 10 minimum in shared quests.",
+    "ValueType": "Integer",
+    "Value": 10
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/KravenOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/KravenOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/LizardOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/LizardOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/MadameHydraOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/MadameHydraOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/MrHydeOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/MrHydeOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/RedSkullOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/OneShots/RedSkullOneShotLoot.prototype",
+    "Path": "Choices[3].Choices[1].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 5 minimum on this One Shot's loot table.",
+    "ValueType": "Integer",
+    "Value": 5
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameRaids/Raid1/SurturLoot.prototype",
+    "Path": "Choices[4].Choices[0].Choices[0].NumMin",
+    "Description": "[TAHITI/Commendations] Set Commendation to 150 minimum on the Surtur Raid loot table.",
+    "ValueType": "Integer",
+    "Value": 150
+  }
+]
