@@ -130,9 +130,9 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/MikesMissionDrop.prototype",
     "Path": "NoDropPercent",
-    "Description": "[TAHITI/AOU Cosmic Arties] No-drop percent for the Cosmic Ultron artifact.",
+    "Description": "[TAHITI/AOU Cosmic Arties] No-drop percent for the Cosmic Ultron artifact. | 2026-08-01: 1% -> 2% (NoDropPercent 0.99 -> 0.98) per balance pass.",
     "ValueType": "Float",
-    "Value": 0.99
+    "Value": 0.98
   },
   {
     "Enabled": true,
@@ -469,11 +469,59 @@
   },
   {
     "Enabled": true,
-    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
-    "Path": "Choices[]",
-    "Description": "[TAHITI/AOU Table2-Gold] Set TestIndivCharDropLootGroup table droppable.",
-    "ValueType": "PrototypeDataRef",
-    "Value": 13675358437730489808
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[1].Item",
+    "Description": "[TAHITI/AOU Table2-Gold] Choices[1] repurposed from TokenHulk to AvengersMysteryBox - a single box that yields one character OR one costume, replacing the three hardcoded character tokens (Hulk/Deadpool/Emma Frost) that dropped together and guaranteed on every qualifying clear. Choices[2] and [3] are zeroed out below rather than deleted: LootDropItemPrototype.Roll() derives numItems from NumMin/NumMax and RollItem() returns NoRoll below 1, so this removes them without shifting the array indices the Choices[0].* patches rely on. Kept at 100% deliberately - reaching Phase 4 Gold on Ultron is the gate, not a dice roll. The T3/T4/T5 restriction already lives on this table's own Modifiers[] entry.",
+    "ValueType": "PrototypeId",
+    "Value": 1528482404631913425
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[1].NumMin",
+    "Description": "[TAHITI/AOU Table2-Gold] AvengersMysteryBox quantity - exactly one per Phase 4 Gold clear.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[1].NumMax",
+    "Description": "[TAHITI/AOU Table2-Gold] AvengersMysteryBox quantity - exactly one per Phase 4 Gold clear.",
+    "ValueType": "Integer",
+    "Value": 1
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[2].NumMin",
+    "Description": "[TAHITI/AOU Table2-Gold] Disable hardcoded TokenDeadpool drop - superseded by the AvengersMysteryBox on Choices[1].",
+    "ValueType": "Integer",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[2].NumMax",
+    "Description": "[TAHITI/AOU Table2-Gold] Disable hardcoded TokenDeadpool drop - superseded by the AvengersMysteryBox on Choices[1].",
+    "ValueType": "Integer",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[3].NumMin",
+    "Description": "[TAHITI/AOU Table2-Gold] Disable hardcoded TokenEmmaFrost drop - superseded by the AvengersMysteryBox on Choices[1].",
+    "ValueType": "Integer",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
+    "Path": "Choices[3].NumMax",
+    "Description": "[TAHITI/AOU Table2-Gold] Disable hardcoded TokenEmmaFrost drop - superseded by the AvengersMysteryBox on Choices[1].",
+    "ValueType": "Integer",
+    "Value": 0
   },
   {
     "Enabled": true,
@@ -487,25 +535,9 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
     "Path": "Choices[]",
-    "Description": "[TAHITI/AOU Table2-Gold] Set TestIndivCharDropLootGroup table droppable.",
-    "ValueType": "PrototypeDataRef",
-    "Value": 13675358437730489808
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
-    "Path": "Choices[]",
     "Description": "[TAHITI/AOU Table2-Gold] Set CreditsFlat10000LT droppable.",
     "ValueType": "PrototypeDataRef",
     "Value": 13736146105435888682
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
-    "Path": "Choices[]",
-    "Description": "[TAHITI/AOU Table2-Gold] Set TestIndivCharDropLootGroup table droppable.",
-    "ValueType": "PrototypeDataRef",
-    "Value": 13675358437730489808
   },
   {
     "Enabled": true,
@@ -596,6 +628,38 @@
         424700179461639950
       ]
     }
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[0].NumMin",
+    "Description": "[TAHITI/AOU Table3-Gold] Disable placeholder choice[0] - Entity/Items/Test/TestThrowArtifact.prototype, a developer test artifact with no real value. LootDropItemPrototype.Roll() computes numItems from NumMin/NumMax and RollItem() returns NoRoll when that is < 1, so zeroing both removes the drop without shifting array indices (the Choices[1].* patches for the real reward depend on those indices holding). Choice[1] - Insignia x5 with SetRarity(R4Epic)/LevelOffset 6 - is deliberately kept: that is the actual Phase-4-Gold capstone reward.",
+    "ValueType": "Integer",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[0].NumMax",
+    "Description": "[TAHITI/AOU Table3-Gold] Disable placeholder choice[0] - Entity/Items/Test/TestThrowArtifact.prototype, a developer test artifact with no real value. LootDropItemPrototype.Roll() computes numItems from NumMin/NumMax and RollItem() returns NoRoll when that is < 1, so zeroing both removes the drop without shifting array indices (the Choices[1].* patches for the real reward depend on those indices holding). Choice[1] - Insignia x5 with SetRarity(R4Epic)/LevelOffset 6 - is deliberately kept: that is the actual Phase-4-Gold capstone reward.",
+    "ValueType": "Integer",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[2].NumMin",
+    "Description": "[TAHITI/AOU Table3-Gold] Disable placeholder choice[2] - Entity/Items/Test/TestPrimaryResourceArtifact.prototype, a developer test artifact with no real value. LootDropItemPrototype.Roll() computes numItems from NumMin/NumMax and RollItem() returns NoRoll when that is < 1, so zeroing both removes the drop without shifting array indices (the Choices[1].* patches for the real reward depend on those indices holding). Choice[1] - Insignia x5 with SetRarity(R4Epic)/LevelOffset 6 - is deliberately kept: that is the actual Phase-4-Gold capstone reward.",
+    "ValueType": "Integer",
+    "Value": 0
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TestVFX.prototype",
+    "Path": "Choices[2].NumMax",
+    "Description": "[TAHITI/AOU Table3-Gold] Disable placeholder choice[2] - Entity/Items/Test/TestPrimaryResourceArtifact.prototype, a developer test artifact with no real value. LootDropItemPrototype.Roll() computes numItems from NumMin/NumMax and RollItem() returns NoRoll when that is < 1, so zeroing both removes the drop without shifting array indices (the Choices[1].* patches for the real reward depend on those indices holding). Choice[1] - Insignia x5 with SetRarity(R4Epic)/LevelOffset 6 - is deliberately kept: that is the actual Phase-4-Gold capstone reward.",
+    "ValueType": "Integer",
+    "Value": 0
   },
   {
     "Enabled": true,
