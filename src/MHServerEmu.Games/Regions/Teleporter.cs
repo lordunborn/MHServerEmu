@@ -237,6 +237,22 @@ namespace MHServerEmu.Games.Regions
                     case TeleportContextEnum.TeleportContext_MetaGame:
                         DifficultyTierRef = region.DifficultyTierRef;
                         break;
+
+                    // In-world teleporters/waypoints that move you around INSIDE the region you are
+                    // already standing in (T4/T5 Hightown's own transitions, for example). Without this
+                    // they fall through to GetDifficultyTierForRegion() and re-resolve from the avatar's
+                    // stored DifficultyTierPreference, which is usually a lower tier. That is worse than
+                    // it looks: IsLocalTeleport() below rejects the teleport as non-local as soon as the
+                    // resolved tier differs from the region's own, so what should be a hop within the
+                    // current instance instead takes the remote path and spins up a WHOLE NEW instance at
+                    // the preference tier - dropping a T4/T5 group into a fresh T2 copy of the zone.
+                    // Deliberately scoped to same-region destinations only: cross-region transitions
+                    // (hub -> zone, zone -> raid) must keep honouring the player's chosen difficulty.
+                    case TeleportContextEnum.TeleportContext_Transition:
+                    case TeleportContextEnum.TeleportContext_Waypoint:
+                        if (RegionPrototype.Equivalent(destinationRegionProto, region.Prototype))
+                            DifficultyTierRef = region.DifficultyTierRef;
+                        break;
                 }
             }
 
