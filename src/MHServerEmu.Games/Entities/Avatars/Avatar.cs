@@ -4758,7 +4758,16 @@ namespace MHServerEmu.Games.Entities.Avatars
         private static readonly LocaleStringId DoctorStrangeFlavorTextRef = (LocaleStringId)2330418597998167342;
 
         // Regions/EndGame/TierX/PatrolHightown/ConnectionTargets/WaypointTargets/HightownPatrolWPTarget.prototype
-        // (UpperMadripoorRegionL60Cosmic) - same target the !patrol hightown command uses.
+        // - same target the !patrol hightown command uses.
+        //
+        // CORRECTED 2026-08-01: this target's Region field is UpperMadripoorRegionBand, NOT
+        // AltRegions/UpperMadripoorRegionL60Cosmic as previously commented here. Band and L60Cosmic
+        // share this one StartTarget, and the server has no alt-region selection at all - AltRegions[]
+        // is only used for area enumeration and region equivalence - so entering here ALWAYS lands in
+        // the Band region. That mistaken comment is why T3/T4/T5 Hightown appeared broken: Band natively
+        // declares only Tier1Normal/Tier2Heroic, so the tier forced below survived arrival (Debug context
+        // skips difficulty resolution) but was clamped back to Heroic by the first in-zone transition.
+        // Fixed by granting Band access to T3/T4/T5 - see PatchDataMod_Difficulty_Patrol_Hightown.json.
         private static readonly PrototypeId HightownPatrolTargetRef = (PrototypeId)10783787859937667646;
 
         private static void UseDoctorStrangeHightownTeleporter(Player player, WorldEntity doctorStrange)

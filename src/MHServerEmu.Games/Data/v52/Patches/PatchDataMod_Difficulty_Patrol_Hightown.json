@@ -1,0 +1,26 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/PatrolHightown/UpperMadripoorRegionBand.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Hightown Patrol] Allow Tier3Superheroic. This region natively declares only Tier1Normal and Tier2Heroic, which is why !patrol hightown t3/t4/t5 and the Doctor Strange teleporter NPC all failed: they force the tier through TeleportContext_Debug (which skips difficulty resolution), so you arrive at the right tier, but the first in-zone transition goes through Player.GetDifficultyTierForRegion() -> RegionPrototype.ConstrainDifficulty(), which clamps to the region's declared ceiling and drops the whole instance to Heroic. Confirmed live via [TeleportDiag]: fromTier=Tier4Cosmic resolvedTier=Tier2Heroic on a same-region transition. Hightown is the only EG patrol that exposes this, because ICP and Midtown have no internal transitions - nothing ever re-clamps them once you land. NOTE: the server has NO alt-region selection (AltRegions[] is only used for area enumeration and region equivalence), so entering via HightownPatrolWPTarget always lands in this Band region, never in AltRegions/UpperMadripoorRegionL60Cosmic - the comments in Avatar.cs and MiscCommands.cs claiming that target resolves to L60Cosmic are wrong. Fixing access on the region players actually occupy is therefore the minimal correct fix. DifficultyTierMask is derived from this array in RegionPrototype.PostProcess() and must NOT be patched by hand. ValueType is PrototypeId, not PrototypeDataRef - the latter's type check compares against typeof(Prototype) and fails on a value-type ID array.",
+    "ValueType": "PrototypeId",
+    "Value": 586640101754933627
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/PatrolHightown/UpperMadripoorRegionBand.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Hightown Patrol] Allow Tier4Cosmic - same rationale as the Tier3 entry above. Mobs are identical across tiers; the tier only scales damage in/out and loot bonuses, so this grants no new content, it just lets the tier the player selected actually survive an in-zone transition.",
+    "ValueType": "PrototypeId",
+    "Value": 1087474643293441873
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Regions/EndGame/TierX/PatrolHightown/UpperMadripoorRegionBand.prototype",
+    "Path": "AccessDifficulties[]",
+    "Description": "[Hightown Patrol] Allow Tier5Omega1 - same rationale as the Tier3 entry above.",
+    "ValueType": "PrototypeId",
+    "Value": 424700179461639950
+  }
+]

@@ -296,7 +296,11 @@ namespace MHServerEmu.Commands.Implementations
 
                 PrototypeId targetProtoRef = @params[0].ToLower() switch
                 {
-                    "hightown"  => (PrototypeId)10783787859937667646,  // Regions/EndGame/TierX/PatrolHightown/ConnectionTargets/WaypointTargets/HightownPatrolWPTarget.prototype (UpperMadripoorRegionL60Cosmic)
+                    // CORRECTED 2026-08-01: this target's Region is UpperMadripoorRegionBand, NOT L60Cosmic.
+                    // The two share one StartTarget and the server has no alt-region selection, so entering
+                    // here always lands in Band. Band declared only T1/T2, which is why t3/t4/t5 were clamped
+                    // back to Heroic by the first in-zone transition - see PatchDataMod_Difficulty_Patrol_Hightown.json.
+                    "hightown"  => (PrototypeId)10783787859937667646,  // Regions/EndGame/TierX/PatrolHightown/ConnectionTargets/WaypointTargets/HightownPatrolWPTarget.prototype (UpperMadripoorRegionBand)
                     "midtown"   => (PrototypeId)549317465236120347,    // Regions/EndGame/TierX/PatrolMidtown/ConnectionTargets/XManhattanEntryTarget01.prototype (XManhattanRegion60Cosmic)
                     "icp"       => (PrototypeId)3167345368996519883,   // Regions/EndGame/TierX/PatrolBrooklyn/Targets/DocksPatrolEntryTarget01.prototype (BrooklynPatrolRegionL60Cosmic)
                     _ => PrototypeId.Invalid
