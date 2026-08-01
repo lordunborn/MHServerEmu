@@ -924,22 +924,6 @@
   },
   {
     "Enabled": true,
-    "Prototype": "Loot/Tables/Test/BoxOfSplinters.prototype",
-    "Path": "Choices[0].Choices[0].NumMin",
-    "Description": "[TAHITI/AOU Fortune Card] Add 10x MansionChunk.",
-    "ValueType": "Integer",
-    "Value": 10
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Loot/Tables/Test/BoxOfSplinters.prototype",
-    "Path": "Choices[0].Choices[0].Item",
-    "Description": "[TAHITI/AOU Fortune Card] Add 10x MansionChunk.",
-    "ValueType": "PrototypeId",
-    "Value": 14167170168771517783
-  },
-  {
-    "Enabled": true,
     "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/BIFBoostAgeOfUltronTable.prototype",
     "Path": "Choices[0].Item",
     "Description": "[TAHITI/AOU Fortune Card] Add Cosmic Fragment.",
