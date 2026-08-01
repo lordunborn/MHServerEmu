@@ -266,6 +266,14 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 1 && args[0] == "--findbyicon")
+            {
+                string[] iconNames = args[1].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                string pathPrefix = args.Length > 2 ? args[2] : "Entity/Items/";
+                FindByIcon(iconNames, pathPrefix);
+                return;
+            }
+
             string[] tablePaths = args.Length > 0 ? args : new[]
             {
                 "Loot/Tables/Mob/Bosses/PatrolHightown/CrossbonesHightownTable.prototype",
@@ -884,6 +892,76 @@ namespace LootTableDumper
 
             Console.WriteLine();
             Console.WriteLine($"-- {checkedCount} item prototype(s) checked under '{pathPrefix}', {unused.Count} NOT referenced in any loot table --");
+        }
+
+        /// <summary>Finds every prototype under pathPrefix that has an AssetId-typed field (IconPath,
+        /// IconPathHiRes, StoreIconPath, UnrealClass, etc.) resolving to one of the given icon base names
+        /// (matched case-insensitively against the asset's own name, ignoring any "Type." prefix).</summary>
+        private static void FindByIcon(string[] iconNames, string pathPrefix)
+        {
+            Console.WriteLine($"==================== Searching prototypes under '{pathPrefix}' for icon/asset matches ====================");
+
+            HashSet<string> targets = new(iconNames.Select(StripExtensionAndPrefix), StringComparer.OrdinalIgnoreCase);
+            var results = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            foreach (string target in targets)
+                results[target] = new List<string>();
+
+            int checkedCount = 0;
+
+            foreach (PrototypeId protoRef in DataDirectory.Instance.IterateAllPrototypes(PrototypeIterateFlags.NoAbstract))
+            {
+                string name = SafeGetName(protoRef);
+                if (name == "(unnamed)" || name.EndsWith(".prototype", StringComparison.OrdinalIgnoreCase) == false) continue;
+                if (name.StartsWith(pathPrefix, StringComparison.OrdinalIgnoreCase) == false) continue;
+
+                Prototype proto = GameDatabase.GetPrototype<Prototype>(protoRef);
+                if (proto == null) continue;
+
+                checkedCount++;
+
+                foreach (System.Reflection.PropertyInfo prop in proto.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    if (prop.PropertyType != typeof(AssetId)) continue;
+
+                    AssetId assetId;
+                    try { assetId = (AssetId)prop.GetValue(proto); }
+                    catch { continue; }
+
+                    if (assetId == AssetId.Invalid) continue;
+
+                    string assetName = StripExtensionAndPrefix(GameDatabase.GetAssetName(assetId));
+                    if (results.TryGetValue(assetName, out var list))
+                        list.Add($"{name} [{prop.Name}] (Ref={(ulong)protoRef})");
+                }
+            }
+
+            foreach (string target in targets.OrderBy(t => t, StringComparer.OrdinalIgnoreCase))
+            {
+                var matches = results[target];
+                Console.WriteLine($"  {target}: {matches.Count} match(es)");
+                foreach (string match in matches.OrderBy(m => m, StringComparer.OrdinalIgnoreCase))
+                    Console.WriteLine($"    {match}");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"-- Checked {checkedCount} prototype(s) under '{pathPrefix}' against {targets.Count} icon name(s) --");
+        }
+
+        /// <summary>Strips a file extension (e.g. ".png") and any "Type."-style dotted prefix, leaving
+        /// just the bare asset name for case-insensitive comparison.</summary>
+        private static string StripExtensionAndPrefix(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+
+            int dotExt = value.LastIndexOf('.');
+            if (dotExt != -1 && dotExt > value.LastIndexOf('/') && value.Length - dotExt <= 5)
+                value = value[..dotExt];
+
+            int dotPrefix = value.LastIndexOf('.');
+            if (dotPrefix != -1)
+                value = value[(dotPrefix + 1)..];
+
+            return value;
         }
 
         private static void CollectPrototypeIdRefsInGraph(object obj, int depth, int maxDepth, HashSet<PrototypeId> refs)
