@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "Prototype": "Entity/Characters/Vendors/Prototypes/HUB01AvengersTower/ARMOREventVendor.prototype",
     "Setting": "eWETV_Visible",
@@ -451,9 +451,9 @@
     "Value": 0.99
   },
   {
-    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownACCTrainer.prototype",
+    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/ItemVendors/MidtownVendorCostume.prototype",
     "Setting": "eWETV_Visible",
-    "Description": "This is the Silver Sable Anniversary Vendor",
+    "Description": "This is the Mr Fantastic Anniversary Vendor",
     "Value": 0.0
   },
   {

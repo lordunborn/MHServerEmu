@@ -15,9 +15,10 @@
     "Value": 1.0
   },
   {
-    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownACCTrainer.prototype",
+    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/ItemVendors/MidtownVendorCostume.prototype",
     "Setting": "eWETV_Visible",
-    "Value": 1.0
+    "Value": 1.0,
+    "Description": "This is the Mr Fantastic Anniversary Vendor"
   },
   {
     "Prototype": "Loot/Tables/ItemType/SpecialsCostumesCardsTokens.prototype",
