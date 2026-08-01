@@ -1,0 +1,26 @@
+[
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/BonusItemFind/BonusItemFindTable.prototype",
+		"Path": "Choices[2].Choices[0].NoDropPercent",
+		"Description": "Set SSB Flourishes to drop 30% of the time",
+		"ValueType": "Float",
+		"Value": 0.8
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/BonusItemFind/BonusItemFindTable.prototype",
+		"Path": "Choices[2].Choices[1].NumMin",
+		"Description": "Set Gear to drop minimum 1 instead of 3 to reduce clutter",
+		"ValueType": "Integer",
+		"Value": 1
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/BonusItemFind/BonusItemFindTable.prototype",
+		"Path": "Choices[2].Choices[6].Choices[3].Item",
+		"Description": "Set Relics to drop instead of Odin Mark Boxes",
+		"ValueType": "PrototypeId",
+		"Value": 7878024578203459893
+	}
+]

@@ -11,13 +11,9 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/RaidTestPunisherTable.prototype",
     "Path": "Choices[0]",
-    "Description": "[Custom Prize Table] Slot 0: Cosmic Artifact, back to 100% guaranteed (reverted from an earlier 50% test), OnceDaily(PerAccount) - user's final call: first King Lizard kill of the day guarantees an artifact, then locked out for 20h (per model variant - see KingLizardBossEG02/Rider's LootCooldownTimeHours patch). FIXED 2026-07-27: the referenced Loot/Modifiers/OnceDaily.defaults (2702037107533811112) actually has PerAccount=False natively (confirmed via LootTableDumper --dump) - despite this and the other 3 OnceDaily slots' descriptions all claiming PerAccount, none of them ever actually were, letting players bypass the 20h lock by farming on alts. Overriding PerAccount=true on the clone here fixes it for real (ItemResolverContext.GetDropChance/SetDropChanceCooldown key off this exact per-node flag to choose Player.Properties vs Avatar.Properties). Still clones the full CosmicArtifactsTable.prototype (all 48 choices intact) rather than hand-copying, only NoDropPercent + Modifiers are overridden on the clone",
-    "ValueType": "Prototype",
-    "Value": {
-      "ParentDataRef": 6601388876799612218,
-      "NoDropPercent": 0,
-      "Modifiers": [ { "ParentDataRef": 2702037107533811112, "PerAccount": true } ]
-    }
+    "Description": "[Custom Prize Table] Slot 0: Cosmic Artifact, 100% guaranteed, once per account per 20h. REWRITTEN 2026-07-31 - this used to be an inline ValueType:Prototype clone of CosmicArtifactsTable that overrode Modifiers to add OnceDaily. That was the root cause of 'nobody under level 60 gets an artifact': overriding an array on a clone REPLACES it wholesale, which silently deleted CosmicArtifactsTable's two native SetItemLevel(Level:63) modifiers. Those are what pin the roll to level 63 so it satisfies every Art*Cosmic item's LootDropRestrictions.LevelMin:60; without them the roll uses the looting player's own level and under-60s are excluded with no error at all (a drop-restriction filter, not a cooldown - restriction failures are never logged). Now points at a private wrapper table instead (see PatchDataMod_Loot_DinosArtifactLockout.json), which REFERENCES CosmicArtifactsTable rather than cloning it - so the native SetItemLevel(63) survives untouched - and carries the OnceDaily(PerAccount) modifier on the wrapper itself. LootNodePrototype.Select() applies a node's Modifiers to a COPY of the roll settings, so the lockout stays scoped to this slot and cannot leak to the other 14. Also avoids nested arrays entirely, so it behaves identically on builds whose PrototypePatchEntry.ParseJsonElement cannot convert them",
+    "ValueType": "PrototypeDataRef",
+    "Value": 12590907460786460183
   },
   {
     "Enabled": true,
@@ -46,7 +42,13 @@
       "PickMethod": "PickWeight",
       "NoDropPercent": 0.98,
       "Choices": [
-        { "ParentDataRef": 1071992662862269383, "Item": 3307062732337321722, "NumMin": 1, "NumMax": 1, "Weight": 100 }
+        {
+          "ParentDataRef": 1071992662862269383,
+          "Item": 3307062732337321722,
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 100
+        }
       ]
     }
   },
@@ -61,18 +63,54 @@
       "PickMethod": "PickAll",
       "NoDropPercent": 0,
       "Choices": [
-        { "ParentDataRef": 1071992662862269383, "Item": 11087194553833821680, "NumMin": 2, "NumMax": 2, "Weight": 100 },
         {
-          "ParentDataRef": 5508985158461163528, "PickMethod": "PickWeight", "NoDropPercent": 0.5,
-          "Choices": [ { "ParentDataRef": 1071992662862269383, "Item": 11087194553833821680, "NumMin": 1, "NumMax": 1, "Weight": 100 } ]
+          "ParentDataRef": 1071992662862269383,
+          "Item": 11087194553833821680,
+          "NumMin": 2,
+          "NumMax": 2,
+          "Weight": 100
         },
         {
-          "ParentDataRef": 5508985158461163528, "PickMethod": "PickWeight", "NoDropPercent": 0.75,
-          "Choices": [ { "ParentDataRef": 1071992662862269383, "Item": 11087194553833821680, "NumMin": 1, "NumMax": 1, "Weight": 100 } ]
+          "ParentDataRef": 5508985158461163528,
+          "PickMethod": "PickWeight",
+          "NoDropPercent": 0.5,
+          "Choices": [
+            {
+              "ParentDataRef": 1071992662862269383,
+              "Item": 11087194553833821680,
+              "NumMin": 1,
+              "NumMax": 1,
+              "Weight": 100
+            }
+          ]
         },
         {
-          "ParentDataRef": 5508985158461163528, "PickMethod": "PickWeight", "NoDropPercent": 0.9,
-          "Choices": [ { "ParentDataRef": 1071992662862269383, "Item": 11087194553833821680, "NumMin": 1, "NumMax": 1, "Weight": 100 } ]
+          "ParentDataRef": 5508985158461163528,
+          "PickMethod": "PickWeight",
+          "NoDropPercent": 0.75,
+          "Choices": [
+            {
+              "ParentDataRef": 1071992662862269383,
+              "Item": 11087194553833821680,
+              "NumMin": 1,
+              "NumMax": 1,
+              "Weight": 100
+            }
+          ]
+        },
+        {
+          "ParentDataRef": 5508985158461163528,
+          "PickMethod": "PickWeight",
+          "NoDropPercent": 0.9,
+          "Choices": [
+            {
+              "ParentDataRef": 1071992662862269383,
+              "Item": 11087194553833821680,
+              "NumMin": 1,
+              "NumMax": 1,
+              "Weight": 100
+            }
+          ]
         }
       ]
     }
@@ -89,8 +127,19 @@
       "NoDropPercent": 0.75,
       "Choices": [
         {
-          "ParentDataRef": 1071992662862269383, "Item": 3158655076108343964, "NumMin": 1, "NumMax": 1, "Weight": 100,
-          "Modifiers": [ { "ParentDataRef": 2629776241329573335, "Choices": [8643734431032020798] } ]
+          "ParentDataRef": 1071992662862269383,
+          "Item": 3158655076108343964,
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 100,
+          "Modifiers": [
+            {
+              "ParentDataRef": 2629776241329573335,
+              "Choices": [
+                8643734431032020798
+              ]
+            }
+          ]
         }
       ]
     }
@@ -105,9 +154,20 @@
       "ParentDataRef": 5508985158461163528,
       "PickMethod": "PickWeight",
       "NoDropPercent": 0,
-      "Modifiers": [ { "ParentDataRef": 2702037107533811112, "PerAccount": true } ],
+      "Modifiers": [
+        {
+          "ParentDataRef": 2702037107533811112,
+          "PerAccount": true
+        }
+      ],
       "Choices": [
-        { "ParentDataRef": 1071992662862269383, "Item": 7963913432821078741, "NumMin": 1, "NumMax": 1, "Weight": 100 }
+        {
+          "ParentDataRef": 1071992662862269383,
+          "Item": 7963913432821078741,
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 100
+        }
       ]
     }
   },
@@ -121,9 +181,20 @@
       "ParentDataRef": 5508985158461163528,
       "PickMethod": "PickWeight",
       "NoDropPercent": 0,
-      "Modifiers": [ { "ParentDataRef": 2702037107533811112, "PerAccount": true } ],
+      "Modifiers": [
+        {
+          "ParentDataRef": 2702037107533811112,
+          "PerAccount": true
+        }
+      ],
       "Choices": [
-        { "ParentDataRef": 1071992662862269383, "Item": 10583912791301561068, "NumMin": 1, "NumMax": 1, "Weight": 100 }
+        {
+          "ParentDataRef": 1071992662862269383,
+          "Item": 10583912791301561068,
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 100
+        }
       ]
     }
   },
@@ -133,7 +204,13 @@
     "Path": "Choices[8]",
     "Description": "[Custom Prize Table] Slot 8: 6 guaranteed Large Experience Orbs, matching SharedEndgameWaveBattles' own bonus-XP slot - deliberately built WITHOUT the LootRollUseLevelVerbatimPrototype modifier that BossExpOrbs (Slot 1) carries, so this orb's value scales to whichever player picks it up rather than a fixed level. Helps sub-60 characters as well as level 60",
     "ValueType": "Prototype",
-    "Value": { "ParentDataRef": 17282256753597680679, "Agent": 9200193991835392089, "NumMin": 6, "NumMax": 6, "Weight": 100 }
+    "Value": {
+      "ParentDataRef": 17282256753597680679,
+      "Agent": 9200193991835392089,
+      "NumMin": 6,
+      "NumMax": 6,
+      "Weight": 100
+    }
   },
   {
     "Enabled": true,
@@ -141,7 +218,13 @@
     "Path": "Choices[9]",
     "Description": "[Custom Prize Table] Slot 9: SixInfinityOrbChest, guaranteed 100%",
     "ValueType": "Prototype",
-    "Value": { "ParentDataRef": 1071992662862269383, "Item": 1899042455121240292, "NumMin": 1, "NumMax": 1, "Weight": 100 }
+    "Value": {
+      "ParentDataRef": 1071992662862269383,
+      "Item": 1899042455121240292,
+      "NumMin": 1,
+      "NumMax": 1,
+      "Weight": 100
+    }
   },
   {
     "Enabled": true,
@@ -149,7 +232,13 @@
     "Path": "Choices[10]",
     "Description": "[Custom Prize Table] Slot 10: Relics, guaranteed, NumMin=5/NumMax=15 (native AllRelicsLootTable.prototype only grants exactly 1 - rebuilt inline with the same Relic.defaults item since the shared table can't be safely mutated for other consumers)",
     "ValueType": "Prototype",
-    "Value": { "ParentDataRef": 1071992662862269383, "Item": 8255039456199642606, "NumMin": 5, "NumMax": 15, "Weight": 100 }
+    "Value": {
+      "ParentDataRef": 1071992662862269383,
+      "Item": 8255039456199642606,
+      "NumMin": 5,
+      "NumMax": 15,
+      "Weight": 100
+    }
   },
   {
     "Enabled": true,
@@ -161,14 +250,48 @@
       "ParentDataRef": 5508985158461163528,
       "PickMethod": "PickWeight",
       "NoDropPercent": 0.98,
-      "Modifiers": [ { "ParentDataRef": 2702037107533811112, "PerAccount": true } ],
-      "Choices": [
-        { "ParentDataRef": 7084891761292086861, "ItemRank": 1, "UISlot": "Costume", "NumMin": 1, "NumMax": 1, "Weight": 100 },
-        { "ParentDataRef": 1071992662862269383, "Item": 15142736093714783733, "NumMin": 1, "NumMax": 1, "Weight": 200 },
-        { "ParentDataRef": 1071992662862269383, "Item": 11922313247660511208, "NumMin": 1, "NumMax": 1, "Weight": 50 },
+      "Modifiers": [
         {
-          "ParentDataRef": 7084891761292086861, "ItemRank": 8, "UISlot": "Costume", "NumMin": 1, "NumMax": 1, "Weight": 2,
-          "Modifiers": [ { "ParentDataRef": 7386301686671674808, "Usable": 1.0 } ]
+          "ParentDataRef": 2702037107533811112,
+          "PerAccount": true
+        }
+      ],
+      "Choices": [
+        {
+          "ParentDataRef": 7084891761292086861,
+          "ItemRank": 1,
+          "UISlot": "Costume",
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 100
+        },
+        {
+          "ParentDataRef": 1071992662862269383,
+          "Item": 15142736093714783733,
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 200
+        },
+        {
+          "ParentDataRef": 1071992662862269383,
+          "Item": 11922313247660511208,
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 50
+        },
+        {
+          "ParentDataRef": 7084891761292086861,
+          "ItemRank": 8,
+          "UISlot": "Costume",
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 2,
+          "Modifiers": [
+            {
+              "ParentDataRef": 7386301686671674808,
+              "Usable": 1.0
+            }
+          ]
         }
       ]
     }
@@ -180,8 +303,20 @@
     "Description": "[Custom Prize Table] Slot 12: 4 guaranteed armor pieces (same shape as SharedEndgameWaveBattles Choices[0]) but rarity floor raised to Cosmic/Unique only instead of Rare/Epic/Unique/Cosmic",
     "ValueType": "Prototype",
     "Value": {
-      "ParentDataRef": 1071992662862269383, "Item": 7244648064590089631, "NumMin": 4, "NumMax": 4, "Weight": 100,
-      "Modifiers": [ { "ParentDataRef": 2629776241329573335, "Choices": [8643734431032020798, 6033964048325414744] } ]
+      "ParentDataRef": 1071992662862269383,
+      "Item": 7244648064590089631,
+      "NumMin": 4,
+      "NumMax": 4,
+      "Weight": 100,
+      "Modifiers": [
+        {
+          "ParentDataRef": 2629776241329573335,
+          "Choices": [
+            8643734431032020798,
+            6033964048325414744
+          ]
+        }
+      ]
     }
   },
   {
@@ -196,8 +331,19 @@
       "NoDropPercent": 0.75,
       "Choices": [
         {
-          "ParentDataRef": 1071992662862269383, "Item": 7130114525711765639, "NumMin": 1, "NumMax": 1, "Weight": 100,
-          "Modifiers": [ { "ParentDataRef": 2629776241329573335, "Choices": [8643734431032020798] } ]
+          "ParentDataRef": 1071992662862269383,
+          "Item": 7130114525711765639,
+          "NumMin": 1,
+          "NumMax": 1,
+          "Weight": 100,
+          "Modifiers": [
+            {
+              "ParentDataRef": 2629776241329573335,
+              "Choices": [
+                8643734431032020798
+              ]
+            }
+          ]
         }
       ]
     }

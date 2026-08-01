@@ -41,11 +41,52 @@ namespace MHServerEmu.Games.GameData.PatchManager
                     continue;
 
                 Type fieldType = fieldInfo.PropertyType;
-                object fieldValue = PatchEntryConverter.ParseJsonElement(jsonProperty.Value, fieldType);
+
+                // Array-typed fields need their own handling: ParseJsonElement() has no
+                // JsonValueKind.Array case, so it falls through to value.ToString() and the array
+                // arrives as a raw JSON string, which then fails the cast in ConvertValue(). That
+                // failure is swallowed as a "Can't convert" warning and the field silently keeps
+                // whatever ParentDataRef had - which is why a loot node's own nested Choices[]/
+                // Modifiers[] stopped applying after upstream merge 34df4088b dropped mtzimas92's
+                // ParseJsonArray() (b27e81dbe).
+                object fieldValue = fieldType.IsArray && jsonProperty.Value.ValueKind == JsonValueKind.Array
+                    ? ParseArrayField(jsonProperty.Value, fieldType)
+                    : PatchEntryConverter.ParseJsonElement(jsonProperty.Value, fieldType);
 
                 Field field = new(fieldName, fieldValue, fieldType);
                 _fields.Add(field);
             }
+        }
+
+        /// <summary>
+        /// Builds the value for an array-typed field. Prototype-element arrays are deferred: we keep a
+        /// <see cref="JsonPrototypeArray"/> and materialize it in <see cref="GetValue()"/>, because
+        /// actually constructing a prototype (AllocatePrototype/CopyPrototypeDataRefFields) requires
+        /// GameDatabase to be initialized, and this runs during LoadPatchDataFromDisk() - which on this
+        /// fork happens BEFORE Globals are loaded (see GameDatabase's static ctor). Doing it eagerly here
+        /// throws NullReferenceException on lootGlobalsProto/blueprint and fails the whole patch file.
+        /// Element types that are plain values (PrototypeId, AssetId, ints, ...) touch no game data, so
+        /// they are safe to build immediately.
+        /// </summary>
+        private static object ParseArrayField(JsonElement jsonElement, Type fieldType)
+        {
+            Type elementType = fieldType.GetElementType();
+            if (elementType == null)
+                return PatchEntryConverter.ParseJsonElement(jsonElement, fieldType);
+
+            if (typeof(Prototype).IsAssignableFrom(elementType))
+                return new JsonPrototypeArray(jsonElement);
+
+            JsonElement[] jsonArray = jsonElement.EnumerateArray().ToArray();
+            Array result = Array.CreateInstance(elementType, jsonArray.Length);
+
+            for (int i = 0; i < jsonArray.Length; i++)
+            {
+                object element = PatchEntryConverter.ParseJsonElement(jsonArray[i], elementType);
+                result.SetValue(PrototypePatchManager.ConvertValue(element, elementType), i);
+            }
+
+            return result;
         }
 
         public override object GetValue()
@@ -70,12 +111,31 @@ namespace MHServerEmu.Games.GameData.PatchManager
 
                     try
                     {
-                        object convertedValue = PrototypePatchManager.ConvertValue(field.Value, field.Type);
+                        // Materialize a deferred prototype-element array now that GameDatabase is ready.
+                        // JsonPrototypeArray.GetValue() returns Prototype[]; ConvertValue() narrows it to
+                        // the field's concrete element type (e.g. LootNodePrototype[]). Nested levels
+                        // recurse naturally: each element is itself a JsonPrototype whose own array fields
+                        // were deferred the same way.
+                        object rawValue = field.Value is JsonPrototypeArray deferredArray
+                            ? deferredArray.GetValue()
+                            : field.Value;
+
+                        object convertedValue = PrototypePatchManager.ConvertValue(rawValue, field.Type);
                         fieldInfo.SetValue(instance, convertedValue);
                     }
                     catch (Exception e)
                     {
-                        Logger.Warn($"Can't convert {field.Name} in {classType.Name} - {e.Message}");
+                        // An array-typed field reaching here means ParseArrayField() did not handle it and
+                        // the value arrived as a raw JSON string. That is always a regression, never normal
+                        // patch data - it silently leaves the field at ParentDataRef's value, which is how
+                        // every nested Choices[]/Modifiers[] in every patch file stopped applying for a day
+                        // without a single error (upstream merge 34df4088b, 2026-07-30). Log it loudly so it
+                        // is caught in minutes rather than by noticing loot has quietly gone missing.
+                        if (field.Type.IsArray)
+                            Logger.Error($"Can't convert ARRAY field {field.Name} in {classType.Name} - {e.Message}. " +
+                                         $"Nested array support has regressed - see JsonPrototype.ParseArrayField().");
+                        else
+                            Logger.Warn($"Can't convert {field.Name} in {classType.Name} - {e.Message}");
                     }
                 }
 
