@@ -127,8 +127,12 @@ namespace MHServerEmu.Games.Network
         /// </summary>
         public void SendMessageToMultiple(List<PlayerConnection> clientList, IMessage message)
         {
+            // Skip null entries defensively. A disconnected player's PlayerConnection is null, and a
+            // single caller passing one in should never be able to take down the entire game instance
+            // for everyone else in it - which is exactly what happened on live via
+            // ChatManager.SendChatFromGameSystem() during mission reward payout.
             foreach (PlayerConnection playerConnection in clientList)
-                playerConnection.SendMessage(message);
+                playerConnection?.SendMessage(message);
         }
 
         /// <summary>

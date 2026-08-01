@@ -132,7 +132,17 @@ namespace MHServerEmu.Games.Social
         {
             using var clientListHandle = ListPool<PlayerConnection>.Instance.Get(out List<PlayerConnection> clientList);
 
-            clientList.Add(player.PlayerConnection);
+            // PlayerConnection is null once a player has disconnected while their Player entity is
+            // still alive in the game. Adding it blindly produced a one-element list containing null,
+            // which slips past the Count == 0 guard in the overload below and then NPEs in
+            // SendMessageToMultiple() - crashing the whole game instance. Seen live when a mission
+            // whose reward table contains a LootDropChatMessagePrototype completed for a player who
+            // had already dropped.
+            PlayerConnection playerConnection = player?.PlayerConnection;
+            if (playerConnection == null)
+                return;
+
+            clientList.Add(playerConnection);
             SendChatFromGameSystem(localeString, clientList);
         }
 
