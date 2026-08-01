@@ -95,7 +95,6 @@
     "ValueType": "PrototypeDataRef",
     "Value": 2838096304585315867
   },
-
   {
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/MikesMissionDrop.prototype",
@@ -116,12 +115,14 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/MikesMissionDrop.prototype",
     "Path": "Modifiers[]",
-    "Description": "[TAHITI/AOU Cosmic Arties] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "Description": "[TAHITI/AOU Cosmic Arties] Gate behind Superheroic and above. FIXED 2026-07-31: LootRollRequireDifficultyTierPrototype.Apply() does Choices.Contains(settings.DifficultyTier) - an exact membership test, NOT a threshold - so listing only Tier3Superheroic would have blocked this loot at Tier4Cosmic/Tier5Omega1 too, the opposite of the intended '+'. All three qualifying tiers are now listed explicitly. Add any new higher tier here as well.",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 9219955363352285908,
       "Choices": [
-        586640101754933627
+        586640101754933627,
+        1087474643293441873,
+        424700179461639950
       ]
     }
   },
@@ -197,7 +198,6 @@
     "ValueType": "PrototypeDataRef",
     "Value": 10707955230249390472
   },
-
   {
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/TestArtifacts.prototype",
@@ -218,12 +218,14 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/TestArtifacts.prototype",
     "Path": "Modifiers[]",
-    "Description": "[TAHITI/AOU Table1] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "Description": "[TAHITI/AOU Table1] Gate behind Superheroic and above. FIXED 2026-07-31: LootRollRequireDifficultyTierPrototype.Apply() does Choices.Contains(settings.DifficultyTier) - an exact membership test, NOT a threshold - so listing only Tier3Superheroic would have blocked this loot at Tier4Cosmic/Tier5Omega1 too, the opposite of the intended '+'. All three qualifying tiers are now listed explicitly. Add any new higher tier here as well.",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 9219955363352285908,
       "Choices": [
-        586640101754933627
+        586640101754933627,
+        1087474643293441873,
+        424700179461639950
       ]
     }
   },
@@ -355,7 +357,6 @@
     "ValueType": "PrototypeDataRef",
     "Value": 13736146105435888682
   },
-
   {
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/TestRelics.prototype",
@@ -384,12 +385,14 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/TestRelics.prototype",
     "Path": "Modifiers[]",
-    "Description": "[TAHITI/AOU Table2-FC] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "Description": "[TAHITI/AOU Table2-FC] Gate behind Superheroic and above. FIXED 2026-07-31: LootRollRequireDifficultyTierPrototype.Apply() does Choices.Contains(settings.DifficultyTier) - an exact membership test, NOT a threshold - so listing only Tier3Superheroic would have blocked this loot at Tier4Cosmic/Tier5Omega1 too, the opposite of the intended '+'. All three qualifying tiers are now listed explicitly. Add any new higher tier here as well.",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 9219955363352285908,
       "Choices": [
-        586640101754933627
+        586640101754933627,
+        1087474643293441873,
+        424700179461639950
       ]
     }
   },
@@ -425,7 +428,6 @@
     "ValueType": "PrototypeDataRef",
     "Value": 14095692588341661434
   },
-
   {
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
@@ -454,12 +456,14 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/TestIndivCharDropLootGroup.prototype",
     "Path": "Modifiers[]",
-    "Description": "[TAHITI/AOU Table2-Gold] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "Description": "[TAHITI/AOU Table2-Gold] Gate behind Superheroic and above. FIXED 2026-07-31: LootRollRequireDifficultyTierPrototype.Apply() does Choices.Contains(settings.DifficultyTier) - an exact membership test, NOT a threshold - so listing only Tier3Superheroic would have blocked this loot at Tier4Cosmic/Tier5Omega1 too, the opposite of the intended '+'. All three qualifying tiers are now listed explicitly. Add any new higher tier here as well.",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 9219955363352285908,
       "Choices": [
-        586640101754933627
+        586640101754933627,
+        1087474643293441873,
+        424700179461639950
       ]
     }
   },
@@ -527,7 +531,6 @@
     "ValueType": "PrototypeDataRef",
     "Value": 13736146105435888682
   },
-
   {
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/TestVFX.prototype",
@@ -583,12 +586,14 @@
     "Enabled": true,
     "Prototype": "Loot/Tables/Test/TestVFX.prototype",
     "Path": "Modifiers[]",
-    "Description": "[TAHITI/AOU Table3-Gold] Gate behind Tier3Superheroic+ difficulty modifier.",
+    "Description": "[TAHITI/AOU Table3-Gold] Gate behind Superheroic and above. FIXED 2026-07-31: LootRollRequireDifficultyTierPrototype.Apply() does Choices.Contains(settings.DifficultyTier) - an exact membership test, NOT a threshold - so listing only Tier3Superheroic would have blocked this loot at Tier4Cosmic/Tier5Omega1 too, the opposite of the intended '+'. All three qualifying tiers are now listed explicitly. Add any new higher tier here as well.",
     "ValueType": "Prototype",
     "Value": {
       "ParentDataRef": 9219955363352285908,
       "Choices": [
-        586640101754933627
+        586640101754933627,
+        1087474643293441873,
+        424700179461639950
       ]
     }
   },
@@ -608,7 +613,6 @@
     "ValueType": "PrototypeDataRef",
     "Value": 17094190423530806315
   },
-
   {
     "Enabled": true,
     "Prototype": "Loot/Tables/MysteryChest/AgeOfUltron/XPBoostAgeOfUltronTable.prototype",
