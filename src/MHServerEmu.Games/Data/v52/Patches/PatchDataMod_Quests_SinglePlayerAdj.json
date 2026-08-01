@@ -150,5 +150,13 @@
         "Description": "Defeat Spider Slayers in the Wakanda One Shot (Default 30)",
         "ValueType": "Integer",
         "Value": 15
+    },
+    {
+        "Enabled": true,
+        "Prototype": "Missions/Prototypes/PVEEndgame/PatrolBrooklyn/Events/BrooklynEventEddaIceAndFireP1.prototype",
+        "Path": "Objectives[0].SuccessConditions.Conditions[0].Count",
+        "Description": "An Edda of Ice and Fire - Objectives[0] kill count (Default 70)",
+        "ValueType": "Integer",
+        "Value": 50
     }
 ]
