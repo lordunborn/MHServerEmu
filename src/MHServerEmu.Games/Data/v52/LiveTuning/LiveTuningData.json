@@ -423,12 +423,6 @@
     "Value": 1.0
   },
   {
-    "Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/ItemVendors/MidtownVendorWeapon.prototype",
-    "Setting": "eWETV_Visible",
-    "Description": "This is the Silver Sable Summer Event Vendor",
-    "Value": 0.0
-  },
-  {
     "Prototype": "Entity/Items/Consumables/Prototypes/FortuneCard/MysteryBox/AvengersMysteryBox.prototype",
     "Setting": "eWETV_EternitySplinterPrice",
     "Value": 100
