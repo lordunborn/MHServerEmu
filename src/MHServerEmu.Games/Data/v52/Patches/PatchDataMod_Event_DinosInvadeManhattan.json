@@ -915,7 +915,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] REVISED 2026-07-25 (second pass) - Native flat 50 regardless of group size, while threat RISE already scales linearly by live in-world player count (PvEScaleGameMode.ScheduledWaveTick), which is why nobody on the live 10-player-capped server got past Phase 1. PvEScaleGameMode.GetEffectiveFailureThreshold() now multiplies this field by CountInWorldPlayers(), so this value is really a PER-PLAYER unit. FIRST attempt cut this to 18 (one phase's raw passive rise) on the assumption a phase's own rise should define its own ceiling - but threat is NOT reset between phases (only cleared on win/fail), so leftover threat compounds; a solo run failed mid-Phase-3 at 18.09. SECOND attempt raised to 35 alongside bumping the orb to 0.4 - a full solo win log then showed peak threat only ever reached 21.44 (61% of cap) and settled to 15.83/35 (45%) by the boss, confirming both numbers had far more slack than needed (net-per-phase growth self-moderates as the orb's percentage cut grows with threat: +4.53, +1.93, +2.05, +0.40, +1.92). Cut to 25 - still real headroom above that observed ~16-21 peak (so a clean run doesn't fail), but tight enough that missed kills or a skipped orb pickup actually threatens the run, unlike 35's wide safety margin. Still a live-tuning starting point",
     "ValueType": "Float",
-    "Value": 25.0
+    "Value": 28.0
   },
   {
     "Enabled": true,
@@ -923,7 +923,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 25.0
+    "Value": 28.0
   },
   {
     "Enabled": true,
@@ -931,7 +931,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 25.0
+    "Value": 28.0
   },
   {
     "Enabled": true,
@@ -939,7 +939,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 25.0
+    "Value": 28.0
   },
   {
     "Enabled": true,
@@ -947,7 +947,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 25.0
+    "Value": 28.0
   },
   {
     "Enabled": true,
@@ -955,7 +955,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold cut as Phase1 - see that entry's description",
     "ValueType": "Float",
-    "Value": 25.0
+    "Value": 28.0
   },
   {
     "Enabled": true,
@@ -963,7 +963,7 @@
     "Path": "WaveDifficultyFailureThreshold",
     "Description": "[Dinos Invade Manhattan] Same per-player threshold scaling as Phase1-6, applied to the boss phase for consistency (this phase's native WaveDurationMS is already patched to 360000/6min elsewhere in this file, independent of this cut) - see Phase1's entry for the full reasoning",
     "ValueType": "Float",
-    "Value": 25.0
+    "Value": 28.0
   },
   {
     "Enabled": true,

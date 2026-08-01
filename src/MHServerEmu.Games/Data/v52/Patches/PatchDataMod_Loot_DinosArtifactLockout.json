@@ -1,0 +1,23 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TESTONLYXPGivePotionOutput.prototype",
+    "Path": "Choices[0]",
+    "Description": "[Dinos Artifact Lockout] Repurposes this unused dev/test table as a PRIVATE wrapper node for the Dinos boss artifact slot. Replaces its throwaway XP-potion Agent drop with a direct REFERENCE to Loot/Tables/Mob/Bosses/CosmicArtifactsTable.prototype (6601388876799612218). Referencing rather than cloning is the whole point: the shared CosmicArtifactsTable keeps its own native Modifiers - two SetItemLevel(Level:63) entries - which pin the artifact roll to level 63 so it satisfies every Art*Cosmic item's LootDropRestrictions.LevelMin:60 for a player of ANY level. Cloning it (the old approach in PatchDataMod_Loot_CustomPrizeTable.json Choices[0]) silently destroyed those modifiers and locked every sub-60 character out of the artifact",
+    "ValueType": "PrototypeDataRef",
+    "Value": 6601388876799612218
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Test/TESTONLYXPGivePotionOutput.prototype",
+    "Path": "Modifiers",
+    "Description": "[Dinos Artifact Lockout] The once-daily, per-account gate, applied to the WRAPPER rather than to the shared CosmicArtifactsTable - that table is used by other content and must never be globally locked. LootNodePrototype.Select() applies a node's Modifiers to a COPY of the roll settings, so this stays scoped to this node only. PerAccount:true is required: LootRollOnceDailyPrototype.Apply() only sets LootDropChanceModifiers.PerAccount when it is true, and SetDropChanceCooldown() uses that flag to choose Player.Properties (account-wide, all 63 avatars) over Avatar.Properties (per-hero, farmable by swapping heroes). The 20h timer is anchored by LootCooldownTimeHours:20 on both King Lizard prototypes (see PatchDataMod_Event_DinosInvadeManhattan.json) and is keyed by (origin, difficulty tier), with ItemResolverContext.DinosSharedBossCooldownRefs normalizing both boss variants onto one origin - so the two bosses share a single timer. Authored as a top-level ValueType:PrototypeArray so it goes through JsonPrototypeArray, which converts correctly; an array nested inside an inline ValueType:Prototype value does NOT convert on all builds and fails silently",
+    "ValueType": "PrototypeArray",
+    "Value": [
+      {
+        "ParentDataRef": 2702037107533811112,
+        "PerAccount": true
+      }
+    ]
+  }
+]
