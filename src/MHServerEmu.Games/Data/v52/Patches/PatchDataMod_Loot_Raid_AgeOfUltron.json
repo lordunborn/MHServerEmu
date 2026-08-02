@@ -1,6 +1,6 @@
 [
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01BronzeNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -8,7 +8,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01GoldNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -16,7 +16,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase01SilverNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -24,7 +24,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02BronzeNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -32,7 +32,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02GoldNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -40,7 +40,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase02SilverNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -48,7 +48,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03BronzeNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -56,7 +56,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03GoldNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -64,7 +64,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase03SilverNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -72,7 +72,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04BronzeNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -80,7 +80,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04GoldNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
@@ -88,7 +88,7 @@
     "Value": 2838096304585315867
   },
   {
-    "Enabled": true,
+    "Enabled": false,
     "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/Normal/AoUPhase04SilverNormal.prototype",
     "Path": "Choices[]",
     "Description": "[TAHITI/AOU Chests] Set Epic Insignia droppable.",
