@@ -214,6 +214,14 @@ namespace LootTableDumper
                 return;
             }
 
+            if (args.Length > 0 && args[0] == "--gencraftingdesc")
+            {
+                string locoDir = args.Length > 1 ? args[1] : "";
+                string outputPath = args.Length > 2 ? args[2] : "CraftingRecipeDescriptions.json";
+                GenerateCraftingDescriptions(locoDir, outputPath);
+                return;
+            }
+
             if (args.Length > 0 && args[0] == "--resolveguid")
             {
                 if (args.Length > 1 && ulong.TryParse(args[1], out ulong guidVal))
@@ -1110,6 +1118,154 @@ namespace LootTableDumper
 
             string text = locale.GetLocaleString((LocaleStringId)idVal);
             Console.WriteLine(string.IsNullOrEmpty(text) ? $"{idVal} = (not found)" : $"{idVal} = \"{text}\"");
+        }
+
+        /// <summary>
+        /// Walks every CraftingRecipePrototype's RecipeInputs and appends an explicit ingredient list
+        /// (one "Qty - Name" line per RecipeInputs slot) directly after the recipe's existing, NATIVE
+        /// RecipeTooltip text. RecipeTooltip (not RecipeDescription) is the field the Crafter window's
+        /// description panel actually renders - confirmed live by the user via their own manual
+        /// AchievementStringMap test (RecipeTooltip 6849254553083381001 on Astral Essence Formation,
+        /// screenshot 2026-08-02 18:36). Native RecipeTooltip text observed ending in "Required
+        /// Materials:" with nothing after it (the actual bug) - this appends the missing list right
+        /// after that point rather than assuming/adding the label ourselves. Any recipe whose native
+        /// text does NOT end that way is reported, not guessed at. Outputs a ready-to-use
+        /// AchievementStringMap JSON file.
+        /// </summary>
+        private static void GenerateCraftingDescriptions(string locoDir, string outputPath)
+        {
+            const string RequiredMaterialsLabel = "Required Materials:";
+
+            if (Directory.Exists(locoDir) == false)
+            {
+                Console.WriteLine($"Directory not found: {locoDir}");
+                return;
+            }
+
+            Locale locale = new(LocaleManager.Instance, Path.Combine(locoDir, "dummy.locale"), "English",
+                LocaleLanguage.English, "English", LocaleRegion.All, "Everywhere", "eng.all");
+
+            foreach (string filePath in Directory.GetFiles(locoDir, "*.string"))
+            {
+                using FileStream fs = File.OpenRead(filePath);
+                locale.ImportStringStream(filePath, fs);
+            }
+
+            using var jsonStream = new MemoryStream();
+            using (Utf8JsonWriter writer = new(jsonStream, new JsonWriterOptions { Indented = true }))
+            {
+                writer.WriteStartObject();
+
+                int recipeCount = 0, skippedNoTooltip = 0, skippedNoInputs = 0, skippedNoText = 0, skippedDuplicate = 0;
+                int noRequiredMaterialsLabel = 0;
+                HashSet<LocaleStringId> seenIds = new();
+
+                foreach (PrototypeId protoRef in DataDirectory.Instance.IteratePrototypesInHierarchy<CraftingRecipePrototype>(PrototypeIterateFlags.NoAbstract))
+                {
+                    CraftingRecipePrototype recipeProto = GameDatabase.GetPrototype<CraftingRecipePrototype>(protoRef);
+                    if (recipeProto == null) continue;
+
+                    if (recipeProto.RecipeTooltip == LocaleStringId.Invalid)
+                    {
+                        skippedNoTooltip++;
+                        continue;
+                    }
+
+                    if (recipeProto.RecipeInputs.IsNullOrEmpty())
+                    {
+                        skippedNoInputs++;
+                        continue;
+                    }
+
+                    if (seenIds.Add(recipeProto.RecipeTooltip) == false)
+                    {
+                        skippedDuplicate++;
+                        Console.WriteLine($"  WARNING: {SafeGetName(protoRef)} shares RecipeTooltip {(ulong)recipeProto.RecipeTooltip} with another recipe already processed - skipping to avoid clobbering it");
+                        continue;
+                    }
+
+                    List<string> parts = new();
+                    foreach (CraftingInputPrototype inputProto in recipeProto.RecipeInputs)
+                    {
+                        string part = DescribeCraftingInput(inputProto, locale);
+                        if (part != null)
+                            parts.Add(part);
+                    }
+
+                    if (parts.Count == 0)
+                    {
+                        skippedNoText++;
+                        continue;
+                    }
+
+                    string existingText = locale.GetLocaleString(recipeProto.RecipeTooltip) ?? "";
+                    string trimmedExisting = existingText.TrimEnd();
+
+                    string newText;
+                    if (trimmedExisting.EndsWith(RequiredMaterialsLabel, StringComparison.Ordinal))
+                    {
+                        // Append right after the native "Required Materials:" label, one ingredient per line.
+                        newText = trimmedExisting + "\n" + string.Join("\n", parts);
+                    }
+                    else
+                    {
+                        // Native text doesn't end with the expected label - report it, don't guess at formatting.
+                        noRequiredMaterialsLabel++;
+                        Console.WriteLine($"  NOTE: {SafeGetName(protoRef)} (RecipeTooltip {(ulong)recipeProto.RecipeTooltip}) does not end with \"{RequiredMaterialsLabel}\" - appended with the label added. Native text was: \"{trimmedExisting}\"");
+                        newText = (string.IsNullOrEmpty(trimmedExisting) ? "" : trimmedExisting + "\n\n")
+                            + RequiredMaterialsLabel + "\n" + string.Join("\n", parts);
+                    }
+
+                    writer.WriteStartObject(((ulong)recipeProto.RecipeTooltip).ToString());
+                    writer.WriteString("en_us", newText);
+                    writer.WriteEndObject();
+                    recipeCount++;
+                }
+
+                writer.WriteEndObject();
+
+                Console.WriteLine($"Generated {recipeCount} recipe tooltip overrides.");
+                Console.WriteLine($"Skipped: {skippedNoTooltip} with no RecipeTooltip, {skippedNoInputs} with no RecipeInputs, {skippedNoText} with no describable inputs, {skippedDuplicate} duplicate RecipeTooltip ids.");
+                Console.WriteLine($"{noRequiredMaterialsLabel} recipes did not natively end with \"{RequiredMaterialsLabel}\" (label added manually for those - see NOTE lines above).");
+            }
+
+            File.WriteAllBytes(outputPath, jsonStream.ToArray());
+            Console.WriteLine($"Wrote {outputPath}");
+        }
+
+        private static string DescribeCraftingInput(CraftingInputPrototype inputProto, Locale locale)
+        {
+            // AutoPopulated inputs have a known Item + exact stack Quantity
+            if (inputProto is AutoPopulatedInputPrototype autoProto)
+            {
+                ItemPrototype ingredientProto = autoProto.AutoPopulatedIngredientPrototype;
+                if (ingredientProto == null) return null;
+
+                string ingredientName = locale.GetLocaleString(ingredientProto.DisplayName);
+                if (string.IsNullOrEmpty(ingredientName))
+                    ingredientName = SafeGetName(ingredientProto.DataRef);
+
+                return $"{autoProto.Quantity} - {ingredientName}";
+            }
+
+            // Everything else (RestrictionSet, AllowedItemList) needs exactly 1 matching item per slot -
+            // use the slot's own category label instead of a fixed ingredient name.
+            string label = GetSlotLabel(inputProto.SlotDisplayInfo, locale);
+            return label != null ? $"1 - {label}" : null;
+        }
+
+        private static string GetSlotLabel(PrototypeId slotDisplayInfoRef, Locale locale)
+        {
+            if (slotDisplayInfoRef == PrototypeId.Invalid) return null;
+
+            InventoryUIDataPrototype slotDisplayInfo = GameDatabase.GetPrototype<InventoryUIDataPrototype>(slotDisplayInfoRef);
+            if (slotDisplayInfo == null || slotDisplayInfo.EmptySlotTooltip == PrototypeId.Invalid) return null;
+
+            UILocalizedInfoPrototype tooltipInfo = GameDatabase.GetPrototype<UILocalizedInfoPrototype>(slotDisplayInfo.EmptySlotTooltip);
+            if (tooltipInfo == null || tooltipInfo.TooltipText == LocaleStringId.Invalid) return null;
+
+            string label = locale.GetLocaleString(tooltipInfo.TooltipText);
+            return string.IsNullOrEmpty(label) ? null : label;
         }
 
         private static void FindTeleportInteractMissions()
