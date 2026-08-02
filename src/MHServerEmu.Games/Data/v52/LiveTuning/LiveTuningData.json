@@ -23,8 +23,8 @@
   {
     "Prototype": "Entity/Characters/Vendors/Prototypes/HUB01AvengersTower/BIFBuxTaker.prototype",
     "Setting": "eWETV_Visible",
-    "Description": "Do not enable.  This is Iron Fist Cube Shards Vendor",
-    "Value": 0.0
+    "Description": "Hero Ticket Vendor - repurposed from the native Boost Voucher Exchange Vendor, see PatchDataMod_Vendors_HeroTicketVendor.json",
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/NPCs/ShannaA.prototype",

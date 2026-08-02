@@ -150,6 +150,31 @@
     "Value": 0.0
   },
   {
+    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarAvengersTowerRoofHUBArea.prototype",
+    "Setting": "eRTV_Enabled",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarHubCaptainAmericaWarehouseRegion.prototype",
+    "Setting": "eRTV_Enabled",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarHubWarehouseArea.prototype",
+    "Setting": "eRTV_Enabled",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarHubCaptainAmericaWarehouseStartTarget.prototype",
+    "Setting": "eRTV_Enabled",
+    "Value": 0.0
+  },
+  {
+    "Prototype": "Regions/HUBS/CivilWarHUBs/CivilWarHubIronManAvengersTowerStartTarget.prototype",
+    "Setting": "eRTV_Enabled",
+    "Value": 0.0
+  },
+  {
     "Prototype": "Entity/Items/Consumables/Prototypes/GShop/ZZZDeprecated/DeprecatedConsumables/Jackpot/Conditions/TeamCapBoost1WeekCondition.prototype",
     "Setting": "eCTV_Enabled",
     "Value": 0.0
