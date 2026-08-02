@@ -2,11 +2,23 @@
     {
         "Enabled": true,
         "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-        "Path": "MarkerSet.Markers[14].EntityGuid",
+        "Path": "MarkerSet.Markers[22].EntityGuid",
         "Description": "Change to Iron Fist Skill Trainer",
         "ValueType": "PrototypeGuid",
         "Value": 12426129186128603905
     },
+	{
+		"Enabled": true,
+		"Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+		"Path": "MarkerSet.Markers[22].Position",
+		"Description": "Change Iron Fist position",
+		"ValueType": "Vector3",
+		"Value": [
+		462.12,
+		-243.5,
+		177
+		]
+	},
 	{
 		"Enabled": true,
 		"Prototype": "Entity/Characters/Vendors/Prototypes/HUBWorldMidtown/Trainers/MidtownAGITrainer.prototype",

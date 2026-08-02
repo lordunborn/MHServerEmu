@@ -4553,6 +4553,8 @@ namespace MHServerEmu.Games.Entities.Avatars
                 UseDominoAxisRaidTeleporter(player, interactableObject);
             else if (interactableObject.PrototypeDataRef == ValkyrieSurturRaidTeleporterRef)
                 UseValkyrieSurturRaidTeleporter(player, interactableObject);
+            else if (interactableObject.PrototypeDataRef == OpsFloorTeleporterRef)
+                UseOpsFloorTeleporter(player, interactableObject);
 
             interactableObject.OnInteractedWith(this);
 
@@ -4981,6 +4983,48 @@ namespace MHServerEmu.Games.Entities.Avatars
                 teleporter.Initialize(responsePlayer, TeleportContextEnum.TeleportContext_Debug);
                 teleporter.DifficultyTierRef = difficultyTierRef;
                 teleporter.TeleportToTarget(SurturRaidTargetRef);
+            }
+        }
+
+        // Entity/Characters/NPCs/SHIELD/SHIELDAgentTutorialBodyslider.prototype ("S.H.I.E.L.D. Agent Justin
+        // Pitta") - leftover from an old, removed Bodyslider tutorial. Native DesignState is NotInGame, 0
+        // prototype-data references anywhere in the game, 0 cell-marker placements anywhere - confirmed safe
+        // to reuse, same category as the raid/patrol teleporter NPCs above.
+        private static readonly PrototypeId OpsFloorTeleporterRef = (PrototypeId)8320897659205524484;
+
+        // His own native DialogText (the Bodyslider tutorial speech) - confirmed via --findlocalestringref to
+        // be referenced by nothing else except his own DialogText field, so it's safe to override wholesale
+        // via AchievementStringMap (see [[achievement-string-override-global-text-fix]]) to talk about the
+        // Ops Floor instead, without touching any other NPC's dialog.
+        private static readonly LocaleStringId OpsFloorFlavorTextRef = (LocaleStringId)7799554739206620423;
+
+        // Regions/HUBS/AvengersTowerHUB/Portals/AvengersTowerHUBEntry.prototype - same target the !tower
+        // command uses (MiscCommands.cs TowerCommand).
+        private static readonly PrototypeId AvengersTowerHUBEntryTargetRef = (PrototypeId)16780605467179883619;
+
+        private static void UseOpsFloorTeleporter(Player player, WorldEntity opsFloorGuide)
+        {
+            Game game = player.Game;
+
+            GameDialogInstance dialog = game.GameDialogManager.CreateInstance(player.DatabaseUniqueId);
+            dialog.OnResponse = OnOpsFloorTeleporterDialogResponse;
+            dialog.Message.LocaleString = OpsFloorFlavorTextRef;
+            dialog.Options = DialogOptionEnum.WorldClick;
+            dialog.TargetId = opsFloorGuide.Id;
+            dialog.InteractorId = player.CurrentAvatar?.Id ?? InvalidId;
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option1, YesButtonRef, ButtonStyle.SecondaryPositive, hold: false);
+            dialog.AddButton(GameDialogResultEnum.eGDR_Option2, NoButtonRef, ButtonStyle.SecondaryNegative, hold: false);
+
+            game.GameDialogManager.ShowDialog(dialog);
+
+            void OnOpsFloorTeleporterDialogResponse(ulong playerGuid, DialogResponse response)
+            {
+                if (response.ButtonIndex != GameDialogResultEnum.eGDR_Option1) return;
+
+                Player responsePlayer = game.EntityManager.GetEntityByDbGuid<Player>(playerGuid);
+                if (responsePlayer == null) return;
+
+                Teleporter.DebugTeleportToTarget(responsePlayer, AvengersTowerHUBEntryTargetRef, GameDatabase.GlobalsPrototype.DifficultyTierDefault);
             }
         }
 

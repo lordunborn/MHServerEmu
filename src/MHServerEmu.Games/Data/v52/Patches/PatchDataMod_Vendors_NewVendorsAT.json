@@ -1,22 +1,151 @@
 [
   {
     "Enabled": true,
+    "Prototype": "Entity/Characters/Vendors/Prototypes/HUB01AvengersTower/ATVendorArmorB.prototype",
+    "Path": "DesignState",
+    "Description": "[Recipe Vendor] Native DesignState is NotInGame - flip to Live so this vendor is actually reachable.",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/Vendors/Prototypes/HUB01AvengersTower/ATVendorArmorB.prototype",
+    "Path": "Properties",
+    "Description": "[Recipe Vendor] Set Vendor Type to VendorPatrolSavage (its native LootTable is VendorPatrolSavageLoot.prototype, which we stock with recipes below).",
+    "ValueType": "Properties",
+    "Value": {
+      "VendorType": 13096588626153773829
+    }
+  },
+  {
+    "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[29].EntityGuid",
-    "Description": "Add Raid Vendor",
+    "Description": "[Recipe Vendor] Replaces the old Raid Vendor (AsgardVendorRaid.prototype) at this marker.",
     "ValueType": "PrototypeGuid",
-    "Value": 5131636323208863595
+    "Value": 16381382183176720465
   },
   {
     "Enabled": true,
     "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
     "Path": "MarkerSet.Markers[29].Position",
-    "Description": "Change Raid Vendor position",
+    "Description": "[Recipe Vendor] Reuses the Raid Vendor's known-good custom position at this marker.",
     "ValueType": "Vector3",
     "Value": [
       1701.125,
       -1497.625,
       368
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[31].EntityGuid",
+    "Description": "[Recipe Vendor] Replaces Adam Warlock (VendorEternitySplinterAdamWarlock.prototype) at this marker in the Classic Tower. Native marker 31 position/rotation kept as-is.",
+    "ValueType": "PrototypeGuid",
+    "Value": 16381382183176720465
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/Missions/VendorPatrolSavageLoot.prototype",
+    "Path": "Choices[0].Item",
+    "Description": "[Recipe Vendor] Overwrite Item 3 - NO RF",
+    "ValueType": "PrototypeId",
+    "Value": 11743517608358583946
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Items/Crafting/Recipes/Tab1Catalyst/AddSightOfNineToCostume.prototype",
+    "Path": "Cost.Components[0].Arg1.Value",
+    "Description": "[Recipe Vendor] Overwrite Item 3 - NO RF",
+    "ValueType": "Integer",
+    "Value": 1000000
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/Missions/VendorPatrolSavageLoot.prototype",
+    "Path": "Choices[6].Item",
+    "Description": "[Recipe Vendor] Overwrite Item 1 - NO REF",
+    "ValueType": "PrototypeId",
+    "Value": 5889030388715297824
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/Missions/VendorPatrolSavageLoot.prototype",
+    "Path": "Choices[1].Item",
+    "Description": "[Recipe Vendor] Overwrite Item 0",
+    "ValueType": "PrototypeId",
+    "Value": 873695704514829663
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/Missions/VendorPatrolSavageLoot.prototype",
+    "Path": "Choices[2].Item",
+    "Description": "[Recipe Vendor] Overwrite Item 2",
+    "ValueType": "PrototypeId",
+    "Value": 10318884791154384642
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/Missions/VendorPatrolSavageLoot.prototype",
+    "Path": "Choices[3].Item",
+    "Description": "[Recipe Vendor] Overwrite Item 4 - NO REF",
+    "ValueType": "PrototypeId",
+    "Value": 4048175206761045136
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/Missions/VendorPatrolSavageLoot.prototype",
+    "Path": "Choices[4].Item",
+    "Description": "[Recipe Vendor] Overwrite Item 5 - ARMOR VENDOR 0.9 NO DROP",
+    "ValueType": "PrototypeId",
+    "Value": 17967526047373467208
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/Missions/VendorPatrolSavageLoot.prototype",
+    "Path": "Choices[5].Item",
+    "Description": "[Recipe Vendor] Overwrite Item 6 - NO REF",
+    "ValueType": "PrototypeId",
+    "Value": 3783454472275500185
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Vendor/Missions/VendorPatrolSavageLoot.prototype",
+    "Path": "Choices[]",
+    "Description": "[Recipe Vendor] Add recipes as LootDropItemPrototype",
+    "ValueType": "Prototype[]",
+    "Value": [
+      { "ParentDataRef": 1071992662862269383, "Item": 10983558852543323518 },
+      { "ParentDataRef": 1071992662862269383, "Item": 17017709887831939940 },
+      { "ParentDataRef": 1071992662862269383, "Item": 11734690366184823994 },
+      { "ParentDataRef": 1071992662862269383, "Item": 7219991718555753511 },
+      { "ParentDataRef": 1071992662862269383, "Item": 1541704920685091882 },
+      { "ParentDataRef": 1071992662862269383, "Item": 10282928876692249640 },
+      { "ParentDataRef": 1071992662862269383, "Item": 18438828788318608427 },
+      { "ParentDataRef": 1071992662862269383, "Item": 7054602616867331113 },
+      { "ParentDataRef": 1071992662862269383, "Item": 1202839289592552492 },
+      { "ParentDataRef": 1071992662862269383, "Item": 9279932907885763626 },
+      { "ParentDataRef": 1071992662862269383, "Item": 17410737566119762989 },
+      { "ParentDataRef": 1071992662862269383, "Item": 8041818360436956203 },
+      { "ParentDataRef": 1071992662862269383, "Item": 2219689070553996334 },
+      { "ParentDataRef": 1071992662862269383, "Item": 8949372132950613079 },
+      { "ParentDataRef": 1071992662862269383, "Item": 16559991513595518040 },
+      { "ParentDataRef": 1071992662862269383, "Item": 2620592828495109209 },
+      { "ParentDataRef": 1071992662862269383, "Item": 5269739406058657721 },
+      { "ParentDataRef": 1071992662862269383, "Item": 13683517883012159703 },
+      { "ParentDataRef": 1071992662862269383, "Item": 1932369747773954265 },
+      { "ParentDataRef": 1071992662862269383, "Item": 10360883186573711581 },
+      { "ParentDataRef": 1071992662862269383, "Item": 13951690078979037388 },
+      { "ParentDataRef": 1071992662862269383, "Item": 5059960715049441485 },
+      { "ParentDataRef": 1071992662862269383, "Item": 10521543086873909455 },
+      { "ParentDataRef": 1071992662862269383, "Item": 16216372084435720403 },
+      { "ParentDataRef": 1071992662862269383, "Item": 13635261576288477400 },
+      { "ParentDataRef": 1071992662862269383, "Item": 12985289011244112488 },
+      { "ParentDataRef": 1071992662862269383, "Item": 3303220518786177641 },
+      { "ParentDataRef": 1071992662862269383, "Item": 354781669731408492 },
+      { "ParentDataRef": 1071992662862269383, "Item": 11317007160953805421 },
+      { "ParentDataRef": 1071992662862269383, "Item": 6665549333049317998 }
     ]
   },
   {

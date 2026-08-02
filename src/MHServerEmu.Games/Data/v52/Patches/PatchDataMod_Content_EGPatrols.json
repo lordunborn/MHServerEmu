@@ -1,38 +1,6 @@
 [
   {
     "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[30].EntityGuid",
-    "Description": "[EG Patrols] Midtown teleporter - place Misty Knight's own real NPC prototype (Entity/Characters/NPCs/MistyKnight.prototype, already DesignState:Live with a real UnrealClass, confirmed unused elsewhere live) at this marker slot. NOT the borrowed HKRooftopVendorArmor vendor-skin guid used in the earlier, now-shelved vendor-reskin experiment (see Off/PatchDataMod_Vendors_Legendaries.json) - same slot, different guid, no vendor entanglement.",
-    "ValueType": "PrototypeGuid",
-    "Value": 4227756442550214266
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[30].Position",
-    "Description": "[EG Patrols] Midtown teleporter - moved to Cloak's exact position (marker 31). All three EG Patrol NPCs now share one physical spot, since only one is ever visible at a time (see LiveTuningDataGlobal.json base eWETV_Visible=0.0 + each patrol's own LiveTuning file setting its own NPC to 1.0 during its event night) - clears up floor space in the hub.",
-    "ValueType": "Vector3",
-    "Value": [
-      1147.125,
-      1034.25,
-      371
-    ]
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[30].Rotation",
-    "Description": "[EG Patrols] Midtown teleporter - moved to Cloak's exact rotation (marker 31), same reasoning as the position change above.",
-    "ValueType": "Vector3",
-    "Value": [
-      -2.356194490192345,
-      0,
-      0
-    ]
-  },
-  {
-    "Enabled": true,
     "Prototype": "Entity/Characters/NPCs/HubNPCs/CivilWarCaptainAmericaHubNPCs/CivilWarCloak.prototype",
     "Path": "DesignState",
     "Description": "[EG Patrols] Cloak's native DesignState is DevelopmentOnly (unlike Misty Knight, who was already Live) - flip to Live so our custom interact dialog actually fires instead of falling back to just his native ambient click-through greeting.",
@@ -41,74 +9,10 @@
   },
   {
     "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[31].EntityGuid",
-    "Description": "[EG Patrols] ICP teleporter - place Entity/Characters/NPCs/HubNPCs/CivilWarCaptainAmericaHubNPCs/CivilWarCloak.prototype. Confirmed unused elsewhere: 0 prototype-data references anywhere in the game (--findprotoref), only ever placed via marker in the inactive CivilWar_Warehouse_HUB.cell (Civil War content confirmed non-live in this fork - see civil-war-hijack memory). Marker 31's native LastKnownEntityName was SpawnMarkers/Types/MissionGiverTinyV2.prototype - same generic 'mission giver can spawn here' marker category as marker 30 (Misty Knight's slot), not a fixed real NPC, so safe to reuse the same way.",
-    "ValueType": "PrototypeGuid",
-    "Value": 3247942265405900330
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[31].Position",
-    "Description": "[EG Patrols] ICP teleporter - final placement position in Avengers Tower (previous value was a testing-cluster spot, easy to reach all 3 at once).",
-    "ValueType": "Vector3",
-    "Value": [
-      1147.125,
-      1034.25,
-      371
-    ]
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[31].Rotation",
-    "Description": "[EG Patrols] Cloak final rotation - 135 degrees counterclockwise from the zeroed (0,0,0) baseline. Same sign convention confirmed live earlier for this exact marker (negative = counterclockwise).",
-    "ValueType": "Vector3",
-    "Value": [
-      -2.356194490192345,
-      0,
-      0
-    ]
-  },
-  {
-    "Enabled": true,
     "Prototype": "Entity/Characters/NPCs/DoctorStrange.prototype",
     "Path": "DesignState",
     "Description": "[EG Patrols] Hightown teleporter - Ironman Tutorial was abandoned (confirmed live: his model has no mouse-hover/interact collision at all client-side, even after fixing DesignState+DialogText - a client-asset limitation, not a data problem). Doctor Strange's native DesignState is NotInGame (same class of blocker as Cloak's DevelopmentOnly). Confirmed safe to reuse: 0 cell-marker placements anywhere; the 3 prototype-data references are all either dead (SerpentMenSurvival is ActiveInRegions-restricted to a ZZZDevelopment dead room, and the old MysticMayhemChild1 redacted variant is itself DesignState:NotInGame) or cosmetic-only (the live MysticMayhemChild1New event references him only for his icon/name in a StoryNotification popup - confirmed live via a full run of that quest, he's never physically spawned).",
     "ValueType": "Enum",
     "Value": "Live"
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[32].EntityGuid",
-    "Description": "[EG Patrols] Hightown teleporter - place Entity/Characters/NPCs/DoctorStrange.prototype. Marker 32's native LastKnownEntityName was SpawnMarkers/Types/MissionTinyV2.prototype - same generic 'mission giver can spawn here' marker category as markers 30/31, not a fixed real NPC. Already has a real native DialogTextList (unlike Ironman Tutorial), so no DialogText fix needed for interact-eligibility.",
-    "ValueType": "PrototypeGuid",
-    "Value": 4823431446756076203
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[32].Position",
-    "Description": "[EG Patrols] Hightown teleporter - moved to Cloak's exact position (marker 31), same reasoning as Midtown's move above.",
-    "ValueType": "Vector3",
-    "Value": [
-      1147.125,
-      1034.25,
-      371
-    ]
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[32].Rotation",
-    "Description": "[EG Patrols] Hightown teleporter - moved to Cloak's exact rotation (marker 31), same reasoning as Midtown's move above.",
-    "ValueType": "Vector3",
-    "Value": [
-      -2.356194490192345,
-      0,
-      0
-    ]
   }
 ]

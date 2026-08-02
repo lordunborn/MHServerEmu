@@ -22,20 +22,20 @@
   {
     "Prototype": "Entity/Characters/NPCs/MistyKnight.prototype",
     "Setting": "eWETV_Visible",
-    "Description": "[EG Patrols] Midtown Patrol teleporter - off by default, turned on for Midtown Patrol night by LiveTuning/Events/Weekly/LiveTuningDataMidtownMadness.json",
-    "Value": 0.0
+    "Description": "[TEMP TEST 2026-08-01] Forced visible to test position/rotation at the new Classic Tower marker - REVERT to 0.0 once confirmed. [EG Patrols] Midtown Patrol teleporter - off by default, turned on for Midtown Patrol night by LiveTuning/Events/Weekly/LiveTuningDataMidtownMadness.json",
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/NPCs/HubNPCs/CivilWarCaptainAmericaHubNPCs/CivilWarCloak.prototype",
     "Setting": "eWETV_Visible",
-    "Description": "[EG Patrols] ICP Patrol teleporter - off by default, turned on for ICP Patrol night by LiveTuning/Events/Weekly/LiveTuningDataBrooklynBeatdown.json",
-    "Value": 0.0
+    "Description": "[TEMP TEST 2026-08-01] Forced visible to test position/rotation at the new Classic Tower marker - REVERT to 0.0 once confirmed. [EG Patrols] ICP Patrol teleporter - off by default, turned on for ICP Patrol night by LiveTuning/Events/Weekly/LiveTuningDataBrooklynBeatdown.json",
+    "Value": 1.0
   },
   {
     "Prototype": "Entity/Characters/NPCs/DoctorStrange.prototype",
     "Setting": "eWETV_Visible",
-    "Description": "[EG Patrols] Hightown Patrol teleporter - off by default, turned on for Hightown Patrol night by LiveTuning/Events/Weekly/LiveTuningDataHightownPatrol.json",
-    "Value": 0.0
+    "Description": "[TEMP TEST 2026-08-01] Forced visible to test position/rotation at the new Classic Tower marker - REVERT to 0.0 once confirmed. [EG Patrols] Hightown Patrol teleporter - off by default, turned on for Hightown Patrol night by LiveTuning/Events/Weekly/LiveTuningDataHightownPatrol.json",
+    "Value": 1.0
   },
   {
     "Prototype": "Loot/Tables/Mob/Bosses/PatrolMidtown/Subtable/SharedMidtownMADNESS.prototype",

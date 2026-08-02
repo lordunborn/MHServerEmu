@@ -1,0 +1,194 @@
+﻿[
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[2].EntityGuid",
+    "Description": "[Classic Tower Teleporters] Raid 1 - Silver Sable (Age of Ultron teleporter). Marker 2's own DisplayName resolves to \"Jarvis\", not its path name (ATVendorArmor.prototype) - confirmed via LocaleStringId lookup, not assumed.",
+    "ValueType": "PrototypeGuid",
+    "Value": 17056502735773574357
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[2].Position",
+    "Description": "[Classic Tower Teleporters] Silver Sable - user-specified position, first pass (fine-tune after restart).",
+    "ValueType": "Vector3",
+    "Value": [
+      878,
+      -241,
+      184
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[2].Rotation",
+    "Description": "[Classic Tower Teleporters] Silver Sable - 180 degrees. Rotated from the zeroed baseline (negative = counterclockwise, positive = clockwise - flipped again 2026-08-01, the other convention was wrong for this pass too).",
+    "ValueType": "Vector3",
+    "Value": [
+      -3.141592653589793,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[7].EntityGuid",
+    "Description": "[Classic Tower Teleporters] Raid 2 - Domino (Axis Raid teleporter). Moved from marker 4 to marker 7 per user's repositioning pass. Native marker 7 was AvengersTowerEventTerminalVendor.prototype. Marker 4 (Hank Pym) reverts fully to native - nothing else patches it now.",
+    "ValueType": "PrototypeGuid",
+    "Value": 12222155132991259485
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[7].Position",
+    "Description": "[Classic Tower Teleporters] Domino - user-specified position, first pass (fine-tune after restart).",
+    "ValueType": "Vector3",
+    "Value": [
+      727,
+      -450,
+      177
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[7].Rotation",
+    "Description": "[Classic Tower Teleporters] Domino - clockwise 110 degrees. Rotated from the zeroed baseline (negative = counterclockwise, positive = clockwise - flipped again 2026-08-01, the other convention was wrong for this pass too).",
+    "ValueType": "Vector3",
+    "Value": [
+      1.9198621771937625,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[3].EntityGuid",
+    "Description": "[Classic Tower Teleporters] Raid 3 - Valkyrie (Muspelheim/Surtur Raid teleporter). Native marker 3 was ATVendorWeapon.",
+    "ValueType": "PrototypeGuid",
+    "Value": 902724671843216079
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[3].Position",
+    "Description": "[Classic Tower Teleporters] Valkyrie - user-specified position, first pass (fine-tune after restart).",
+    "ValueType": "Vector3",
+    "Value": [
+      560,
+      -560,
+      176
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[3].Rotation",
+    "Description": "[Classic Tower Teleporters] Valkyrie - clockwise 90 degrees. Rotated from the zeroed baseline (negative = counterclockwise, positive = clockwise - flipped again 2026-08-01, the other convention was wrong for this pass too).",
+    "ValueType": "Vector3",
+    "Value": [
+      1.5707963267948966,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[26].EntityGuid",
+    "Description": "[Classic Tower Teleporters] Patrol 1 - Misty Knight (Midtown Patrol teleporter). Moved from marker 5 to marker 26 per user's repositioning pass. Native marker 26 was SHIELDAgentStanLee.prototype. Marker 5 (ATVendorGuild) reverts fully to native - nothing else patches it now.",
+    "ValueType": "PrototypeGuid",
+    "Value": 4227756442550214266
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[26].Position",
+    "Description": "[Classic Tower Teleporters] Misty Knight - user-specified position, first pass (fine-tune after restart).",
+    "ValueType": "Vector3",
+    "Value": [
+      867,
+      166,
+      176
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[26].Rotation",
+    "Description": "[Classic Tower Teleporters] Misty Knight - 180 degrees. Rotated from the zeroed baseline (negative = counterclockwise, positive = clockwise - flipped again 2026-08-01, the other convention was wrong for this pass too).",
+    "ValueType": "Vector3",
+    "Value": [
+      -3.141592653589793,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[20].EntityGuid",
+    "Description": "[Classic Tower Teleporters] Patrol 2 - Cloak / CivilWarCloak.prototype (ICP Patrol teleporter). Moved from marker 6 to marker 20 per user's repositioning pass. Native marker 20 was MariaHill.prototype. Marker 6 (ATVendorHardcore) reverts fully to native - nothing else patches it now.",
+    "ValueType": "PrototypeGuid",
+    "Value": 3247942265405900330
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[20].Position",
+    "Description": "[Classic Tower Teleporters] Cloak - user-specified position, first pass (fine-tune after restart).",
+    "ValueType": "Vector3",
+    "Value": [
+      772,
+      460,
+      177
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[20].Rotation",
+    "Description": "[Classic Tower Teleporters] Cloak - counterclockwise 135 degrees. Rotated from the zeroed baseline (negative = counterclockwise, positive = clockwise - flipped again 2026-08-01, the other convention was wrong for this pass too).",
+    "ValueType": "Vector3",
+    "Value": [
+      -2.356194490192345,
+      0,
+      0
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[27].EntityGuid",
+    "Description": "[Classic Tower Teleporters] Patrol 3 - Doctor Strange (Hightown Patrol teleporter). Native marker 27 was SpecialEventVendor.prototype.",
+    "ValueType": "PrototypeGuid",
+    "Value": 4823431446756076203
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[27].Position",
+    "Description": "[Classic Tower Teleporters] Doctor Strange - user-specified position, first pass (fine-tune after restart).",
+    "ValueType": "Vector3",
+    "Value": [
+      565,
+      560,
+      176
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTower_HUB.cell",
+    "Path": "MarkerSet.Markers[27].Rotation",
+    "Description": "[Classic Tower Teleporters] Doctor Strange - counterclockwise 90 degrees. Rotated from the zeroed baseline (negative = counterclockwise, positive = clockwise - flipped again 2026-08-01, the other convention was wrong for this pass too).",
+    "ValueType": "Vector3",
+    "Value": [
+      -1.5707963267948966,
+      0,
+      0
+    ]
+  }
+]

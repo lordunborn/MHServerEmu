@@ -9,38 +9,6 @@
   },
   {
     "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[0].EntityGuid",
-    "Description": "[Raid Teleporters] Age of Ultron teleporter - place Silver Sable at this marker slot. Marker 0's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV3.prototype - a generic encounter spawn placeholder, same reusable category as markers 30/31/32 (already repurposed for the EG Patrol teleporters), not a fixed named NPC.",
-    "ValueType": "PrototypeGuid",
-    "Value": 17056502735773574357
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[0].Position",
-    "Description": "[Raid Teleporters] Age of Ultron teleporter - moved to Cloak's exact position (marker 31 in PatchDataMod_Content_EGPatrols.json). All raid teleporters now share this one spot with the EG Patrol teleporters, since only one raid event NPC is ever meant to be visible at a time (gated off by default via LiveTuningData.json eWETV_Visible=0.0, turned on per raid event as those events are built) - one consistent 'event teleporter' landmark in the hub.",
-    "ValueType": "Vector3",
-    "Value": [
-      1147.125,
-      1034.25,
-      371
-    ]
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[0].Rotation",
-    "Description": "[Raid Teleporters] Age of Ultron teleporter - moved to Cloak's exact rotation, same reasoning as the position change above.",
-    "ValueType": "Vector3",
-    "Value": [
-      -2.356194490192345,
-      0,
-      0
-    ]
-  },
-  {
-    "Enabled": true,
     "Prototype": "Entity/Characters/NPCs/HubNPCs/Domino.prototype",
     "Path": "DesignState",
     "Description": "[Raid Teleporters] Domino - Axis Raid teleporter (moved here from Age of Ultron - her model IS cooked into the client UPKs and she renders fine, just thematically fits an X-Men-affiliated raid better than Ultron). Native DesignState is NotInGame - flip to Live. Confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere.",
@@ -49,75 +17,11 @@
   },
   {
     "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[19].EntityGuid",
-    "Description": "[Raid Teleporters] Axis Raid teleporter - place Domino at this marker slot (previously Manifold, whose model wasn't cooked into the client UPKs). Marker 19's native LastKnownEntityName was SpawnMarkers/Types/EncounterSmall.prototype - a generic encounter spawn placeholder, not a fixed named NPC.",
-    "ValueType": "PrototypeGuid",
-    "Value": 12222155132991259485
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[19].Position",
-    "Description": "[Raid Teleporters] Axis Raid teleporter - moved to Cloak's exact position (marker 31 in PatchDataMod_Content_EGPatrols.json), same reasoning as the Age of Ultron teleporter's move above.",
-    "ValueType": "Vector3",
-    "Value": [
-      1147.125,
-      1034.25,
-      371
-    ]
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[19].Rotation",
-    "Description": "[Raid Teleporters] Axis Raid teleporter - moved to Cloak's exact rotation, same reasoning as the Age of Ultron teleporter's move above.",
-    "ValueType": "Vector3",
-    "Value": [
-      -2.356194490192345,
-      0,
-      0
-    ]
-  },
-  {
-    "Enabled": true,
     "Prototype": "Entity/Characters/NPCs/Valkyrie.prototype",
     "Path": "DesignState",
     "Description": "[Raid Teleporters] Valkyrie - Surtur Raid teleporter (replaces Songbird, whose model wasn't cooked into the client UPKs). Valkyrie's model (MarvelNPC_Valkyrie) is confirmed cooked into the client UPKs, thematically fits an Asgard-set raid, and is confirmed safe to reuse: 0 prototype-data references anywhere in the game, 0 cell-marker placements anywhere. Native DesignState is NotInGame - flip to Live.",
     "ValueType": "Enum",
     "Value": "Live"
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[23].EntityGuid",
-    "Description": "[Raid Teleporters] Surtur Raid teleporter - place Valkyrie at this marker slot. Marker 23's native LastKnownEntityName was SpawnMarkers/Types/EncounterTinyV2.prototype - a generic encounter spawn placeholder, not a fixed named NPC.",
-    "ValueType": "PrototypeGuid",
-    "Value": 902724671843216079
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[23].Position",
-    "Description": "[Raid Teleporters] Surtur Raid teleporter - moved to Cloak's exact position (marker 31 in PatchDataMod_Content_EGPatrols.json), same reasoning as the Age of Ultron teleporter's move above.",
-    "ValueType": "Vector3",
-    "Value": [
-      1147.125,
-      1034.25,
-      371
-    ]
-  },
-  {
-    "Enabled": true,
-    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
-    "Path": "MarkerSet.Markers[23].Rotation",
-    "Description": "[Raid Teleporters] Surtur Raid teleporter - moved to Cloak's exact rotation, same reasoning as the Age of Ultron teleporter's move above.",
-    "ValueType": "Vector3",
-    "Value": [
-      -2.356194490192345,
-      0,
-      0
-    ]
   },
   {
     "Enabled": true,

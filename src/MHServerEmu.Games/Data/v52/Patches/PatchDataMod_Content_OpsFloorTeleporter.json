@@ -1,0 +1,42 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Entity/Characters/NPCs/SHIELD/SHIELDAgentTutorialBodyslider.prototype",
+    "Path": "DesignState",
+    "Description": "[Ops Floor Teleporter] \"S.H.I.E.L.D. Agent Justin Pitta\" - leftover Bodyslider tutorial NPC, confirmed unused (0 prototype-data references, 0 cell-marker placements anywhere). Native DesignState is NotInGame - flip to Live so our custom interact dialog fires.",
+    "ValueType": "Enum",
+    "Value": "Live"
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[30].EntityGuid",
+    "Description": "[Ops Floor Teleporter] Place Justin Pitta at marker 30 (native MissionGiverTinyV1 placeholder - confirmed empty in practice, no mission giver spawns here outside an active related quest).",
+    "ValueType": "PrototypeGuid",
+    "Value": 4068075024685475015
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[30].Position",
+    "Description": "[Ops Floor Teleporter] Moved to the original raid teleporters' shared spot (was Cloak's marker 31 position before the raid teleporters moved to the Classic Tower).",
+    "ValueType": "Vector3",
+    "Value": [
+      1147.125,
+      1034.25,
+      371
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Resource/Cells/DistrictCells/Avengers_Tower/AvengersTowerNPE_HUB.cell",
+    "Path": "MarkerSet.Markers[30].Rotation",
+    "Description": "[Ops Floor Teleporter] Same rotation as the original raid teleporters' shared spot.",
+    "ValueType": "Vector3",
+    "Value": [
+      -2.356194490192345,
+      0,
+      0
+    ]
+  }
+]
