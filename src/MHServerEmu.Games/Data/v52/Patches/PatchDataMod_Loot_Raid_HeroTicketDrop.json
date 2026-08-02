@@ -1,0 +1,98 @@
+[
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameRaids/Raid1/SurturLoot.prototype",
+    "Path": "Choices[]",
+    "Description": "[Hero Ticket Drop] Self-contained nested sub-table appended in a single entry (avoids the separate-indexed-follow-up-patch approach, which was found to collide with unrelated Choices[9] paths elsewhere in the tree). 2% chance for a Free Hero Ticket, gated to Tier3Superheroic and above.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 5508985158461163528,
+        "PickMethod": "PickAll",
+        "NoDropPercent": 0.98,
+        "Modifiers": [
+          {
+            "ParentDataRef": 9219955363352285908,
+            "Choices": [
+              586640101754933627,
+              1087474643293441873,
+              424700179461639950
+            ]
+          }
+        ],
+        "Choices": [
+          {
+            "ParentDataRef": 1071992662862269383,
+            "Item": 18146578028433383832,
+            "NumMin": 1,
+            "NumMax": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Bosses/EndgameRaids/Raid2/GenoshaEnc3Loot.prototype",
+    "Path": "Choices[]",
+    "Description": "[Hero Ticket Drop] Same self-contained nested sub-table as SurturLoot.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 5508985158461163528,
+        "PickMethod": "PickAll",
+        "NoDropPercent": 0.98,
+        "Modifiers": [
+          {
+            "ParentDataRef": 9219955363352285908,
+            "Choices": [
+              586640101754933627,
+              1087474643293441873,
+              424700179461639950
+            ]
+          }
+        ],
+        "Choices": [
+          {
+            "ParentDataRef": 1071992662862269383,
+            "Item": 18146578028433383832,
+            "NumMin": 1,
+            "NumMax": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Enabled": true,
+    "Prototype": "Loot/Tables/Mob/Destructibles/AgeOfUltronChest/UltronAgeOfUltron.prototype",
+    "Path": "Choices[]",
+    "Description": "[Hero Ticket Drop] Same self-contained nested sub-table as SurturLoot.",
+    "ValueType": "Prototype[]",
+    "Value": [
+      {
+        "ParentDataRef": 5508985158461163528,
+        "PickMethod": "PickAll",
+        "NoDropPercent": 0.98,
+        "Modifiers": [
+          {
+            "ParentDataRef": 9219955363352285908,
+            "Choices": [
+              586640101754933627,
+              1087474643293441873,
+              424700179461639950
+            ]
+          }
+        ],
+        "Choices": [
+          {
+            "ParentDataRef": 1071992662862269383,
+            "Item": 18146578028433383832,
+            "NumMin": 1,
+            "NumMax": 1
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -467,7 +467,7 @@ namespace LootTableDumper
 
             public override void ProcessLogMessage(in LogMessage message)
             {
-                if (message.Logger == nameof(PrototypePatchManager))
+                if (message.Logger == nameof(PrototypePatchManager) || message.Logger == nameof(JsonPrototype))
                     Messages.Add(message);
             }
         }

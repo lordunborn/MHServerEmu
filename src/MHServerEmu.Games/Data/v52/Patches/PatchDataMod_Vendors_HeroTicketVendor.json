@@ -1,0 +1,58 @@
+[
+	{
+		"Enabled": true,
+		"Prototype": "Entity/Characters/Vendors/VendorTypes/VendorBIFTaker.prototype",
+		"Path": "Inventories[0].LootTable",
+		"Description": "Change Boost Voucher Exchange Vendor loot table to free hero ticket loot table. Need to remove boost voucher both and maybe change the actual vendor if possible to vendor temp event",
+		"ValueType": "PrototypeId",
+		"Value": 11829509810710846032
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Vendor/SpecialEvent/SpecialEventVendorTable.prototype",
+		"Path": "Choices[22].Item",
+		"Description": "Remove HumanTorch",
+		"ValueType": "PrototypeId",
+		"Value": 0
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Vendor/SpecialEvent/SpecialEventVendorTable.prototype",
+		"Path": "Choices[24].Item",
+		"Description": "Remove InvisibleWoman",
+		"ValueType": "PrototypeId",
+		"Value": 0
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Vendor/SpecialEvent/SpecialEventVendorTable.prototype",
+		"Path": "Choices[35].Item",
+		"Description": "Remove MrFantastic",
+		"ValueType": "PrototypeId",
+		"Value": 0
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Vendor/SpecialEvent/SpecialEventVendorTable.prototype",
+		"Path": "Choices[44].Item",
+		"Description": "Remove SilverSurfer",
+		"ValueType": "PrototypeId",
+		"Value": 0
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Vendor/SpecialEvent/SpecialEventVendorTable.prototype",
+		"Path": "Choices[50].Item",
+		"Description": "Remove Thing",
+		"ValueType": "PrototypeId",
+		"Value": 0
+	},
+	{
+		"Enabled": true,
+		"Prototype": "Loot/Tables/Vendor/SpecialEvent/SpecialEventVendorTable.prototype",
+		"Path": "Choices[0].Item",
+		"Description": "Set to Carnage",
+		"ValueType": "PrototypeId",
+		"Value": 15358016657602126366
+	}
+]
