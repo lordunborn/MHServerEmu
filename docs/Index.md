@@ -2,6 +2,12 @@
 
 If you would like to ask questions or get up to date information, please feel free to join our [Discord](https://discord.gg/hjR8Bj52t3).
 
+## Fork
+
+What's custom to this fork, on top of upstream.
+
+- [Fork Features](./Fork/Features.md) - full details on custom gameplay systems, content, and changes added in this fork.
+
 ## Setup
 
 If this is your first time using MHServerEmu, you may be interested in this.
