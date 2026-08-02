@@ -1651,10 +1651,19 @@ namespace MHServerEmu.Games.Powers
 #if GAME_VERSION_1_52 || GAME_VERSION_1_53
             difficultyMult = tuningTable.GetDamageMultiplier(IsPlayerPayload, rankProto.Rank, target.RegionLocation.Position);
 
+#if GAME_VERSION_1_52
             // Normalize difficulty multiplier to Red (Hard) tier for IncursionEnemies.
             // IncursionEnemies are balanced for Hard mode; Cosmic tier's extra damage scaling
             // makes them vastly too strong. We counteract only the tier-specific portion
             // (DamageMobToPlayerPct / DamagePlayerToMobPct) by ratioing back to Red tier values.
+            // 1.53-only: DifficultyTier's members and DifficultyTierPrototype's shape are both
+            // completely different (see RegionEnums.cs / DifficultyPrototype.cs) - the Red-tier
+            // damage-pct fields used here don't exist there (DamagePlayerToMobPct/DamageMobToPlayerPct
+            // moved into a per-platform DifficultyTierGameplaySettingsPrototype[] array instead of
+            // living directly on DifficultyTierPrototype). Skipped for 1.53 rather than guessed at -
+            // Incursion is experimental/off-by-default and 1.53 is preliminary-support only, so it
+            // just falls back to the plain tuningTable multiplier above, same as it would without
+            // an active Incursion normalization.
             if (Game.IncursionManager != null)
             {
                 bool isIncursionSource = false;
@@ -1690,6 +1699,7 @@ namespace MHServerEmu.Games.Powers
                     }
                 }
             }
+#endif
 #else
             difficultyMult = difficultyTable.GetDamageMultiplier(IsPlayerPayload, rankProto.Rank, target.RegionLocation.Position);
 #endif
